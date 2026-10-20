@@ -51,9 +51,11 @@ class DespesasController {
 
     static async atualizarDespesa (req, res, next) {
         try {
-            
+            const {  } = req.body
+
+
         } catch (error) {
-            
+            return res.staus(500).json({ message: "Erro interno no servidor", erro: error.message });
         }
     }
 
