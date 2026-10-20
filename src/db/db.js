@@ -1,5 +1,7 @@
 import 'dotenv/config'//Carrega todas as variaveis do .env para o process.env
-import pool from "pg";
+import PG from "pg";
+
+const { Pool } = PG
 
 const pool = new Pool({
     host: process.env.POSTGRES_HOST || "localhost",
