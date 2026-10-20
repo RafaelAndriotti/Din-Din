@@ -32,6 +32,31 @@ class DespesasController {
         }
     }
 
+    static async listarDespesasPorId (req, res, next){
+        try {
+            const id  = Number(req.params.id);
+
+             const despesaEncontrada = despesas.find((item) => item.id === id);
+
+            if(!despesaEncontrada){
+                return res.status(404).json({ message: "Despesa nao encontrada" })
+            }
+
+            res.status(200).json(despesaEncontrada);
+
+        } catch (error) {
+            return res.status(500).json({ message: "erro interno no servidor", erro: error.message });
+        }
+    }
+
+    static async atualizarDespesa (req, res, next) {
+        try {
+            
+        } catch (error) {
+            
+        }
+    }
+
 }
 
 export default DespesasController;
