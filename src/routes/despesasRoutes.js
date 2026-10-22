@@ -7,5 +7,7 @@ const routes = express.Router();
 routes.get('/despesas', DespesasController.listarDespesas);
 routes.post('/despesas', validarDespesa, DespesasController.criarDespesa);
 routes.get('/despesas/:id', DespesasController.listarDespesasPorId);
+routes.put('despesas/:id', DespesasController.atualizarDespesa);
+
 
 export default routes;

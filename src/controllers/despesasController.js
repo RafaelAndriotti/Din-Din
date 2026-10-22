@@ -55,11 +55,47 @@ class DespesasController {
 
     static async atualizarDespesa (req, res, next) {
         try {
-            const {  } = req.body
+            const { id } = req.params
+            const { desc, value, category, payMethod, installment, status } = req.body
+            const { rows } = await pool.query(
+                `UPDATE despesas
+                    SET "desc"=$1,
+                    value=$2,
+                    category=$3,
+                    payMethod=$4,
+                    installment=$5,
+                    status=$6
+                WHERE id=$7
+                RETURNING *`,
+                [desc, value, category, payMethod, installment, status, id]
+            );
 
+            if (rows.length === 0) {
+                return res.status(404).json({message: "Despesa nao encontrada"})
+            }
+
+            return res.status(200).json(rows[0]);
 
         } catch (error) {
-            return res.staus(500).json({ message: "Erro interno no servidor", erro: error.message });
+            return res.status(500).json({ message: "Erro interno no servidor.", erro: error.message });
+        }
+    }
+
+    static async deletarDespesa(req, res, next){
+        try {
+            const { id } = req.params
+            const { rows } = await pool.query(
+                `DELETE FROM despesas WHERE id=$1`,
+                [id]
+            )
+
+            if (rows === 0){
+                return res.status(404).json({ message: 'Despesa nao encontrada.' })
+            }
+
+            res.status(200).json({ message: `Registro ${id} deletado com sucesso.` })
+        } catch (error) {
+            return res.status(500).json({ message: "Erro interno no servidor.", erro: error.message });
         }
     }
 
