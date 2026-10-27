@@ -7,7 +7,7 @@ const routes = express.Router();
 routes.get('/despesas', DespesasController.listarDespesas);
 routes.post('/despesas', validarDespesa, DespesasController.criarDespesa);
 routes.get('/despesas/:id', DespesasController.listarDespesasPorId);
-routes.put('/despesas/:id', DespesasController.atualizarDespesa);
+routes.put('/despesas/:id', validarDespesa, DespesasController.atualizarDespesa);
 routes.delete('/despesas/:id', DespesasController.deletarDespesa);
 
 
