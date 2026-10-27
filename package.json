@@ -1,9 +1,10 @@
 {
-  "name": "controle-financeiro",
+  "name": "controle-financeiro-root",
   "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
+  "private": true,
   "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
     "test": "vitest run",
     "test:watch": "vitest",
     "dev": "nodemon server.js"
