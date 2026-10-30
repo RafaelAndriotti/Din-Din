@@ -1,4 +1,3 @@
-import despesaValidator from '../validators/despesasValidator.js'
 import pool from '../db/db.js'
 
 // const despesas = [ { id: 1, desc: "supermercado", category: "compras", payMethod: "PIX", installment: 0, status: "paid",  value: 250.0}]
@@ -42,7 +41,7 @@ class DespesasController {
                 [req.params.id]
             );
 
-            if(!rows.length === 0){
+            if(rows.length === 0){
                 return res.status(404).json({ message: "Despesa nao encontrada" })
             }
 
@@ -84,16 +83,16 @@ class DespesasController {
     static async deletarDespesa(req, res, next){
         try {
             const { id } = req.params
-            const { rows } = await pool.query(
+            const { rowCount } = await pool.query(
                 `DELETE FROM despesas WHERE id=$1`,
                 [id]
             )
 
-            if (rows === 0){
+            if (rowCount === 0){
                 return res.status(404).json({ message: 'Despesa nao encontrada.' })
             }
 
-            res.status(200).json({ message: `Registro ${id} deletado com sucesso.` })
+            res.status(204).end()
         } catch (error) {
             return res.status(500).json({ message: "Erro interno no servidor.", erro: error.message });
         }
