@@ -1,111 +1,111 @@
-// Serviço de comunicação com o backend
+// Serviço de comunicação com o backend.
+// Regra principal: nunca transformar uma falha em sucesso simulado.
+// Toda resposta que não for 2xx vira ApiError, e quem chamou decide o que mostrar.
 
-const BASE_URL = '/despesas';
+import { toPayload } from '../utils/despesas';
 
-// Mock de fallback caso o backend ainda não tenha sido iniciado pelo usuário
+const DESPESAS_URL = '/despesas';
+const CATEGORIAS_URL = '/categorias';
+
+// Dados de exemplo usados só em desenvolvimento, quando o backend não está de pé.
 const FALLBACK_DESPESAS = [
-  {
-    id: 1,
-    descricao: 'Supermercado Mensal',
-    valor: 450.00,
-    categoria: 'Alimentação',
-    metodoPagamento: 'PIX',
-    parcelas: 0,
-    status: 'pago'
-  },
-  {
-    id: 2,
-    descricao: 'Conta de Energia',
-    valor: 185.30,
-    categoria: 'Moradia',
-    metodoPagamento: 'Boleto',
-    parcelas: 0,
-    status: 'pendente'
-  },
-  {
-    id: 3,
-    descricao: 'Notebook para Trabalho',
-    valor: 3600.00,
-    categoria: 'Tecnologia',
-    metodoPagamento: 'Cartão de Crédito',
-    parcelas: 10,
-    status: 'pago'
-  }
+  { id: 1, descricao: 'Supermercado Mensal', valor: 450.0, categoria: 'Alimentação', metodoPagamento: 'PIX', parcelas: 0, status: 'pago' },
+  { id: 2, descricao: 'Conta de Energia', valor: 185.3, categoria: 'Moradia', metodoPagamento: 'Boleto', parcelas: 0, status: 'pendente' },
+  { id: 3, descricao: 'Notebook para Trabalho', valor: 3600.0, categoria: 'Tecnologia', metodoPagamento: 'Cartão de Crédito', parcelas: 10, status: 'pago' }
 ];
 
-export async function checkBackendHealth() {
-  try {
-    const res = await fetch('/despesas', { method: 'GET', headers: { 'Accept': 'application/json' } });
-    return res.ok;
-  } catch {
-    return false;
+// kind: 'network' (sem conexão), 'validation' (400), 'not_found' (404) ou 'server' (outros).
+export class ApiError extends Error {
+  constructor(message, { status = 0, kind = 'server', issues = [] } = {}) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.kind = kind;
+    this.issues = issues;
   }
 }
 
+const MENSAGENS = {
+  network: 'Sem conexão com o servidor.',
+  validation: 'Os dados foram recusados pelo servidor.',
+  not_found: 'Registro não encontrado.',
+  server: 'O servidor encontrou um erro.'
+};
+
+async function request(url, options = {}) {
+  let response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers: { Accept: 'application/json', ...(options.body ? { 'Content-Type': 'application/json' } : {}) }
+    });
+  } catch {
+    // fetch só rejeita em falha de rede (TypeError).
+    throw new ApiError(MENSAGENS.network, { kind: 'network' });
+  }
+
+  if (response.status === 204) return null;
+
+  const isJson = (response.headers.get('content-type') || '').includes('application/json');
+  const body = isJson ? await response.json().catch(() => null) : null;
+
+  if (response.ok) return body;
+
+  let kind = 'server';
+  if (response.status === 400) kind = 'validation';
+  else if (response.status === 404) kind = 'not_found';
+  // O proxy do Vite responde 5xx sem JSON quando o backend está desligado.
+  else if (response.status >= 500 && !isJson) kind = 'network';
+
+  throw new ApiError(MENSAGENS[kind], {
+    status: response.status,
+    kind,
+    issues: Array.isArray(body?.erros) ? body.erros : []
+  });
+}
+
+// O Postgres devolve NUMERIC como string ("450.00"). Na tela, tratamos como número.
+function normalizarDespesa(d) {
+  return { ...d, valor: Number(d.valor) || 0, parcelas: Number(d.parcelas) || 0 };
+}
+
+// Devolve { data, isFallback, error }. Nunca lança.
+// Fallback só em falha de rede e só em desenvolvimento. 4xx/5xx viram erro.
 export async function getDespesas() {
   try {
-    const response = await fetch(BASE_URL);
-    if (!response.ok) {
-      throw new Error(`Erro ${response.status}: ${response.statusText}`);
-    }
-    const data = await response.json();
-    return { data, isFallback: false };
+    const data = await request(DESPESAS_URL);
+    return { data: (data || []).map(normalizarDespesa), isFallback: false, error: null };
   } catch (error) {
-    console.warn('Backend inacessível no momento, utilizando dados de demonstração:', error.message);
-    return { data: FALLBACK_DESPESAS, isFallback: true };
+    if (error.kind === 'network' && import.meta.env.DEV) {
+      console.warn('Backend inacessível. Exibindo dados de exemplo. Suba a API com: npm run dev');
+      return { data: FALLBACK_DESPESAS.map(normalizarDespesa), isFallback: true, error };
+    }
+    return { data: null, isFallback: false, error };
   }
 }
 
-export async function getDespesaById(id) {
-  try {
-    const response = await fetch(`${BASE_URL}/${id}`);
-    if (!response.ok) {
-      throw new Error(`Erro ao buscar despesa #${id}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(error);
-    const item = FALLBACK_DESPESAS.find(d => d.id === Number(id));
-    if (item) return item;
-    throw error;
-  }
+export async function createDespesa(despesa) {
+  const criada = await request(DESPESAS_URL, { method: 'POST', body: JSON.stringify(toPayload(despesa)) });
+  return normalizarDespesa(criada);
 }
 
-export async function createDespesa(despesaData) {
-  // Converte e formata os dados conforme esperado pelo despesaSchema do Zod no backend:
-  // descricao (string), categoria (string), metodoPagamento (string), parcelas (number), status (string), valor (number)
-  const payload = {
-    descricao: String(despesaData.descricao).trim(),
-    categoria: String(despesaData.categoria).trim(),
-    metodoPagamento: String(despesaData.metodoPagamento).trim(),
-    parcelas: Number(despesaData.parcelas || 0),
-    status: String(despesaData.status || 'pendente').trim(),
-    valor: Number(despesaData.valor)
-  };
+// O validator exige o corpo completo, por isso sempre enviamos todos os campos.
+export async function updateDespesa(id, despesa) {
+  const atualizada = await request(`${DESPESAS_URL}/${id}`, { method: 'PUT', body: JSON.stringify(toPayload(despesa)) });
+  return normalizarDespesa(atualizada);
+}
 
+export async function deleteDespesa(id, { keepalive = false } = {}) {
+  await request(`${DESPESAS_URL}/${id}`, { method: 'DELETE', keepalive });
+}
+
+// Categorias são opcionais para a tela: se a rota falhar, o formulário usa a lista padrão.
+export async function getCategorias() {
   try {
-    const response = await fetch(BASE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      const errJson = await response.json().catch(() => null);
-      const errorMsg = errJson?.message || 'Falha ao cadastrar despesa no backend';
-      const issues = errJson?.erros?.map(e => `${e.path?.join('.')}: ${e.message}`).join(', ');
-      throw new Error(issues ? `${errorMsg} (${issues})` : errorMsg);
-    }
-
-    return await response.json();
+    const data = await request(CATEGORIAS_URL);
+    return Array.isArray(data) ? data.filter((c) => c.ativo !== false) : [];
   } catch (error) {
-    console.warn('Falha na criação via backend, simulando inclusão local:', error.message);
-    const novaLocal = {
-      id: Date.now(),
-      ...payload
-    };
-    return novaLocal;
+    console.warn('Não foi possível carregar /categorias. Usando a lista padrão.', error.message);
+    return [];
   }
 }

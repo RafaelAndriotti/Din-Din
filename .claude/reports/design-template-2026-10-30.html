@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Din-Din | Template de redesign (2026-10-30)</title>
+<style>
+/* =========================================================
+   TOKENS PROPOSTOS (ver design-proposta-2026-10-30.md)
+   Contrastes calculados sobre --surface-1 (#121826)
+   ========================================================= */
+:root {
+  /* superficies: solidas, sem transparencia, para contraste previsivel */
+  --bg: #0B0F19;
+  --surface-1: #121826;      /* cards, tabela, modal */
+  --surface-2: #1A2233;      /* inputs, hover, blocos internos */
+  --surface-3: #232C3D;      /* trilho de barras, skeleton */
+  --border-subtle: #232C3D;  /* divisorias decorativas */
+  --border-control: #64748B; /* borda de input/select: 3.34:1 sobre surface-2 */
+
+  /* texto */
+  --text-1: #F1F5F9;  /* 16.2:1 */
+  --text-2: #A1AAB8;  /* 7.6:1  */
+  --text-3: #8B95A7;  /* 5.9:1  substitui #6B7280 (3.4:1, reprovado) */
+
+  /* marca */
+  --accent: #818CF8;          /* texto/icone sobre escuro: 5.9:1 */
+  --accent-soft: #A5B4FC;     /* texto sobre fundo tingido: 6.8:1 */
+  --accent-bg: #4F46E5;       /* fundo do botao primario: branco 6.3:1 */
+  --accent-bg-hover: #4338CA;
+  --accent-tint: rgba(129, 140, 248, 0.14);
+  --focus-ring: #A5B4FC;
+
+  /* semantica financeira */
+  --positive: #34D399;  --positive-tint: rgba(52, 211, 153, 0.14);  /* pago: 7.1:1 */
+  --warning:  #FBBF24;  --warning-tint:  rgba(251, 191, 36, 0.14);  /* pendente: 8.0:1 */
+  --danger:   #F87171;  --danger-tint:   rgba(248, 113, 113, 0.14); /* estouro/erro: 5.3:1 */
+  --danger-bg: #B91C1C; /* botao destrutivo: branco 6.5:1 */
+
+  /* tipografia */
+  --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fs-xs: 0.75rem;   /* 12 */
+  --fs-sm: 0.875rem;  /* 14 */
+  --fs-md: 1rem;      /* 16 */
+  --fs-lg: 1.25rem;   /* 20 */
+  --fs-xl: 1.5rem;    /* 24 */
+  --fs-2xl: 2rem;     /* 32 */
+
+  /* espaco (grid de 4) */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-12: 48px;
+
+  /* raios (mantidos do projeto atual) */
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px; --radius-full: 9999px;
+
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.4), 0 4px 6px -2px rgba(0,0,0,.3);
+  --control-h: 44px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font); background: var(--bg); color: var(--text-1);
+  line-height: 1.5; -webkit-font-smoothing: antialiased; font-size: var(--fs-md);
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; }
+/* foco visivel sempre: nunca outline:none sem substituto */
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: var(--radius-sm); }
+.money { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; white-space: nowrap; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.i-sm { width: 14px; height: 14px; }
+.i-lg { width: 28px; height: 28px; }
+
+/* ---------- moldura do template (nao faz parte do produto) ---------- */
+.tpl-nav { position: sticky; top: 0; z-index: 90; background: #05070D; border-bottom: 1px solid var(--border-subtle);
+  display: flex; gap: var(--sp-4); align-items: center; padding: var(--sp-2) var(--sp-6); font-size: var(--fs-sm); flex-wrap: wrap; }
+.tpl-nav strong { color: var(--accent-soft); }
+.tpl-nav a { color: var(--text-2); text-decoration: none; padding: var(--sp-1) var(--sp-2); border-radius: var(--radius-sm); }
+.tpl-nav a:hover { color: var(--text-1); background: var(--surface-2); }
+.tpl-section { padding: var(--sp-12) var(--sp-6); border-bottom: 1px dashed #2A3447; }
+.tpl-title { max-width: 1200px; margin: 0 auto var(--sp-6); }
+.tpl-title h2 { font-size: var(--fs-lg); }
+.tpl-title p { color: var(--text-2); font-size: var(--fs-sm); max-width: 760px; }
+.tpl-note { display: inline-block; font-size: var(--fs-xs); font-weight: 700; color: #05070D; background: var(--accent-soft);
+  padding: 2px var(--sp-2); border-radius: var(--radius-sm); margin-bottom: var(--sp-2); letter-spacing: .02em; }
+.tpl-phase2 { background: var(--warning); }
+
+/* =========================================================
+   COMPONENTES DO PRODUTO
+   ========================================================= */
+/* Botoes */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  min-height: var(--control-h); padding: 0 var(--sp-4); border-radius: var(--radius-md);
+  font-size: var(--fs-sm); font-weight: 600; transition: background-color .15s, border-color .15s; }
+.btn-primary { background: var(--accent-bg); color: #fff; }
+.btn-primary:hover { background: var(--accent-bg-hover); }
+.btn-secondary { background: var(--surface-2); border: 1px solid var(--border-control); color: var(--text-1); }
+.btn-secondary:hover { background: var(--surface-3); }
+.btn-ghost { color: var(--text-2); }
+.btn-ghost:hover { color: var(--text-1); background: var(--surface-2); }
+.btn-danger { background: var(--danger-bg); color: #fff; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.icon-btn { width: var(--control-h); height: var(--control-h); display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md); color: var(--text-2); }
+.icon-btn:hover { background: var(--surface-2); color: var(--text-1); }
+.icon-btn.sm { width: 36px; height: 36px; }
+.icon-btn.danger:hover { color: var(--danger); background: var(--danger-tint); }
+
+/* Header */
+.app-header { background: var(--surface-1); border-bottom: 1px solid var(--border-subtle); }
+.header-inner { max-width: 1200px; margin: 0 auto; padding: var(--sp-3) var(--sp-6); display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); }
+.brand { display: flex; align-items: center; gap: var(--sp-3); }
+.brand-logo { width: 36px; height: 36px; border-radius: var(--radius-md); background: var(--accent-bg); color: #fff; display: grid; place-items: center; }
+.brand-name { font-size: var(--fs-lg); font-weight: 800; letter-spacing: -0.02em; }
+.header-actions { display: flex; align-items: center; gap: var(--sp-2); }
+.conn { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-xs); color: var(--text-3); padding: 0 var(--sp-2); }
+.conn-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--positive); }
+.conn.off .conn-dot { background: var(--warning); }
+
+/* Layout */
+.page { max-width: 1200px; margin: 0 auto; padding: var(--sp-8) var(--sp-6); display: flex; flex-direction: column; gap: var(--sp-6); }
+.page-head h1 { font-size: var(--fs-xl); font-weight: 700; letter-spacing: -0.01em; }
+.page-head p { color: var(--text-2); font-size: var(--fs-sm); }
+
+.card { background: var(--surface-1); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); }
+
+/* Resumo */
+.summary { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--sp-4); }
+.sum-card { padding: var(--sp-6); display: flex; flex-direction: column; gap: var(--sp-2); }
+.sum-label { font-size: var(--fs-sm); color: var(--text-2); font-weight: 600; display: flex; align-items: center; gap: var(--sp-2); }
+.sum-value { font-size: var(--fs-2xl); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+.sum-value.md { font-size: var(--fs-xl); }
+.sum-meta { font-size: var(--fs-sm); color: var(--text-3); }
+.sum-link { font-size: var(--fs-sm); color: var(--accent); font-weight: 600; margin-top: auto; align-self: flex-start; padding: var(--sp-1) 0; text-decoration: underline; text-underline-offset: 3px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.dot.pos { background: var(--positive); }
+.dot.warn { background: var(--warning); }
+.stack-bar { display: flex; gap: 2px; height: 12px; border-radius: var(--radius-full); overflow: hidden; background: var(--surface-3); margin: var(--sp-3) 0 var(--sp-2); }
+.stack-bar span { display: block; height: 100%; }
+.stack-bar .pos { background: var(--positive); }
+.stack-bar .warn { background: var(--warning); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-6); font-size: var(--fs-sm); }
+.legend-item { display: flex; align-items: center; gap: var(--sp-2); color: var(--text-2); }
+.legend-item b { color: var(--text-1); font-weight: 700; }
+.sum-foot { display: flex; gap: var(--sp-6); border-top: 1px solid var(--border-subtle); padding-top: var(--sp-3); margin-top: var(--sp-2); font-size: var(--fs-sm); color: var(--text-3); flex-wrap: wrap; }
+.sum-foot b { color: var(--text-2); font-weight: 600; }
+.icon-chip { width: 32px; height: 32px; border-radius: var(--radius-md); display: grid; place-items: center; }
+.icon-chip.warn { background: var(--warning-tint); color: var(--warning); }
+.icon-chip.pos { background: var(--positive-tint); color: var(--positive); }
+
+/* Filtros */
+.filters { padding: var(--sp-4); display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; }
+.search { position: relative; flex: 1 1 260px; }
+.search .i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-3); }
+.input, .select { width: 100%; min-height: var(--control-h); background: var(--surface-2); border: 1px solid var(--border-control);
+  border-radius: var(--radius-md); padding: 0 var(--sp-3); font-size: var(--fs-sm); color: var(--text-1); }
+.input::placeholder { color: var(--text-3); }
+.input:focus-visible, .select:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 0; border-color: var(--focus-ring); }
+.search .input { padding-left: 40px; }
+.select { appearance: none; padding-right: 36px; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-2) 50%), linear-gradient(135deg, var(--text-2) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+.select-wrap { display: flex; flex-direction: column; gap: 2px; min-width: 180px; }
+.select-wrap label { font-size: var(--fs-xs); color: var(--text-2); font-weight: 600; }
+.segmented { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border-control); border-radius: var(--radius-md); padding: 3px; gap: 2px; }
+.segmented button { min-height: 36px; padding: 0 var(--sp-3); border-radius: 7px; font-size: var(--fs-sm); font-weight: 600; color: var(--text-2); display: inline-flex; align-items: center; gap: var(--sp-2); white-space: nowrap; }
+.segmented button[aria-pressed="true"], .segmented button[aria-checked="true"] { background: var(--accent-tint); color: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.segmented .count { font-size: var(--fs-xs); color: var(--text-3); font-weight: 600; }
+.segmented button[aria-pressed="true"] .count { color: var(--accent-soft); }
+.active-filters { width: 100%; display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; font-size: var(--fs-sm); color: var(--text-2); }
+.tag { display: inline-flex; align-items: center; gap: var(--sp-1); background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--radius-full); padding: 2px 4px 2px 10px; font-size: var(--fs-xs); color: var(--text-1); }
+.tag button { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: var(--text-2); }
+.tag button:hover { background: var(--surface-3); color: var(--text-1); }
+
+/* Lista */
+.list-head { display: flex; justify-content: space-between; align-items: baseline; padding: var(--sp-4) var(--sp-6); border-bottom: 1px solid var(--border-subtle); gap: var(--sp-4); flex-wrap: wrap; }
+.list-head h2 { font-size: var(--fs-md); font-weight: 700; }
+.list-head h2 span { color: var(--text-3); font-weight: 600; }
+.list-head .total { font-size: var(--fs-sm); color: var(--text-2); }
+.list-head .total b { color: var(--text-1); }
+table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+th { text-align: left; font-size: var(--fs-xs); font-weight: 600; color: var(--text-2); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border-subtle); white-space: nowrap; }
+td { padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border-subtle); vertical-align: middle; }
+tbody tr:hover { background: var(--surface-2); }
+tbody tr:last-child td { border-bottom: 0; }
+th:first-child, td:first-child { padding-left: var(--sp-6); }
+th:last-child, td:last-child { padding-right: var(--sp-4); }
+.num { text-align: right; }
+.desc-btn { text-align: left; font-weight: 600; color: var(--text-1); padding: var(--sp-1) 0; border-radius: var(--radius-sm); }
+.desc-btn:hover { color: var(--accent-soft); text-decoration: underline; text-underline-offset: 3px; }
+.cat { display: inline-flex; align-items: center; gap: var(--sp-2); color: var(--text-1); }
+.muted { color: var(--text-2); }
+.sub { display: block; font-size: var(--fs-xs); color: var(--text-3); }
+.val { font-weight: 700; font-size: var(--fs-md); }
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px 2px 8px; border-radius: var(--radius-full); font-size: var(--fs-xs); font-weight: 700; white-space: nowrap; }
+.badge.pago { background: var(--positive-tint); color: var(--positive); }
+.badge.pendente { background: var(--warning-tint); color: var(--warning); }
+.badge.estouro { background: var(--danger-tint); color: var(--danger); }
+.row-actions { display: flex; gap: 2px; justify-content: flex-end; }
+.quick-pay { font-size: var(--fs-xs); font-weight: 700; color: var(--accent); padding: 0 var(--sp-2); min-height: 36px; border-radius: var(--radius-sm); white-space: nowrap; }
+.quick-pay:hover { background: var(--accent-tint); color: var(--accent-soft); }
+
+/* lista em cards (mobile) */
+.cards { list-style: none; display: none; }
+.cards li { border-bottom: 1px solid var(--border-subtle); }
+.cards li:last-child { border-bottom: 0; }
+.item { width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 2px var(--sp-3); padding: var(--sp-3) var(--sp-4); text-align: left; min-height: 64px; }
+.item:hover { background: var(--surface-2); }
+.item-title { font-weight: 600; font-size: var(--fs-sm); color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item-meta { font-size: var(--fs-xs); color: var(--text-3); display: flex; align-items: center; gap: 6px; }
+.item-val { font-weight: 700; font-size: var(--fs-md); text-align: right; }
+.item-status { justify-self: end; }
+
+/* Fase 2: limites */
+.limits { padding: var(--sp-6); display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-5) var(--sp-8); }
+.limits-head { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-4); flex-wrap: wrap; }
+.limits-head h2 { font-size: var(--fs-md); }
+.limit-row { display: flex; flex-direction: column; gap: 6px; }
+.limit-top { display: flex; justify-content: space-between; font-size: var(--fs-sm); gap: var(--sp-2); }
+.limit-top .muted b { color: var(--text-1); }
+.bar { height: 8px; background: var(--surface-3); border-radius: var(--radius-full); overflow: hidden; }
+.bar span { display: block; height: 100%; border-radius: var(--radius-full); background: var(--accent); }
+.bar.warn span { background: var(--warning); }
+.bar.over span { background: var(--danger); }
+.limit-msg { font-size: var(--fs-xs); color: var(--text-3); display: flex; align-items: center; gap: 6px; }
+.limit-msg.warn { color: var(--warning); }
+.limit-msg.over { color: var(--danger); }
+
+/* Modal */
+.stage { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: var(--sp-6); align-items: start; }
+.backdrop { background: rgba(5, 7, 13, .8); border-radius: var(--radius-lg); padding: var(--sp-8) var(--sp-4); display: flex; justify-content: center; border: 1px dashed #2A3447; }
+.modal { background: var(--surface-1); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); width: 100%; max-width: 520px; box-shadow: var(--shadow-lg); }
+.modal-head { display: flex; justify-content: space-between; align-items: center; padding: var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-6); border-bottom: 1px solid var(--border-subtle); }
+.modal-head h3 { font-size: var(--fs-lg); font-weight: 700; }
+.modal-body { padding: var(--sp-6); display: flex; flex-direction: column; gap: var(--sp-5); }
+.modal-foot { padding: var(--sp-4) var(--sp-6); border-top: 1px solid var(--border-subtle); display: flex; justify-content: flex-end; gap: var(--sp-2); flex-wrap: wrap; }
+.field { display: flex; flex-direction: column; gap: 6px; border: 0; }
+.field > label, .field > legend { font-size: var(--fs-sm); font-weight: 600; color: var(--text-2); }
+.field .hint { font-size: var(--fs-xs); color: var(--text-3); }
+.field .err { font-size: var(--fs-xs); color: var(--danger); display: flex; gap: 6px; align-items: center; font-weight: 600; }
+.input.invalid { border-color: var(--danger); }
+.money-input { position: relative; }
+.money-input span { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: var(--fs-lg); font-weight: 700; color: var(--text-2); }
+.money-input .input { min-height: 56px; font-size: var(--fs-xl); font-weight: 800; padding-left: 52px; font-variant-numeric: tabular-nums; }
+.money-input .input.focus { outline: 2px solid var(--focus-ring); border-color: var(--focus-ring); }
+.chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.chip { min-height: 36px; padding: 0 var(--sp-3); border-radius: var(--radius-full); border: 1px solid var(--border-control); background: var(--surface-2); font-size: var(--fs-sm); font-weight: 600; color: var(--text-2); display: inline-flex; align-items: center; gap: var(--sp-2); }
+.chip[aria-checked="true"] { background: var(--accent-tint); border-color: var(--accent); color: var(--accent-soft); }
+.chip.add { border-style: dashed; }
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-4); }
+.stepper { display: flex; align-items: center; border: 1px solid var(--border-control); border-radius: var(--radius-md); background: var(--surface-2); width: fit-content; }
+.stepper button { width: 44px; height: 42px; font-size: var(--fs-lg); color: var(--text-1); }
+.stepper output { min-width: 56px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.segmented.full { display: flex; }
+.segmented.full button { flex: 1; justify-content: center; min-height: 40px; }
+.segmented button.is-pago[aria-checked="true"] { background: var(--positive-tint); color: var(--positive); box-shadow: inset 0 0 0 1px var(--positive); }
+.segmented button.is-pend[aria-checked="true"] { background: var(--warning-tint); color: var(--warning); box-shadow: inset 0 0 0 1px var(--warning); }
+
+/* Detalhes */
+.detail-hero { text-align: center; padding: var(--sp-2) 0 var(--sp-4); display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
+.detail-hero .sum-value { font-size: 2.25rem; }
+.dl { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-3) var(--sp-6); font-size: var(--fs-sm); background: var(--surface-2); border-radius: var(--radius-md); padding: var(--sp-4); }
+.dl dt { color: var(--text-2); }
+.dl dd { text-align: right; font-weight: 600; }
+
+/* Estados */
+.states { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: var(--sp-6); }
+.state-cap { font-size: var(--fs-xs); font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: var(--sp-2); }
+.empty { padding: var(--sp-12) var(--sp-6); text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); }
+.empty-ico { width: 64px; height: 64px; border-radius: 50%; background: var(--surface-2); color: var(--text-2); display: grid; place-items: center; }
+.empty-ico.err { background: var(--danger-tint); color: var(--danger); }
+.empty h3 { font-size: var(--fs-md); }
+.empty p { color: var(--text-2); font-size: var(--fs-sm); max-width: 320px; }
+.empty .actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; justify-content: center; margin-top: var(--sp-2); }
+.skel { background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface-3) 50%, var(--surface-2) 100%); background-size: 200% 100%; animation: shimmer 1.4s ease-in-out infinite; border-radius: var(--radius-sm); }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
+.skel-row { display: grid; grid-template-columns: 1fr 80px; gap: var(--sp-3); padding: var(--sp-4) var(--sp-6); border-bottom: 1px solid var(--border-subtle); }
+.toast { display: flex; align-items: center; gap: var(--sp-3); background: var(--surface-2); border: 1px solid var(--border-control); border-left: 4px solid var(--positive); border-radius: var(--radius-md); padding: var(--sp-3) var(--sp-3) var(--sp-3) var(--sp-4); box-shadow: var(--shadow-lg); font-size: var(--fs-sm); }
+.toast.err { border-left-color: var(--danger); }
+.toast .i { color: var(--positive); }
+.toast.err .i { color: var(--danger); }
+.toast span { flex: 1; }
+.toast .undo { color: var(--accent-soft); font-weight: 700; padding: 0 var(--sp-3); min-height: 36px; border-radius: var(--radius-sm); }
+.toast .undo:hover { background: var(--accent-tint); }
+.banner { display: flex; gap: var(--sp-3); align-items: flex-start; padding: var(--sp-3) var(--sp-4); background: var(--warning-tint); border: 1px solid rgba(251,191,36,.35); border-radius: var(--radius-md); font-size: var(--fs-sm); color: var(--text-1); }
+.banner .i { color: var(--warning); margin-top: 2px; }
+.banner .btn { min-height: 36px; margin-left: auto; }
+
+/* Tokens */
+.swatches { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: var(--sp-3); }
+.sw { border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; font-size: var(--fs-xs); background: var(--surface-1); }
+.sw div { height: 48px; }
+.sw p { padding: var(--sp-2) var(--sp-3); color: var(--text-2); }
+.sw p b { color: var(--text-1); display: block; font-size: var(--fs-sm); }
+.type-scale { max-width: 1200px; margin: var(--sp-6) auto 0; display: flex; flex-direction: column; gap: var(--sp-2); }
+.type-scale div { display: flex; gap: var(--sp-6); align-items: baseline; border-bottom: 1px solid var(--border-subtle); padding-bottom: var(--sp-2); }
+.type-scale code { color: var(--text-3); font-size: var(--fs-xs); width: 180px; flex-shrink: 0; }
+
+/* Mobile frames */
+.phones { max-width: 1200px; margin: 0 auto; display: flex; gap: var(--sp-8); flex-wrap: wrap; justify-content: center; }
+.phone { width: 375px; height: 760px; border: 8px solid #2A3447; border-radius: 40px; overflow: hidden; background: var(--bg); position: relative; display: flex; flex-direction: column; flex-shrink: 0; }
+.phone-scroll { overflow-y: auto; flex: 1; }
+.phone .header-inner { padding: var(--sp-3) var(--sp-4); }
+.phone .page { padding: var(--sp-4); gap: var(--sp-4); }
+.phone .summary { grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.phone .summary .hero { grid-column: 1 / -1; }
+.phone .sum-card { padding: var(--sp-4); }
+.phone .sum-value { font-size: 1.75rem; }
+.phone .sum-value.md { font-size: var(--fs-lg); }
+.phone .filters { padding: 0; background: none; border: 0; flex-wrap: nowrap; flex-direction: column; align-items: stretch; }
+.phone .chip-scroll { display: flex; gap: var(--sp-2); overflow-x: auto; padding-bottom: 2px; }
+.phone .chip-scroll .chip { flex-shrink: 0; }
+.phone table { display: none; }
+.phone .cards { display: block; }
+.phone .list-head { padding: var(--sp-3) var(--sp-4); }
+.fab-bar { position: absolute; left: 0; right: 0; bottom: 0; padding: var(--sp-3) var(--sp-4) var(--sp-5); background: linear-gradient(to top, var(--bg) 70%, transparent); }
+.fab-bar .btn { width: 100%; min-height: 52px; font-size: var(--fs-md); }
+.sheet-backdrop { position: absolute; inset: 0; background: rgba(5,7,13,.75); display: flex; align-items: flex-end; }
+.sheet { background: var(--surface-1); border-radius: 20px 20px 0 0; width: 100%; max-height: 92%; display: flex; flex-direction: column; border-top: 1px solid var(--border-subtle); }
+.sheet-grip { width: 40px; height: 4px; border-radius: 2px; background: var(--border-control); margin: var(--sp-2) auto 0; }
+.sheet .modal-body { overflow-y: auto; padding: var(--sp-4); gap: var(--sp-4); }
+.sheet .modal-head { padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4); }
+.sheet .modal-foot { padding: var(--sp-3) var(--sp-4) var(--sp-5); }
+.sheet .modal-foot .btn-primary { flex: 1; min-height: 48px; }
+
+/* Responsivo real da tela principal */
+@media (max-width: 900px) {
+  .summary { grid-template-columns: 1fr 1fr; }
+  .summary .hero { grid-column: 1 / -1; }
+  .limits { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .main-screen table { display: none; }
+  .main-screen .cards { display: block; }
+  .header-inner { padding: var(--sp-3) var(--sp-4); }
+  .page { padding: var(--sp-4); }
+  .hide-sm { display: none; }
+  .row-2 { grid-template-columns: 1fr; }
+  .stage { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Sprite de icones (paths no estilo lucide-react, que ja e dependencia do projeto) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+  <symbol id="i-triangle" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></symbol>
+  <symbol id="i-cloud-off" viewBox="0 0 24 24"><path d="m2 2 20 20"/><path d="M5.78 5.78A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.31-.2"/><path d="M21.53 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7 7 0 0 0 10.4 5.23"/></symbol>
+  <symbol id="i-filter-x" viewBox="0 0 24 24"><path d="M13 13v8l-4-2v-6L2 3h20l-3.6 4.5"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/></symbol>
+</svg>
+
+<nav class="tpl-nav" aria-label="Seções do template">
+  <strong>Din-Din | template de redesign</strong>
+  <a href="#principal">1. Tela principal</a>
+  <a href="#modais">2. Cadastro e detalhes</a>
+  <a href="#estados">3. Estados</a>
+  <a href="#mobile">4. Mobile 375px</a>
+  <a href="#tokens">5. Tokens</a>
+  <span style="margin-left:auto;color:var(--text-3)">Estático, dados fictícios. Proposta: .claude/reports/design-proposta-2026-10-30.md</span>
+</nav>
+
+<!-- =====================================================
+     1. TELA PRINCIPAL
+     ===================================================== -->
+<section class="tpl-section" id="principal" style="padding:0;">
+  <div class="tpl-title" style="padding: var(--sp-8) var(--sp-6) 0;">
+    <span class="tpl-note">1. TELA PRINCIPAL (desktop; reduza a janela abaixo de 720px para ver a lista virar cards)</span>
+    <p>Hierarquia: primeiro o total e quanto falta pagar, depois a lista. "Ticket médio" sai do destaque. O indicador de conexão com a API vira um detalhe discreto no header, para desenvolvimento.</p>
+  </div>
+
+  <div class="main-screen">
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-logo"><svg class="i"><use href="#i-wallet"/></svg></div>
+          <span class="brand-name">Din-Din</span>
+        </div>
+        <div class="header-actions">
+          <span class="conn hide-sm" title="API respondendo em localhost:3000"><span class="conn-dot"></span>API conectada</span>
+          <button class="icon-btn" aria-label="Recarregar despesas"><svg class="i"><use href="#i-refresh"/></svg></button>
+          <button class="btn btn-primary"><svg class="i"><use href="#i-plus"/></svg>Nova despesa</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="page-head">
+        <h1>Visão geral</h1>
+        <p>10 despesas registradas</p>
+      </div>
+
+      <!-- Resumo -->
+      <section class="summary" aria-label="Resumo">
+        <article class="card sum-card hero">
+          <span class="sum-label">Total registrado</span>
+          <span class="sum-value money">R$ 8.315,85</span>
+          <div class="stack-bar" role="img" aria-label="62% pago, 38% a pagar">
+            <span class="pos" style="width:62.3%"></span>
+            <span class="warn" style="width:37.7%"></span>
+          </div>
+          <div class="legend">
+            <span class="legend-item"><span class="dot pos"></span>Pago <b class="money">R$ 5.177,05</b> (62%)</span>
+            <span class="legend-item"><span class="dot warn"></span>A pagar <b class="money">R$ 3.138,80</b> (38%)</span>
+          </div>
+          <div class="sum-foot">
+            <span>Maior despesa: <b>Notebook Dell</b> <b class="money">R$ 3.899,00</b></span>
+            <span>Média: <b class="money">R$ 831,59</b></span>
+          </div>
+        </article>
+
+        <article class="card sum-card">
+          <span class="sum-label"><span class="icon-chip warn"><svg class="i"><use href="#i-clock"/></svg></span>A pagar</span>
+          <span class="sum-value md money">R$ 3.138,80</span>
+          <span class="sum-meta">3 contas pendentes</span>
+          <button class="sum-link">Ver pendentes</button>
+        </article>
+
+        <article class="card sum-card">
+          <span class="sum-label"><span class="icon-chip pos"><svg class="i"><use href="#i-check"/></svg></span>Pago</span>
+          <span class="sum-value md money">R$ 5.177,05</span>
+          <span class="sum-meta">7 despesas quitadas</span>
+          <button class="sum-link">Ver pagas</button>
+        </article>
+      </section>
+
+      <!-- Filtros -->
+      <section class="card filters" aria-label="Filtros">
+        <div class="search">
+          <label for="busca" class="sr-only">Buscar despesas</label>
+          <svg class="i"><use href="#i-search"/></svg>
+          <input id="busca" class="input" type="search" placeholder="Buscar por descrição ou categoria" value="">
+        </div>
+        <div class="segmented" role="group" aria-label="Status">
+          <button aria-pressed="false">Todos <span class="count">10</span></button>
+          <button aria-pressed="true"><svg class="i i-sm"><use href="#i-clock"/></svg>Pendentes <span class="count">3</span></button>
+          <button aria-pressed="false"><svg class="i i-sm"><use href="#i-check"/></svg>Pagos <span class="count">7</span></button>
+        </div>
+        <div class="select-wrap">
+          <label for="f-cat" class="sr-only">Categoria</label>
+          <select id="f-cat" class="select"><option>Todas as categorias</option><option>Moradia</option><option>Alimentação</option></select>
+        </div>
+        <div class="select-wrap">
+          <label for="f-ord" class="sr-only">Ordenar</label>
+          <select id="f-ord" class="select"><option>Mais recentes</option><option>Maior valor</option><option>Menor valor</option></select>
+        </div>
+        <div class="active-filters">
+          Filtrando por:
+          <span class="tag">Pendentes <button aria-label="Remover filtro Pendentes"><svg class="i i-sm"><use href="#i-x"/></svg></button></span>
+          <button class="btn btn-ghost" style="min-height:32px;padding:0 8px;font-size:var(--fs-xs)">Limpar filtros</button>
+        </div>
+      </section>
+
+      <!-- Lista -->
+      <section class="card" aria-labelledby="lanc">
+        <div class="list-head">
+          <h2 id="lanc">Lançamentos <span>(10)</span></h2>
+          <span class="total">Total exibido: <b class="money">R$ 8.315,85</b></span>
+        </div>
+
+        <table>
+          <caption class="sr-only">Lista de despesas</caption>
+          <thead>
+            <tr><th scope="col">Descrição</th><th scope="col">Categoria</th><th scope="col">Pagamento</th><th scope="col">Status</th><th scope="col" class="num">Valor</th><th scope="col"><span class="sr-only">Ações</span></th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><button class="desc-btn">Aluguel</button></td>
+              <td><span class="cat"><span class="dot" style="background:#60A5FA"></span>Moradia</span></td>
+              <td class="muted">Boleto<span class="sub">À vista</span></td>
+              <td><span class="badge pendente"><svg class="i i-sm"><use href="#i-clock"/></svg>Pendente</span></td>
+              <td class="num"><span class="val money">R$ 1.850,00</span></td>
+              <td><div class="row-actions"><button class="quick-pay">Marcar como pago</button><button class="icon-btn sm" aria-label="Editar Aluguel"><svg class="i"><use href="#i-pencil"/></svg></button><button class="icon-btn sm danger" aria-label="Excluir Aluguel"><svg class="i"><use href="#i-trash"/></svg></button></div></td>
+            </tr>
+            <tr>
+              <td><button class="desc-btn">Supermercado Pão de Açúcar</button></td>
+              <td><span class="cat"><span class="dot" style="background:#FB923C"></span>Alimentação</span></td>
+              <td class="muted">Cartão de débito<span class="sub">À vista</span></td>
+              <td><span class="badge pago"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</span></td>
+              <td class="num"><span class="val money">R$ 642,87</span></td>
+              <td><div class="row-actions"><button class="icon-btn sm" aria-label="Editar Supermercado Pão de Açúcar"><svg class="i"><use href="#i-pencil"/></svg></button><button class="icon-btn sm danger" aria-label="Excluir Supermercado Pão de Açúcar"><svg class="i"><use href="#i-trash"/></svg></button></div></td>
+            </tr>
+            <tr>
+              <td><button class="desc-btn">Conta de luz (Enel)</button></td>
+              <td><span class="cat"><span class="dot" style="background:#60A5FA"></span>Moradia</span></td>
+              <td class="muted">PIX<span class="sub">À vista</span></td>
+              <td><span class="badge pago"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</span></td>
+              <td class="num"><span class="val money">R$ 214,36</span></td>
+              <td><div class="row-actions"><button class="icon-btn sm" aria-label="Editar Conta de luz"><svg class="i"><use href="#i-pencil"/></svg></button><button class="icon-btn sm danger" aria-label="Excluir Conta de luz"><svg class="i"><use href="#i-trash"/></svg></button></div></td>
+            </tr>
+            <tr>
+              <td><button class="desc-btn">Notebook Dell</button></td>
+              <td><span class="cat"><span class="dot" style="background:#94A3B8"></span>Tecnologia</span></td>
+              <td class="muted">Cartão de crédito<span class="sub money">10x de R$ 389,90</span></td>
+              <td><span class="badge pago"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</span></td>
+              <td class="num"><span class="val money">R$ 3.899,00</span></td>
+              <td><div class="row-actions"><button class="icon-btn sm" aria-label="Editar Notebook Dell"><svg class="i"><use href="#i-pencil"/></svg></button><button class="icon-btn sm danger" aria-label="Excluir Notebook Dell"><svg class="i"><use href="#i-trash"/></svg></button></div></td>
+            </tr>
+            <tr>
+              <td><button class="desc-btn">Plano de saúde</button></td>
+              <td><span class="cat"><span class="dot" style="background:#F472B6"></span>Saúde</span></td>
+              <td class="muted">Boleto<span class="sub">À vista</span></td>
+              <td><span class="badge pendente"><svg class="i i-sm"><use href="#i-clock"/></svg>Pendente</span></td>
+              <td class="num"><span class="val money">R$ 489,90</span></td>
+              <td><div class="row-actions"><button class="quick-pay">Marcar como pago</button><button class="icon-btn sm" aria-label="Editar Plano de saúde"><svg class="i"><use href="#i-pencil"/></svg></button><button class="icon-btn sm danger" aria-label="Excluir Plano de saúde"><svg class="i"><use href="#i-trash"/></svg></button></div></td>
+            </tr>
+            <tr>
+              <td><button class="desc-btn">Curso de inglês</button></td>
+              <td><span class="cat"><span class="dot" style="background:#2DD4BF"></span>Educação</span></td>
+              <td class="muted">Cartão de crédito<span class="sub money">6x de R$ 133,15</span></td>
+              <td><span class="badge pendente"><svg class="i i-sm"><use href="#i-clock"/></svg>Pendente</span></td>
+              <td class="num"><span class="val money">R$ 798,90</span></td>
+              <td><div class="row-actions"><button class="quick-pay">Marcar como pago</button><button class="icon-btn sm" aria-label="Editar Curso de inglês"><svg class="i"><use href="#i-pencil"/></svg></button><button class="icon-btn sm danger" aria-label="Excluir Curso de inglês"><svg class="i"><use href="#i-trash"/></svg></button></div></td>
+            </tr>
+            <tr>
+              <td><button class="desc-btn">Gasolina</button></td>
+              <td><span class="cat"><span class="dot" style="background:#A78BFA"></span>Transporte</span></td>
+              <td class="muted">Cartão de débito<span class="sub">À vista</span></td>
+              <td><span class="badge pago"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</span></td>
+              <td class="num"><span class="val money">R$ 250,00</span></td>
+              <td><div class="row-actions"><button class="icon-btn sm" aria-label="Editar Gasolina"><svg class="i"><use href="#i-pencil"/></svg></button><button class="icon-btn sm danger" aria-label="Excluir Gasolina"><svg class="i"><use href="#i-trash"/></svg></button></div></td>
+            </tr>
+            <tr>
+              <td><button class="desc-btn">Farmácia</button></td>
+              <td><span class="cat"><span class="dot" style="background:#F472B6"></span>Saúde</span></td>
+              <td class="muted">PIX<span class="sub">À vista</span></td>
+              <td><span class="badge pago"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</span></td>
+              <td class="num"><span class="val money">R$ 87,42</span></td>
+              <td><div class="row-actions"><button class="icon-btn sm" aria-label="Editar Farmácia"><svg class="i"><use href="#i-pencil"/></svg></button><button class="icon-btn sm danger" aria-label="Excluir Farmácia"><svg class="i"><use href="#i-trash"/></svg></button></div></td>
+            </tr>
+            <tr>
+              <td><button class="desc-btn">Netflix</button></td>
+              <td><span class="cat"><span class="dot" style="background:#FACC15"></span>Lazer</span></td>
+              <td class="muted">Cartão de crédito<span class="sub">À vista</span></td>
+              <td><span class="badge pago"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</span></td>
+              <td class="num"><span class="val money">R$ 44,90</span></td>
+              <td><div class="row-actions"><button class="icon-btn sm" aria-label="Editar Netflix"><svg class="i"><use href="#i-pencil"/></svg></button><button class="icon-btn sm danger" aria-label="Excluir Netflix"><svg class="i"><use href="#i-trash"/></svg></button></div></td>
+            </tr>
+            <tr>
+              <td><button class="desc-btn">Uber</button></td>
+              <td><span class="cat"><span class="dot" style="background:#A78BFA"></span>Transporte</span></td>
+              <td class="muted">Cartão de crédito<span class="sub">À vista</span></td>
+              <td><span class="badge pago"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</span></td>
+              <td class="num"><span class="val money">R$ 38,50</span></td>
+              <td><div class="row-actions"><button class="icon-btn sm" aria-label="Editar Uber"><svg class="i"><use href="#i-pencil"/></svg></button><button class="icon-btn sm danger" aria-label="Excluir Uber"><svg class="i"><use href="#i-trash"/></svg></button></div></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- mesma lista em cards: aparece abaixo de 720px -->
+        <ul class="cards">
+          <li><button class="item"><span class="item-title">Aluguel</span><span class="item-val money">R$ 1.850,00</span><span class="item-meta"><span class="dot" style="background:#60A5FA;width:8px;height:8px"></span>Moradia · Boleto</span><span class="item-status badge pendente"><svg class="i i-sm"><use href="#i-clock"/></svg>Pendente</span></button></li>
+          <li><button class="item"><span class="item-title">Supermercado Pão de Açúcar</span><span class="item-val money">R$ 642,87</span><span class="item-meta"><span class="dot" style="background:#FB923C;width:8px;height:8px"></span>Alimentação · Débito</span><span class="item-status badge pago"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</span></button></li>
+          <li><button class="item"><span class="item-title">Notebook Dell</span><span class="item-val money">R$ 3.899,00</span><span class="item-meta"><span class="dot" style="background:#94A3B8;width:8px;height:8px"></span>Tecnologia · 10x de R$ 389,90</span><span class="item-status badge pago"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</span></button></li>
+          <li><button class="item"><span class="item-title">Plano de saúde</span><span class="item-val money">R$ 489,90</span><span class="item-meta"><span class="dot" style="background:#F472B6;width:8px;height:8px"></span>Saúde · Boleto</span><span class="item-status badge pendente"><svg class="i i-sm"><use href="#i-clock"/></svg>Pendente</span></button></li>
+        </ul>
+      </section>
+
+      <!-- Fase 2 -->
+      <section class="card limits" aria-labelledby="lim">
+        <div class="limits-head">
+          <div>
+            <span class="tpl-note tpl-phase2">FASE 2: depende do campo "data" na despesa (A3). Não implementar agora.</span>
+            <h2 id="lim">Limites por categoria em outubro</h2>
+          </div>
+          <span class="sum-meta">Limites vêm de GET /categorias (limiteMensal, cor)</span>
+        </div>
+        <div class="limit-row">
+          <div class="limit-top"><span class="cat"><span class="dot" style="background:#A78BFA"></span>Transporte</span><span class="muted money"><b>R$ 288,50</b> de R$ 250,00</span></div>
+          <div class="bar over" role="progressbar" aria-valuenow="115" aria-valuemin="0" aria-valuemax="100" aria-label="Transporte: 115% do limite"><span style="width:100%"></span></div>
+          <span class="limit-msg over"><svg class="i i-sm"><use href="#i-triangle"/></svg>Estourou em R$ 38,50</span>
+        </div>
+        <div class="limit-row">
+          <div class="limit-top"><span class="cat"><span class="dot" style="background:#60A5FA"></span>Moradia</span><span class="muted money"><b>R$ 2.064,36</b> de R$ 2.200,00</span></div>
+          <div class="bar warn" role="progressbar" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100" aria-label="Moradia: 94% do limite"><span style="width:94%"></span></div>
+          <span class="limit-msg warn"><svg class="i i-sm"><use href="#i-alert"/></svg>94% usado, restam R$ 135,64</span>
+        </div>
+        <div class="limit-row">
+          <div class="limit-top"><span class="cat"><span class="dot" style="background:#FB923C"></span>Alimentação</span><span class="muted money"><b>R$ 642,87</b> de R$ 900,00</span></div>
+          <div class="bar" role="progressbar" aria-valuenow="71" aria-valuemin="0" aria-valuemax="100" aria-label="Alimentação: 71% do limite"><span style="width:71%"></span></div>
+          <span class="limit-msg">Restam R$ 257,13</span>
+        </div>
+        <div class="limit-row">
+          <div class="limit-top"><span class="cat"><span class="dot" style="background:#FACC15"></span>Lazer</span><span class="muted money"><b>R$ 44,90</b> de R$ 300,00</span></div>
+          <div class="bar" role="progressbar" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100" aria-label="Lazer: 15% do limite"><span style="width:15%"></span></div>
+          <span class="limit-msg">Restam R$ 255,10</span>
+        </div>
+      </section>
+    </main>
+  </div>
+</section>
+
+<!-- =====================================================
+     2. MODAIS
+     ===================================================== -->
+<section class="tpl-section" id="modais">
+  <div class="tpl-title">
+    <span class="tpl-note">2. CADASTRO E DETALHES</span>
+    <h2>Modal "Nova despesa" e modal de detalhes com ações</h2>
+    <p>Valor vem primeiro e grande. Categoria e forma de pagamento viram chips (1 toque em vez de abrir select). Parcelas só aparecem para cartão de crédito e mostram o valor de cada parcela. O mesmo modal serve para editar (título "Editar despesa", botão "Salvar alterações").</p>
+  </div>
+  <div class="stage">
+    <div class="backdrop">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">
+        <div class="modal-head">
+          <h3 id="m-title">Nova despesa</h3>
+          <button class="icon-btn" aria-label="Fechar"><svg class="i"><use href="#i-x"/></svg></button>
+        </div>
+        <div class="modal-body">
+          <div class="field">
+            <label for="m-valor">Valor</label>
+            <div class="money-input"><span aria-hidden="true">R$</span><input id="m-valor" class="input focus" inputmode="decimal" value="3.899,00"></div>
+          </div>
+          <div class="field">
+            <label for="m-desc">Descrição</label>
+            <input id="m-desc" class="input" value="Notebook Dell" placeholder="Ex.: Aluguel, mercado, farmácia">
+          </div>
+          <fieldset class="field">
+            <legend>Categoria</legend>
+            <div class="chips" role="radiogroup" aria-label="Categoria">
+              <button class="chip" role="radio" aria-checked="false"><span class="dot" style="background:#FB923C;width:8px;height:8px"></span>Alimentação</button>
+              <button class="chip" role="radio" aria-checked="false"><span class="dot" style="background:#60A5FA;width:8px;height:8px"></span>Moradia</button>
+              <button class="chip" role="radio" aria-checked="false"><span class="dot" style="background:#A78BFA;width:8px;height:8px"></span>Transporte</button>
+              <button class="chip" role="radio" aria-checked="false"><span class="dot" style="background:#F472B6;width:8px;height:8px"></span>Saúde</button>
+              <button class="chip" role="radio" aria-checked="true"><span class="dot" style="background:#94A3B8;width:8px;height:8px"></span>Tecnologia</button>
+              <button class="chip add"><svg class="i i-sm"><use href="#i-plus"/></svg>Outra</button>
+            </div>
+          </fieldset>
+          <fieldset class="field">
+            <legend>Forma de pagamento</legend>
+            <div class="chips" role="radiogroup" aria-label="Forma de pagamento">
+              <button class="chip" role="radio" aria-checked="false">PIX</button>
+              <button class="chip" role="radio" aria-checked="true">Cartão de crédito</button>
+              <button class="chip" role="radio" aria-checked="false">Cartão de débito</button>
+              <button class="chip" role="radio" aria-checked="false">Boleto</button>
+              <button class="chip" role="radio" aria-checked="false">Dinheiro</button>
+            </div>
+          </fieldset>
+          <div class="row-2">
+            <div class="field">
+              <label id="lbl-parc">Parcelas</label>
+              <div class="stepper" role="group" aria-labelledby="lbl-parc">
+                <button aria-label="Menos uma parcela">−</button><output class="money">10x</output><button aria-label="Mais uma parcela">+</button>
+              </div>
+              <span class="hint money">10x de R$ 389,90</span>
+            </div>
+            <fieldset class="field">
+              <legend>Status</legend>
+              <div class="segmented full" role="radiogroup" aria-label="Status">
+                <button class="is-pago" role="radio" aria-checked="true"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</button>
+                <button class="is-pend" role="radio" aria-checked="false"><svg class="i i-sm"><use href="#i-clock"/></svg>Pendente</button>
+              </div>
+            </fieldset>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn btn-ghost">Cancelar</button>
+          <button class="btn btn-secondary">Salvar e adicionar outra</button>
+          <button class="btn btn-primary">Salvar despesa</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="backdrop">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="d-title" style="max-width:440px">
+        <div class="modal-head">
+          <h3 id="d-title">Plano de saúde</h3>
+          <button class="icon-btn" aria-label="Fechar"><svg class="i"><use href="#i-x"/></svg></button>
+        </div>
+        <div class="modal-body">
+          <div class="detail-hero">
+            <span class="sum-value money">R$ 489,90</span>
+            <span class="badge pendente"><svg class="i i-sm"><use href="#i-clock"/></svg>Pendente</span>
+          </div>
+          <dl class="dl">
+            <dt>Categoria</dt><dd><span class="cat"><span class="dot" style="background:#F472B6"></span>Saúde</span></dd>
+            <dt>Forma de pagamento</dt><dd>Boleto</dd>
+            <dt>Parcelas</dt><dd>À vista</dd>
+          </dl>
+          <button class="btn btn-primary" style="width:100%"><svg class="i"><use href="#i-check"/></svg>Marcar como pago</button>
+        </div>
+        <div class="modal-foot" style="justify-content:space-between">
+          <button class="btn btn-ghost" style="color:var(--danger)"><svg class="i"><use href="#i-trash"/></svg>Excluir</button>
+          <button class="btn btn-secondary"><svg class="i"><use href="#i-pencil"/></svg>Editar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
+     3. ESTADOS
+     ===================================================== -->
+<section class="tpl-section" id="estados">
+  <div class="tpl-title">
+    <span class="tpl-note">3. ESTADOS</span>
+    <h2>Carregando, vazio, erro e feedback</h2>
+    <p>Hoje o carregamento mostra R$ 0,00 nos cards (falso), "vazio" e "filtro sem resultado" usam a mesma mensagem, e uma falha no cadastro vira sucesso simulado. Cada estado abaixo tem mensagem e ação próprias.</p>
+  </div>
+  <div class="states">
+    <div>
+      <p class="state-cap">Carregando (skeleton, sem valores falsos)</p>
+      <div class="card" aria-busy="true" aria-label="Carregando despesas">
+        <div style="padding:var(--sp-6);display:flex;flex-direction:column;gap:var(--sp-3);border-bottom:1px solid var(--border-subtle)">
+          <div class="skel" style="width:120px;height:14px"></div>
+          <div class="skel" style="width:220px;height:32px"></div>
+          <div class="skel" style="width:100%;height:12px;border-radius:999px"></div>
+        </div>
+        <div class="skel-row"><div class="skel" style="height:14px;width:70%"></div><div class="skel" style="height:14px"></div></div>
+        <div class="skel-row"><div class="skel" style="height:14px;width:55%"></div><div class="skel" style="height:14px"></div></div>
+        <div class="skel-row" style="border:0"><div class="skel" style="height:14px;width:62%"></div><div class="skel" style="height:14px"></div></div>
+      </div>
+    </div>
+
+    <div>
+      <p class="state-cap">Primeiro uso (nenhuma despesa)</p>
+      <div class="card empty">
+        <div class="empty-ico"><svg class="i i-lg"><use href="#i-receipt"/></svg></div>
+        <h3>Comece registrando um gasto</h3>
+        <p>Cadastre o aluguel, o mercado ou uma conta do mês. O resumo aparece aqui assim que houver a primeira despesa.</p>
+        <div class="actions"><button class="btn btn-primary"><svg class="i"><use href="#i-plus"/></svg>Cadastrar primeira despesa</button></div>
+      </div>
+    </div>
+
+    <div>
+      <p class="state-cap">Filtro sem resultado</p>
+      <div class="card empty">
+        <div class="empty-ico"><svg class="i i-lg"><use href="#i-filter-x"/></svg></div>
+        <h3>Nada encontrado para "academia"</h3>
+        <p>Nenhuma despesa pendente em Lazer bate com essa busca.</p>
+        <div class="actions"><button class="btn btn-secondary">Limpar filtros</button></div>
+      </div>
+    </div>
+
+    <div>
+      <p class="state-cap">Erro ao carregar (API fora do ar)</p>
+      <div class="card empty" role="alert">
+        <div class="empty-ico err"><svg class="i i-lg"><use href="#i-cloud-off"/></svg></div>
+        <h3>Não foi possível carregar suas despesas</h3>
+        <p>Verifique sua conexão e tente de novo. Nenhum dado foi perdido.</p>
+        <div class="actions"><button class="btn btn-primary"><svg class="i"><use href="#i-refresh"/></svg>Tentar de novo</button></div>
+      </div>
+    </div>
+
+    <div>
+      <p class="state-cap">Modo demonstração (só em desenvolvimento)</p>
+      <div class="banner" role="status">
+        <svg class="i"><use href="#i-triangle"/></svg>
+        <div><b>Exibindo dados de exemplo.</b> Alterações não serão salvas.</div>
+        <button class="btn btn-secondary">Reconectar</button>
+      </div>
+      <p class="state-cap" style="margin-top:var(--sp-6)">Toasts (canto inferior, aria-live)</p>
+      <div style="display:flex;flex-direction:column;gap:var(--sp-3)">
+        <div class="toast" role="status"><svg class="i"><use href="#i-check"/></svg><span>"Aluguel" excluída.</span><button class="undo">Desfazer</button><button class="icon-btn sm" aria-label="Fechar aviso"><svg class="i"><use href="#i-x"/></svg></button></div>
+        <div class="toast" role="status"><svg class="i"><use href="#i-check"/></svg><span>Despesa salva. Total a pagar agora: <b class="money">R$ 3.628,70</b></span><button class="icon-btn sm" aria-label="Fechar aviso"><svg class="i"><use href="#i-x"/></svg></button></div>
+        <div class="toast err" role="alert"><svg class="i"><use href="#i-alert"/></svg><span>Não foi possível salvar. Tente de novo.</span><button class="undo">Tentar de novo</button></div>
+      </div>
+    </div>
+
+    <div>
+      <p class="state-cap">Erro de validação no campo</p>
+      <div class="card" style="padding:var(--sp-6);display:flex;flex-direction:column;gap:var(--sp-4)">
+        <div class="field">
+          <label for="e-valor">Valor</label>
+          <div class="money-input"><span aria-hidden="true">R$</span><input id="e-valor" class="input invalid" inputmode="decimal" value="0,00" aria-invalid="true" aria-describedby="e-valor-msg"></div>
+          <span class="err" id="e-valor-msg"><svg class="i i-sm"><use href="#i-alert"/></svg>Informe um valor maior que zero.</span>
+        </div>
+        <div class="field">
+          <label for="e-desc">Descrição</label>
+          <input id="e-desc" class="input invalid" value="" aria-invalid="true" aria-describedby="e-desc-msg">
+          <span class="err" id="e-desc-msg"><svg class="i i-sm"><use href="#i-alert"/></svg>Dê um nome para a despesa.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
+     4. MOBILE
+     ===================================================== -->
+<section class="tpl-section" id="mobile">
+  <div class="tpl-title">
+    <span class="tpl-note">4. MOBILE (375 px)</span>
+    <h2>Lista em cards, filtros em chips roláveis e cadastro em bottom sheet</h2>
+    <p>Botão "Nova despesa" fixo no rodapé, na zona do polegar. Tabela vira lista: descrição e valor na primeira linha, categoria/pagamento e status na segunda. Toque no card abre os detalhes (onde estão editar, excluir e marcar como pago).</p>
+  </div>
+  <div class="phones">
+    <div class="phone" aria-label="Simulação 375px: tela principal">
+      <div class="phone-scroll">
+        <header class="app-header">
+          <div class="header-inner">
+            <div class="brand"><div class="brand-logo"><svg class="i"><use href="#i-wallet"/></svg></div><span class="brand-name">Din-Din</span></div>
+            <button class="icon-btn" aria-label="Recarregar despesas"><svg class="i"><use href="#i-refresh"/></svg></button>
+          </div>
+        </header>
+        <main class="page" style="padding-bottom:96px">
+          <section class="summary">
+            <article class="card sum-card hero">
+              <span class="sum-label">Total registrado</span>
+              <span class="sum-value money">R$ 8.315,85</span>
+              <div class="stack-bar" role="img" aria-label="62% pago, 38% a pagar"><span class="pos" style="width:62.3%"></span><span class="warn" style="width:37.7%"></span></div>
+              <div class="legend" style="gap:var(--sp-1) var(--sp-4)">
+                <span class="legend-item"><span class="dot pos"></span>Pago 62%</span>
+                <span class="legend-item"><span class="dot warn"></span>A pagar 38%</span>
+              </div>
+            </article>
+            <article class="card sum-card"><span class="sum-label"><span class="icon-chip warn"><svg class="i i-sm"><use href="#i-clock"/></svg></span>A pagar</span><span class="sum-value md money">R$ 3.138,80</span><span class="sum-meta">3 contas</span></article>
+            <article class="card sum-card"><span class="sum-label"><span class="icon-chip pos"><svg class="i i-sm"><use href="#i-check"/></svg></span>Pago</span><span class="sum-value md money">R$ 5.177,05</span><span class="sum-meta">7 despesas</span></article>
+          </section>
+          <section class="filters">
+            <div class="search"><svg class="i"><use href="#i-search"/></svg><input class="input" type="search" placeholder="Buscar" aria-label="Buscar despesas"></div>
+            <div class="chip-scroll" role="group" aria-label="Filtros rápidos">
+              <button class="chip" aria-pressed="true" aria-checked="true">Todos 10</button>
+              <button class="chip">Pendentes 3</button>
+              <button class="chip">Pagos 7</button>
+              <button class="chip">Categoria</button>
+              <button class="chip">Ordenar</button>
+            </div>
+          </section>
+          <section class="card">
+            <div class="list-head"><h2>Lançamentos <span>(10)</span></h2></div>
+            <table></table>
+            <ul class="cards">
+              <li><button class="item"><span class="item-title">Aluguel</span><span class="item-val money">R$ 1.850,00</span><span class="item-meta"><span class="dot" style="background:#60A5FA;width:8px;height:8px"></span>Moradia · Boleto</span><span class="item-status badge pendente"><svg class="i i-sm"><use href="#i-clock"/></svg>Pendente</span></button></li>
+              <li><button class="item"><span class="item-title">Supermercado Pão de Açúcar</span><span class="item-val money">R$ 642,87</span><span class="item-meta"><span class="dot" style="background:#FB923C;width:8px;height:8px"></span>Alimentação · Débito</span><span class="item-status badge pago"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</span></button></li>
+              <li><button class="item"><span class="item-title">Conta de luz (Enel)</span><span class="item-val money">R$ 214,36</span><span class="item-meta"><span class="dot" style="background:#60A5FA;width:8px;height:8px"></span>Moradia · PIX</span><span class="item-status badge pago"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</span></button></li>
+              <li><button class="item"><span class="item-title">Notebook Dell</span><span class="item-val money">R$ 3.899,00</span><span class="item-meta"><span class="dot" style="background:#94A3B8;width:8px;height:8px"></span>Tecnologia · 10x de R$ 389,90</span><span class="item-status badge pago"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</span></button></li>
+              <li><button class="item"><span class="item-title">Plano de saúde</span><span class="item-val money">R$ 489,90</span><span class="item-meta"><span class="dot" style="background:#F472B6;width:8px;height:8px"></span>Saúde · Boleto</span><span class="item-status badge pendente"><svg class="i i-sm"><use href="#i-clock"/></svg>Pendente</span></button></li>
+              <li><button class="item"><span class="item-title">Curso de inglês</span><span class="item-val money">R$ 798,90</span><span class="item-meta"><span class="dot" style="background:#2DD4BF;width:8px;height:8px"></span>Educação · 6x de R$ 133,15</span><span class="item-status badge pendente"><svg class="i i-sm"><use href="#i-clock"/></svg>Pendente</span></button></li>
+            </ul>
+          </section>
+        </main>
+      </div>
+      <div class="fab-bar"><button class="btn btn-primary"><svg class="i"><use href="#i-plus"/></svg>Nova despesa</button></div>
+    </div>
+
+    <div class="phone" aria-label="Simulação 375px: cadastro em bottom sheet">
+      <div class="phone-scroll" style="opacity:.35;pointer-events:none">
+        <header class="app-header"><div class="header-inner"><div class="brand"><div class="brand-logo"><svg class="i"><use href="#i-wallet"/></svg></div><span class="brand-name">Din-Din</span></div></div></header>
+      </div>
+      <div class="sheet-backdrop">
+        <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="s-title">
+          <div class="sheet-grip" aria-hidden="true"></div>
+          <div class="modal-head">
+            <h3 id="s-title">Nova despesa</h3>
+            <button class="icon-btn" aria-label="Fechar"><svg class="i"><use href="#i-x"/></svg></button>
+          </div>
+          <div class="modal-body">
+            <div class="field"><label for="s-valor">Valor</label><div class="money-input"><span aria-hidden="true">R$</span><input id="s-valor" class="input focus" inputmode="decimal" value="642,87"></div></div>
+            <div class="field"><label for="s-desc">Descrição</label><input id="s-desc" class="input" value="Supermercado"></div>
+            <fieldset class="field"><legend>Categoria</legend>
+              <div class="chips" role="radiogroup" aria-label="Categoria">
+                <button class="chip" role="radio" aria-checked="true">Alimentação</button>
+                <button class="chip" role="radio" aria-checked="false">Moradia</button>
+                <button class="chip" role="radio" aria-checked="false">Transporte</button>
+                <button class="chip" role="radio" aria-checked="false">Saúde</button>
+                <button class="chip add"><svg class="i i-sm"><use href="#i-plus"/></svg>Outra</button>
+              </div>
+            </fieldset>
+            <fieldset class="field"><legend>Forma de pagamento</legend>
+              <div class="chips" role="radiogroup" aria-label="Forma de pagamento">
+                <button class="chip" role="radio" aria-checked="false">PIX</button>
+                <button class="chip" role="radio" aria-checked="true">Débito</button>
+                <button class="chip" role="radio" aria-checked="false">Crédito</button>
+                <button class="chip" role="radio" aria-checked="false">Boleto</button>
+              </div>
+              <span class="hint">Último método usado já vem selecionado.</span>
+            </fieldset>
+            <fieldset class="field"><legend>Status</legend>
+              <div class="segmented full" role="radiogroup" aria-label="Status">
+                <button class="is-pago" role="radio" aria-checked="true"><svg class="i i-sm"><use href="#i-check"/></svg>Pago</button>
+                <button class="is-pend" role="radio" aria-checked="false"><svg class="i i-sm"><use href="#i-clock"/></svg>Pendente</button>
+              </div>
+            </fieldset>
+          </div>
+          <div class="modal-foot"><button class="btn btn-primary">Salvar despesa</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
+     5. TOKENS
+     ===================================================== -->
+<section class="tpl-section" id="tokens" style="border-bottom:0">
+  <div class="tpl-title">
+    <span class="tpl-note">5. TOKENS</span>
+    <h2>Paleta e escala (contraste calculado sobre #121826)</h2>
+    <p>Mantém o tema escuro, o índigo da marca e os raios atuais. Muda: superfícies sólidas no lugar de rgba com blur, texto secundário mais claro, índigo mais claro quando é texto, borda de input visível.</p>
+  </div>
+  <div class="swatches">
+    <div class="sw"><div style="background:#0B0F19"></div><p><b>--bg</b>#0B0F19 (mantido)</p></div>
+    <div class="sw"><div style="background:#121826"></div><p><b>--surface-1</b>#121826 cards</p></div>
+    <div class="sw"><div style="background:#1A2233"></div><p><b>--surface-2</b>#1A2233 inputs</p></div>
+    <div class="sw"><div style="background:#232C3D"></div><p><b>--surface-3</b>#232C3D trilhos</p></div>
+    <div class="sw"><div style="background:#64748B"></div><p><b>--border-control</b>#64748B (3,3:1)</p></div>
+    <div class="sw"><div style="background:#F1F5F9"></div><p><b>--text-1</b>#F1F5F9 (16,2:1)</p></div>
+    <div class="sw"><div style="background:#A1AAB8"></div><p><b>--text-2</b>#A1AAB8 (7,6:1)</p></div>
+    <div class="sw"><div style="background:#8B95A7"></div><p><b>--text-3</b>#8B95A7 (5,9:1)</p></div>
+    <div class="sw"><div style="background:#4F46E5"></div><p><b>--accent-bg</b>#4F46E5 branco 6,3:1</p></div>
+    <div class="sw"><div style="background:#818CF8"></div><p><b>--accent</b>#818CF8 (5,9:1)</p></div>
+    <div class="sw"><div style="background:#A5B4FC"></div><p><b>--accent-soft / foco</b>#A5B4FC</p></div>
+    <div class="sw"><div style="background:#34D399"></div><p><b>--positive</b>#34D399 pago (7,1:1 no tint)</p></div>
+    <div class="sw"><div style="background:#FBBF24"></div><p><b>--warning</b>#FBBF24 pendente (8,0:1)</p></div>
+    <div class="sw"><div style="background:#F87171"></div><p><b>--danger</b>#F87171 estouro/erro (5,3:1)</p></div>
+    <div class="sw"><div style="background:#B91C1C"></div><p><b>--danger-bg</b>#B91C1C branco 6,5:1</p></div>
+  </div>
+  <div class="type-scale">
+    <div><code>--fs-2xl 32/800 tnum</code><span class="money" style="font-size:2rem;font-weight:800">R$ 8.315,85</span></div>
+    <div><code>--fs-xl 24/700</code><span style="font-size:1.5rem;font-weight:700">Visão geral</span></div>
+    <div><code>--fs-lg 20/700</code><span style="font-size:1.25rem;font-weight:700">Nova despesa</span></div>
+    <div><code>--fs-md 16/400-700</code><span>Corpo e valores da lista <b class="money">R$ 1.850,00</b></span></div>
+    <div><code>--fs-sm 14/400-600</code><span style="font-size:.875rem">Tabela, labels, botões</span></div>
+    <div><code>--fs-xs 12/600-700</code><span style="font-size:.75rem;color:var(--text-2)">Badges, cabeçalho de tabela, dicas</span></div>
+  </div>
+</section>
+
+</body>
+</html>

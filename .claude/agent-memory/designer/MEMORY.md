@@ -1,0 +1,3 @@
+- [Redesign 2026-10-30](project_redesign_2026-10-30.md) — P1-P5 proposed, awaiting Rafa's approval; pending decisions listed
+- [Design tokens](design_tokens.md) — proposed dark-theme tokens with measured contrast ratios
+- [Data constraints](data_constraints.md) — no date on despesas, categoria free text, proxy only /despesas

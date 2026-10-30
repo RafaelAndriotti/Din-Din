@@ -10,6 +10,10 @@ export default defineConfig({
       '/despesas': {
         target: 'http://localhost:3000',
         changeOrigin: true
+      },
+      '/categorias': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
       }
     }
   }

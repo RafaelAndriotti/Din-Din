@@ -1,38 +1,68 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
+/* =========================================================
+   DESIGN TOKENS (ver .claude/reports/design-proposta-2026-10-30.md)
+   Contrastes calculados sobre --surface-1 (#121826).
+   ========================================================= */
 :root {
-  --bg-primary: #0B0F19;
-  --bg-secondary: #111827;
-  --bg-tertiary: #1F2937;
-  --bg-card: rgba(31, 41, 55, 0.6);
-  --bg-card-hover: rgba(55, 65, 81, 0.5);
+  color-scheme: dark;
 
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-focus: #6366F1;
+  /* superfícies sólidas: contraste previsível e sem custo de blur no celular */
+  --bg: #0B0F19;
+  --surface-1: #121826;      /* cards, tabela, modal */
+  --surface-2: #1A2233;      /* inputs, hover, blocos internos */
+  --surface-3: #232C3D;      /* trilho de barras, skeleton */
+  --border-subtle: #232C3D;  /* divisórias decorativas */
+  --border-control: #64748B; /* borda de controles: 3,34:1 sobre surface-2 */
 
-  --text-primary: #F9FAFB;
-  --text-secondary: #9CA3AF;
-  --text-muted: #6B7280;
+  /* texto */
+  --text-1: #F1F5F9; /* 16,2:1 */
+  --text-2: #A1AAB8; /* 7,6:1 */
+  --text-3: #8B95A7; /* 5,9:1 */
 
-  --primary: #6366F1;
-  --primary-hover: #4F46E5;
-  --primary-light: rgba(99, 102, 241, 0.15);
+  /* marca */
+  --accent: #818CF8;         /* texto e ícone sobre escuro: 5,9:1 */
+  --accent-soft: #A5B4FC;    /* texto sobre fundo tingido: 6,75:1 */
+  --accent-bg: #4F46E5;      /* fundo do botão primário: branco 6,29:1 */
+  --accent-bg-hover: #4338CA;
+  --accent-tint: rgba(129, 140, 248, 0.14);
+  --focus-ring: #A5B4FC;
 
-  --success: #10B981;
-  --success-light: rgba(16, 185, 129, 0.12);
-  --warning: #F59E0B;
-  --warning-light: rgba(245, 158, 11, 0.12);
-  --danger: #EF4444;
-  --danger-light: rgba(239, 68, 68, 0.12);
+  /* semântica financeira */
+  --positive: #34D399;
+  --positive-tint: rgba(52, 211, 153, 0.14);
+  --warning: #FBBF24;
+  --warning-tint: rgba(251, 191, 36, 0.14);
+  --danger: #F87171;
+  --danger-tint: rgba(248, 113, 113, 0.14);
+  --danger-bg: #B91C1C;
 
+  /* tipografia */
+  --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fs-xs: 0.75rem;  /* 12 */
+  --fs-sm: 0.875rem; /* 14 */
+  --fs-md: 1rem;     /* 16 */
+  --fs-lg: 1.25rem;  /* 20 */
+  --fs-xl: 1.5rem;   /* 24 */
+  --fs-2xl: 2rem;    /* 32 */
+
+  /* espaço (grid de 4 px) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+
+  /* raios, sombra e controles */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-full: 9999px;
-
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --control-h: 44px;
 }
 
 * {
@@ -42,20 +72,66 @@
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  background-color: var(--bg);
+  color: var(--text-1);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
 
-input, button, select, textarea {
-  font-family: inherit;
+input,
+button,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
 }
 
 button {
   cursor: pointer;
-  border: none;
-  outline: none;
+  background: none;
+  border: 0;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Foco visível sempre. Nunca outline: none sem substituto. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Valores: algarismos de largura fixa, sem trocar a fonte por monospace. */
+.money {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+  white-space: nowrap;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
