@@ -16,7 +16,7 @@ Projeto de estudo: o dono escreve o código para aprender backend. Explicar o po
 - `backend/tests/` — Vitest + Supertest.
 - `backend/docker-compose.yml` — Postgres 16, porta host `5434`, lê `../.env`.
 - `frontend/` — Vite na porta 5173, proxy de `/despesas` para `localhost:3000`. Lint com oxlint. `src/services/api.js` fala com a API.
-- `.claude/agents/` — agentes do projeto (orquestrador, mentor-backend, frontend-especialista, cacador-de-bugs).
+- `.claude/agents/` — agentes do projeto (orquestrador, designer, mentor-backend, frontend-especialista, cacador-de-bugs).
 - `.claude/reports/` — revisões e guias do mentor. Fonte de verdade do roteiro: `revisao-backend-2026-10-29.md`.
 
 ## Setup em máquina nova
