@@ -4,7 +4,7 @@ services:
     container_name: postgres-dev
     restart: unless-stopped
     env_file:
-      - .env
+      - ../.env
     ports:
       - "5434:5432"
     volumes:

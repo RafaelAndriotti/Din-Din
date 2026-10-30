@@ -1,4 +1,3 @@
-import 'dotenv/config'//Carrega todas as variaveis do .env para o process.env
 import PG from "pg";
 
 const { Pool } = PG
