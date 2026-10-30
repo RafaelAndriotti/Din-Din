@@ -40,7 +40,7 @@ export default function ExpenseTable({ despesas, onSelectExpense, onOpenNewModal
         </thead>
         <tbody>
           {despesas.map((item) => {
-            const isPaid = String(item.status).toLowerCase() === 'paid';
+            const isPaid = String(item.status).toLowerCase() === 'pago';
             return (
               <tr 
                 key={item.id} 
@@ -48,23 +48,23 @@ export default function ExpenseTable({ despesas, onSelectExpense, onOpenNewModal
                 className="expense-row"
               >
                 <td className="font-semibold cell-desc">
-                  <div className="desc-text">{item.desc}</div>
+                  <div className="desc-text">{item.descricao}</div>
                   <span className="desc-id">ID: #{item.id}</span>
                 </td>
                 <td>
                   <span className="badge category-badge">
                     <Tag size={12} />
-                    {item.category || 'Geral'}
+                    {item.categoria || 'Geral'}
                   </span>
                 </td>
                 <td>
                   <span className="badge payment-badge">
                     <CreditCard size={12} />
-                    {item.payMethod || 'Padrão'}
+                    {item.metodoPagamento || 'Padrão'}
                   </span>
                 </td>
                 <td className="cell-installments">
-                  {item.installment > 0 ? `${item.installment}x` : 'À vista'}
+                  {item.parcelas > 0 ? `${item.parcelas}x` : 'À vista'}
                 </td>
                 <td>
                   <span className={`status-badge ${isPaid ? 'paid' : 'pending'}`}>
@@ -73,7 +73,7 @@ export default function ExpenseTable({ despesas, onSelectExpense, onOpenNewModal
                   </span>
                 </td>
                 <td className="text-right font-bold cell-value">
-                  {formatCurrency(item.value)}
+                  {formatCurrency(item.valor)}
                 </td>
                 <td className="text-center cell-actions" onClick={(e) => e.stopPropagation()}>
                   <button 

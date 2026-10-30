@@ -37,15 +37,15 @@ describe('CategoriasController - Testes Unitários', () => {
     describe('listarCategorias', () => {
         it('deve listar todas as categorias com status 200', async () => {
             const categoriasMock = [
-                { id: 1, nome: 'Alimentação', cor: '#FF0000', tipo_custo: 'variavel', ativo: true },
-                { id: 2, nome: 'Salário', cor: '#00FF00', tipo_custo: 'fixo', ativo: true }
+                { id: 1, nome: 'Alimentação', cor: '#FF0000', tipoCusto: 'variavel', ativo: true },
+                { id: 2, nome: 'Salário', cor: '#00FF00', tipoCusto: 'fixo', ativo: true }
             ];
 
             pool.query.mockResolvedValueOnce({ rows: categoriasMock });
 
             await CategoriasController.listarCategorias(req, res, next);
 
-            expect(pool.query).toHaveBeenCalledWith('SELECT * FROM categorias');
+            expect(pool.query).toHaveBeenCalledWith(expect.stringContaining('FROM categorias'));
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith(categoriasMock);
         });
@@ -75,7 +75,7 @@ describe('CategoriasController - Testes Unitários', () => {
             await CategoriasController.buscarCategoriaPorId(req, res, next);
 
             expect(pool.query).toHaveBeenCalledWith(
-                'SELECT * FROM categorias WHERE id = $1',
+                expect.stringContaining('FROM categorias WHERE id = $1'),
                 ['1']
             );
             expect(res.status).toHaveBeenCalledWith(200);
@@ -104,8 +104,8 @@ describe('CategoriasController - Testes Unitários', () => {
                 tipo: 'receita',
                 descricao: 'Rendimentos e dividendos',
                 cor: '#10B981',
-                limite_mensal: 500,
-                tipo_custo: 'variavel',
+                limiteMensal: 500,
+                tipoCusto: 'variavel',
                 ativo: true
             };
             req.body = novaCategoria;
@@ -142,8 +142,8 @@ describe('CategoriasController - Testes Unitários', () => {
                 tipo: 'despesa',
                 descricao: 'Restaurantes e compras',
                 cor: '#F59E0B',
-                limite_mensal: 1000,
-                tipo_custo: 'variavel',
+                limiteMensal: 1000,
+                tipoCusto: 'variavel',
                 ativo: true
             };
 

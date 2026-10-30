@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS despesas (
-  id         SERIAL PRIMARY KEY,
-  "desc"       TEXT NOT NULL,
-  value      NUMERIC(10, 2) NOT NULL,
-  category   TEXT,
-  payMethod  TEXT,
-  installment  INTEGER,
-  status     TEXT
+  id                SERIAL PRIMARY KEY,
+  descricao         TEXT NOT NULL,
+  valor             NUMERIC(10, 2) NOT NULL,
+  categoria         TEXT,
+  metodo_pagamento  TEXT,
+  parcelas          INTEGER, -- 0 = a vista
+  status            TEXT     -- 'pago' ou 'pendente'
 );
 
  CREATE TABLE IF NOT EXISTS categorias (

@@ -2,12 +2,12 @@ import * as z from "zod";
 
 export const despesaSchema = z.object({
 
-    desc: z.string(),
-    category: z.string(),
-    payMethod: z.string(),
-    installment: z.number(),
+    descricao: z.string(),
+    categoria: z.string(),
+    metodoPagamento: z.string(),
+    parcelas: z.number(),
     status: z.string(),
-    value: z.number()
+    valor: z.number()
 
 })
 

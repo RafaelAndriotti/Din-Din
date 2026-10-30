@@ -9,13 +9,13 @@ function formatCurrency(val) {
 }
 
 export default function MetricsCards({ despesas }) {
-  const total = despesas.reduce((acc, curr) => acc + (Number(curr.value) || 0), 0);
+  const total = despesas.reduce((acc, curr) => acc + (Number(curr.valor) || 0), 0);
   
-  const pagas = despesas.filter(d => String(d.status).toLowerCase() === 'paid');
-  const totalPagas = pagas.reduce((acc, curr) => acc + (Number(curr.value) || 0), 0);
+  const pagas = despesas.filter(d => String(d.status).toLowerCase() === 'pago');
+  const totalPagas = pagas.reduce((acc, curr) => acc + (Number(curr.valor) || 0), 0);
   
-  const pendentes = despesas.filter(d => String(d.status).toLowerCase() !== 'paid');
-  const totalPendentes = pendentes.reduce((acc, curr) => acc + (Number(curr.value) || 0), 0);
+  const pendentes = despesas.filter(d => String(d.status).toLowerCase() !== 'pago');
+  const totalPendentes = pendentes.reduce((acc, curr) => acc + (Number(curr.valor) || 0), 0);
 
   const totalCount = despesas.length;
 

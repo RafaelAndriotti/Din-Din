@@ -40,8 +40,8 @@ describe('Rotas de Categorias (HTTP com Supertest)', () => {
     describe('GET /categorias', () => {
         it('deve retornar status 200 e a lista de categorias', async () => {
             const mockCategorias = [
-                { id: 1, nome: 'Alimentação', cor: '#FF5733', tipo_custo: 'variavel', ativo: true },
-                { id: 2, nome: 'Moradia', cor: '#33FF57', tipo_custo: 'fixo', ativo: true }
+                { id: 1, nome: 'Alimentação', cor: '#FF5733', tipoCusto: 'variavel', ativo: true },
+                { id: 2, nome: 'Moradia', cor: '#33FF57', tipoCusto: 'fixo', ativo: true }
             ];
 
             pool.query.mockResolvedValueOnce({ rows: mockCategorias });
@@ -83,8 +83,8 @@ describe('Rotas de Categorias (HTTP com Supertest)', () => {
                 tipo: 'despesa',
                 descricao: 'Netflix, Spotify, etc',
                 cor: '#E50914',
-                limite_mensal: 150.00,
-                tipo_custo: 'fixo',
+                limiteMensal: 150.00,
+                tipoCusto: 'fixo',
                 ativo: true
             };
 
@@ -109,8 +109,8 @@ describe('Rotas de Categorias (HTTP com Supertest)', () => {
                 tipo: 'despesa',
                 descricao: 'Mercado mensal e feira',
                 cor: '#2ECC71',
-                limite_mensal: 1200.00,
-                tipo_custo: 'variavel',
+                limiteMensal: 1200.00,
+                tipoCusto: 'variavel',
                 ativo: true
             };
 

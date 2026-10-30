@@ -1,10 +1,13 @@
 import pool from "../db/db.js";
 
+// Colunas devolvidas pela API. O alias com aspas preserva o camelCase na chave do JSON
+const COLUNAS = `id, nome, descricao, cor, icone, limite_mensal AS "limiteMensal", tipo_custo AS "tipoCusto", ativo`
+
 class CategoriasController {
 
     static async listarCategorias (req, res, next){
         try {
-            const { rows } = await pool.query('SELECT * FROM categorias');
+            const { rows } = await pool.query(`SELECT ${COLUNAS} FROM categorias`);
 
             return res.status(200).json(rows);
         } catch (error) {
@@ -14,7 +17,7 @@ class CategoriasController {
 
     static async buscarCategoriaPorId(req, res, next) {
         try {
-            const { rows } = await pool.query('SELECT * FROM categorias WHERE id = $1', [req.params.id]);
+            const { rows } = await pool.query(`SELECT ${COLUNAS} FROM categorias WHERE id = $1`, [req.params.id]);
 
             if(!rows[0]){
                 return res.status(404).json({ message: "Registro nao encontrado" })
@@ -28,9 +31,9 @@ class CategoriasController {
 
     static async criarCategoria(req, res, next){
         try {
-            const { nome, ativo, descricao, cor, limite_mensal, tipo_custo, icone } = req.body
+            const { nome, ativo, descricao, cor, limiteMensal, tipoCusto, icone } = req.body
             const { rows } = await pool.query(`INSERT INTO  categorias (nome, ativo, descricao, cor, limite_mensal, tipo_custo, icone)
-                                               VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`, [nome, ativo, descricao, cor, limite_mensal, tipo_custo, icone]);
+                                               VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING ${COLUNAS}`, [nome, ativo, descricao, cor, limiteMensal, tipoCusto, icone]);
             
             return res.status(201).json(rows[0]);
         } catch (error) {
@@ -42,13 +45,13 @@ class CategoriasController {
     static async atualizarCategoria(req, res, next){
         try {
             const { id } = req.params;
-            const { nome, ativo, descricao, cor, limite_mensal, tipo_custo, icone } = req.body;
+            const { nome, ativo, descricao, cor, limiteMensal, tipoCusto, icone } = req.body;
 
             const { rows } = await pool.query(
                 `UPDATE categorias
                 SET nome = $1, ativo = $2, descricao = $3, cor = $4, limite_mensal = $5, tipo_custo = $6, icone = $7
                 WHERE id = $8
-                RETURNING *`,[nome, ativo, descricao, cor, limite_mensal, tipo_custo, icone, id]);
+                RETURNING ${COLUNAS}`,[nome, ativo, descricao, cor, limiteMensal, tipoCusto, icone, id]);
 
                 if(!rows[0]){
                 return res.status(404).json({ message: "Registro nao encontrado" })
