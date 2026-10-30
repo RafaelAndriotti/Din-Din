@@ -11,10 +11,10 @@ CREATE TABLE IF NOT EXISTS despesas (
  CREATE TABLE IF NOT EXISTS categorias (
       id             SERIAL PRIMARY KEY,
       nome           VARCHAR(50) NOT NULL UNIQUE,
-      descricao      TEXT,
+      descricao      TEXT NOT NULL,
       cor            VARCHAR(7) DEFAULT '#64748B',
       icone          VARCHAR(30) DEFAULT 'tag',
-      limite_mensal  NUMERIC(10, 2),
+      limite_mensal  NUMERIC(10, 2) NOT NULL,
       tipo_custo     VARCHAR(10) DEFAULT 'variavel', -- 'fixo' ou 'variavel'
       ativo          BOOLEAN DEFAULT TRUE
     );
