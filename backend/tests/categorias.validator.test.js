@@ -17,8 +17,8 @@ describe('CategoriasValidator - Validações do Zod e Middleware', () => {
                 nome: 'Transporte',
                 descricao: 'Combustível e passagens',
                 cor: '#3B82F6',
-                limite_mensal: 350.00,
-                tipo_custo: 'variavel'
+                limiteMensal: 350.00,
+                tipoCusto: 'variavel'
             }
         };
 

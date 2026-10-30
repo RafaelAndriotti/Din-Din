@@ -11,7 +11,7 @@ function formatCurrency(val) {
 export default function ExpenseDetailsModal({ expense, isOpen, onClose }) {
   if (!isOpen || !expense) return null;
 
-  const isPaid = String(expense.status).toLowerCase() === 'paid';
+  const isPaid = String(expense.status).toLowerCase() === 'pago';
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -19,7 +19,7 @@ export default function ExpenseDetailsModal({ expense, isOpen, onClose }) {
         <div className="modal-header">
           <div className="details-header-title">
             <span className="details-id-tag">ID #{expense.id}</span>
-            <h3>{expense.desc}</h3>
+            <h3>{expense.descricao}</h3>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose}>
             <X size={20} />
@@ -29,7 +29,7 @@ export default function ExpenseDetailsModal({ expense, isOpen, onClose }) {
         <div className="details-body">
           <div className="details-highlight-card">
             <span className="details-highlight-label">Valor Total</span>
-            <span className="details-highlight-value">{formatCurrency(expense.value)}</span>
+            <span className="details-highlight-value">{formatCurrency(expense.valor)}</span>
             <div className={`status-badge large ${isPaid ? 'paid' : 'pending'}`}>
               {isPaid ? <CheckCircle2 size={16} /> : <Clock size={16} />}
               <span>{isPaid ? 'Pago' : 'Pendente'}</span>
@@ -43,7 +43,7 @@ export default function ExpenseDetailsModal({ expense, isOpen, onClose }) {
               </div>
               <div className="details-item-content">
                 <span className="details-item-label">Categoria</span>
-                <span className="details-item-value">{expense.category || 'Geral'}</span>
+                <span className="details-item-value">{expense.categoria || 'Geral'}</span>
               </div>
             </div>
 
@@ -53,7 +53,7 @@ export default function ExpenseDetailsModal({ expense, isOpen, onClose }) {
               </div>
               <div className="details-item-content">
                 <span className="details-item-label">Forma de Pagamento</span>
-                <span className="details-item-value">{expense.payMethod || 'Não informado'}</span>
+                <span className="details-item-value">{expense.metodoPagamento || 'Não informado'}</span>
               </div>
             </div>
 
@@ -64,7 +64,7 @@ export default function ExpenseDetailsModal({ expense, isOpen, onClose }) {
               <div className="details-item-content">
                 <span className="details-item-label">Parcelas</span>
                 <span className="details-item-value">
-                  {expense.installment > 0 ? `${expense.installment}x parcelado` : 'À vista (0)'}
+                  {expense.parcelas > 0 ? `${expense.parcelas}x parcelado` : 'À vista (0)'}
                 </span>
               </div>
             </div>

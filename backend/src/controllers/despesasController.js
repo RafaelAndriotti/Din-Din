@@ -2,12 +2,15 @@ import pool from '../db/db.js'
 
 // const despesas = [ { id: 1, desc: "supermercado", category: "compras", payMethod: "PIX", installment: 0, status: "paid",  value: 250.0}]
 
+// Colunas devolvidas pela API. O alias com aspas preserva o camelCase na chave do JSON
+const COLUNAS = `id, descricao, valor, categoria, metodo_pagamento AS "metodoPagamento", parcelas, status`
+
 class DespesasController {
 
     static async listarDespesas (req, res, next){
         try {
             const { rows } = await pool.query(
-                'SELECT * FROM despesas'
+                `SELECT ${COLUNAS} FROM despesas`
             );
 
             return res.status(200).json(rows);
@@ -18,13 +21,13 @@ class DespesasController {
     }
 
     static async criarDespesa (req, res, next){
-        const { desc, value, category, payMethod, installment, status } = req.body;
+        const { descricao, valor, categoria, metodoPagamento, parcelas, status } = req.body;
         try {
             const { rows } = await pool.query(
-                `INSERT INTO despesas ("desc", value, category, payMethod, installment, status)
+                `INSERT INTO despesas (descricao, valor, categoria, metodo_pagamento, parcelas, status)
                 VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING *`,
-                [desc, value, category, payMethod, installment, status]
+                RETURNING ${COLUNAS}`,
+                [descricao, valor, categoria, metodoPagamento, parcelas, status]
             );
 
             return res.status(201).json(rows[0]);
@@ -37,7 +40,7 @@ class DespesasController {
     static async listarDespesasPorId (req, res, next){
         try {
             const { rows } = await pool.query(
-                'SELECT * FROM despesas WHERE id = $1',
+                `SELECT ${COLUNAS} FROM despesas WHERE id = $1`,
                 [req.params.id]
             );
 
@@ -55,18 +58,18 @@ class DespesasController {
     static async atualizarDespesa (req, res, next) {
         try {
             const { id } = req.params
-            const { desc, value, category, payMethod, installment, status } = req.body
+            const { descricao, valor, categoria, metodoPagamento, parcelas, status } = req.body
             const { rows } = await pool.query(
                 `UPDATE despesas
-                    SET "desc"=$1,
-                    value=$2,
-                    category=$3,
-                    payMethod=$4,
-                    installment=$5,
+                    SET descricao=$1,
+                    valor=$2,
+                    categoria=$3,
+                    metodo_pagamento=$4,
+                    parcelas=$5,
                     status=$6
                 WHERE id=$7
-                RETURNING *`,
-                [desc, value, category, payMethod, installment, status, id]
+                RETURNING ${COLUNAS}`,
+                [descricao, valor, categoria, metodoPagamento, parcelas, status, id]
             );
 
             if (rows.length === 0) {

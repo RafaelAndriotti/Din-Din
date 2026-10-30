@@ -6,30 +6,30 @@ const BASE_URL = '/despesas';
 const FALLBACK_DESPESAS = [
   {
     id: 1,
-    desc: 'Supermercado Mensal',
-    value: 450.00,
-    category: 'Alimentação',
-    payMethod: 'PIX',
-    installment: 0,
-    status: 'paid'
+    descricao: 'Supermercado Mensal',
+    valor: 450.00,
+    categoria: 'Alimentação',
+    metodoPagamento: 'PIX',
+    parcelas: 0,
+    status: 'pago'
   },
   {
     id: 2,
-    desc: 'Conta de Energia',
-    value: 185.30,
-    category: 'Moradia',
-    payMethod: 'Boleto',
-    installment: 0,
-    status: 'pending'
+    descricao: 'Conta de Energia',
+    valor: 185.30,
+    categoria: 'Moradia',
+    metodoPagamento: 'Boleto',
+    parcelas: 0,
+    status: 'pendente'
   },
   {
     id: 3,
-    desc: 'Notebook para Trabalho',
-    value: 3600.00,
-    category: 'Tecnologia',
-    payMethod: 'Cartão de Crédito',
-    installment: 10,
-    status: 'paid'
+    descricao: 'Notebook para Trabalho',
+    valor: 3600.00,
+    categoria: 'Tecnologia',
+    metodoPagamento: 'Cartão de Crédito',
+    parcelas: 10,
+    status: 'pago'
   }
 ];
 
@@ -73,14 +73,14 @@ export async function getDespesaById(id) {
 
 export async function createDespesa(despesaData) {
   // Converte e formata os dados conforme esperado pelo despesaSchema do Zod no backend:
-  // desc (string), category (string), payMethod (string), installment (number), status (string), value (number)
+  // descricao (string), categoria (string), metodoPagamento (string), parcelas (number), status (string), valor (number)
   const payload = {
-    desc: String(despesaData.desc).trim(),
-    category: String(despesaData.category).trim(),
-    payMethod: String(despesaData.payMethod).trim(),
-    installment: Number(despesaData.installment || 0),
-    status: String(despesaData.status || 'pending').trim(),
-    value: Number(despesaData.value)
+    descricao: String(despesaData.descricao).trim(),
+    categoria: String(despesaData.categoria).trim(),
+    metodoPagamento: String(despesaData.metodoPagamento).trim(),
+    parcelas: Number(despesaData.parcelas || 0),
+    status: String(despesaData.status || 'pendente').trim(),
+    valor: Number(despesaData.valor)
   };
 
   try {

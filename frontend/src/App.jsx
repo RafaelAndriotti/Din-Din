@@ -60,7 +60,7 @@ export default function App() {
     try {
       const created = await createDespesa(newExpenseData);
       setDespesas(prev => [created, ...prev]);
-      showToast(`Despesa "${created.desc}" cadastrada com sucesso!`, 'success');
+      showToast(`Despesa "${created.descricao}" cadastrada com sucesso!`, 'success');
       return created;
     } catch (err) {
       showToast(err.message, 'error');
@@ -83,7 +83,7 @@ export default function App() {
   const uniqueCategories = useMemo(() => {
     const set = new Set();
     despesas.forEach(d => {
-      if (d.category) set.add(d.category);
+      if (d.categoria) set.add(d.categoria);
     });
     return Array.from(set).sort();
   }, [despesas]);
@@ -95,27 +95,27 @@ export default function App() {
         // Busca textual
         const matchesSearch = 
           !searchTerm ||
-          (item.desc && item.desc.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase()));
+          (item.descricao && item.descricao.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (item.categoria && item.categoria.toLowerCase().includes(searchTerm.toLowerCase()));
 
         // Filtro por status
         const matchesStatus = 
           statusFilter === 'all' ||
-          (statusFilter === 'paid' && String(item.status).toLowerCase() === 'paid') ||
-          (statusFilter === 'pending' && String(item.status).toLowerCase() !== 'paid');
+          (statusFilter === 'paid' && String(item.status).toLowerCase() === 'pago') ||
+          (statusFilter === 'pending' && String(item.status).toLowerCase() !== 'pago');
 
         // Filtro por categoria
         const matchesCategory = 
           categoryFilter === 'all' ||
-          item.category === categoryFilter;
+          item.categoria === categoryFilter;
 
         return matchesSearch && matchesStatus && matchesCategory;
       })
       .sort((a, b) => {
         if (sortBy === 'newest') return (b.id || 0) - (a.id || 0);
         if (sortBy === 'oldest') return (a.id || 0) - (b.id || 0);
-        if (sortBy === 'highest') return (Number(b.value) || 0) - (Number(a.value) || 0);
-        if (sortBy === 'lowest') return (Number(a.value) || 0) - (Number(b.value) || 0);
+        if (sortBy === 'highest') return (Number(b.valor) || 0) - (Number(a.valor) || 0);
+        if (sortBy === 'lowest') return (Number(a.valor) || 0) - (Number(b.valor) || 0);
         return 0;
       });
   }, [despesas, searchTerm, statusFilter, categoryFilter, sortBy]);

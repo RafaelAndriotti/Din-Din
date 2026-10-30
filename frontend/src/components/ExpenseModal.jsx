@@ -29,7 +29,7 @@ export default function ExpenseModal({ isOpen, onClose, onSave }) {
   const [customCategory, setCustomCategory] = useState('');
   const [payMethod, setPayMethod] = useState('PIX');
   const [installment, setInstallment] = useState(0);
-  const [status, setStatus] = useState('paid');
+  const [status, setStatus] = useState('pago');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -55,11 +55,11 @@ export default function ExpenseModal({ isOpen, onClose, onSave }) {
       : category;
 
     const payload = {
-      desc: desc.trim(),
-      value: numValue,
-      category: finalCategory,
-      payMethod,
-      installment: parseInt(installment, 10) || 0,
+      descricao: desc.trim(),
+      valor: numValue,
+      categoria: finalCategory,
+      metodoPagamento: payMethod,
+      parcelas: parseInt(installment, 10) || 0,
       status
     };
 
@@ -73,7 +73,7 @@ export default function ExpenseModal({ isOpen, onClose, onSave }) {
       setCustomCategory('');
       setPayMethod('PIX');
       setInstallment(0);
-      setStatus('paid');
+      setStatus('pago');
       onClose();
     } catch (err) {
       setError(err.message || 'Erro ao salvar despesa');
@@ -199,23 +199,23 @@ export default function ExpenseModal({ isOpen, onClose, onSave }) {
             <div className="form-group">
               <label>Status</label>
               <div className="status-radio-group">
-                <label className={`radio-pill ${status === 'paid' ? 'active' : ''}`}>
+                <label className={`radio-pill ${status === 'pago' ? 'active' : ''}`}>
                   <input
                     type="radio"
                     name="status"
-                    value="paid"
-                    checked={status === 'paid'}
-                    onChange={() => setStatus('paid')}
+                    value="pago"
+                    checked={status === 'pago'}
+                    onChange={() => setStatus('pago')}
                   />
                   Pago
                 </label>
-                <label className={`radio-pill ${status === 'pending' ? 'active' : ''}`}>
+                <label className={`radio-pill ${status === 'pendente' ? 'active' : ''}`}>
                   <input
                     type="radio"
                     name="status"
-                    value="pending"
-                    checked={status === 'pending'}
-                    onChange={() => setStatus('pending')}
+                    value="pendente"
+                    checked={status === 'pendente'}
+                    onChange={() => setStatus('pendente')}
                   />
                   Pendente
                 </label>

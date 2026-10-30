@@ -7,8 +7,8 @@ const categoriaSchema = z.object({
     ativo: z.boolean().default(true),
     descricao: z.string(),
     cor: z.string().regex(hexColorRegex).default("#64748B"),
-    limite_mensal: z.number(),
-    tipo_custo: z.enum(['fixo', 'variavel']).default('fixo'),
+    limiteMensal: z.number(),
+    tipoCusto: z.enum(['fixo', 'variavel']).default('fixo'),
     icone: z.string().max(30).default('tag')
 })
 
