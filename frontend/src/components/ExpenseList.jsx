@@ -1,14 +1,14 @@
 import React from 'react';
 import { CircleCheck, Clock, Pencil, Trash2, Plus, Receipt, FunnelX, CloudOff, RefreshCw } from 'lucide-react';
 import { formatCurrency, formatParcelas, isPago } from '../utils/format';
-import { corDaCategoria } from '../utils/despesas';
+import { corDaCategoria, rotuloMetodo, ROTULOS_STATUS } from '../utils/despesas';
 
 export function StatusBadge({ despesa }) {
   const pago = isPago(despesa);
   return (
     <span className={`badge ${pago ? 'pago' : 'pendente'}`}>
       {pago ? <CircleCheck size={14} aria-hidden="true" /> : <Clock size={14} aria-hidden="true" />}
-      {pago ? 'Pago' : 'Pendente'}
+      {pago ? ROTULOS_STATUS.PAGO : ROTULOS_STATUS.PENDENTE}
     </span>
   );
 }
@@ -151,7 +151,7 @@ export default function ExpenseList({
                   </span>
                 </td>
                 <td className="muted">
-                  {item.metodoPagamento || 'Não informado'}
+                  {rotuloMetodo(item.metodoPagamento)}
                   <span className="sub money">{formatParcelas(item.parcelas, item.valor)}</span>
                 </td>
                 <td><StatusBadge despesa={item} /></td>
@@ -199,7 +199,7 @@ export default function ExpenseList({
                   <span className="item-meta-text">
                     {item.categoria || 'Sem categoria'} · {Number(item.parcelas) > 1
                       ? formatParcelas(item.parcelas, item.valor)
-                      : item.metodoPagamento || 'Não informado'}
+                      : rotuloMetodo(item.metodoPagamento)}
                   </span>
                 </span>
                 <span className="item-status"><StatusBadge despesa={item} /></span>

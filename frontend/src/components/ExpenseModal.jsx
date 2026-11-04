@@ -5,33 +5,37 @@ import ChipGroup from './ChipGroup';
 import { formatDecimal, formatParcelas, parseValor } from '../utils/format';
 import {
   CATEGORIAS_PADRAO,
+  LIMITES,
   METODOS_PAGAMENTO,
+  ROTULOS_METODO,
+  ROTULOS_STATUS,
   corDaCategoria,
   isCartaoCredito,
+  normalizarMetodo,
+  normalizarStatus,
   statusPadrao
 } from '../utils/despesas';
 
 const OUTRA = '__outra__';
 const ULTIMO_METODO_KEY = 'dindin:ultimoMetodo';
 const MAX_CHIPS_CATEGORIA = 6;
-const MAX_PARCELAS = 48;
-const VALOR_MAXIMO = 99999999.99; // NUMERIC(10, 2) no banco
+const MAX_PARCELAS = LIMITES.parcelasMax;
 
 // Mensagens amigáveis para campos recusados pelo backend (400 do Zod).
 // Os textos do Zod (em inglês, técnicos) não vão para a tela.
 const ERRO_SERVIDOR_POR_CAMPO = {
-  descricao: 'O servidor recusou a descrição. Confira o texto.',
-  valor: 'O servidor recusou o valor. Confira o número.',
-  categoria: 'O servidor recusou a categoria.',
-  metodoPagamento: 'O servidor recusou a forma de pagamento.',
+  descricao: `O servidor recusou a descrição. Use de 1 a ${LIMITES.descricao} caracteres.`,
+  valor: 'O servidor recusou o valor. Use de R$ 0,01 a R$ 10.000,00, com até 2 casas.',
+  categoria: `O servidor recusou a categoria. Use até ${LIMITES.categoria} caracteres.`,
+  metodoPagamento: 'O servidor recusou a forma de pagamento. Escolha PIX, débito ou crédito.',
   parcelas: 'O servidor recusou o número de parcelas.',
   status: 'O servidor recusou o status.'
 };
 
 function lerUltimoMetodo() {
   try {
-    const salvo = localStorage.getItem(ULTIMO_METODO_KEY);
-    return METODOS_PAGAMENTO.includes(salvo) ? salvo : 'PIX';
+    // Aceita também valores antigos salvos ("Cartão de Crédito").
+    return normalizarMetodo(localStorage.getItem(ULTIMO_METODO_KEY)) || 'PIX';
   } catch {
     return 'PIX';
   }
@@ -78,9 +82,10 @@ function estadoInicial(despesa, categoriasChips) {
       descricao: despesa.descricao || '',
       categoria: despesa.categoria || categoriasChips[0] || OUTRA,
       outraCategoria: '',
-      metodo: despesa.metodoPagamento || 'PIX',
+      // Método antigo sem equivalente (ex.: "Boleto") deixa o campo vazio: a pessoa precisa escolher.
+      metodo: normalizarMetodo(despesa.metodoPagamento) || '',
       parcelas: Math.min(MAX_PARCELAS, Math.max(1, Number(despesa.parcelas) || 1)),
-      status: String(despesa.status).toLowerCase() === 'pago' ? 'pago' : 'pendente',
+      status: normalizarStatus(despesa.status),
       statusTocado: true
     };
   }
@@ -139,12 +144,12 @@ export default function ExpenseModal({ despesa, categorias, despesas, onClose, o
       ? [...ranking, form.categoria]
       : ranking;
 
-  const metodosOpcoes = METODOS_PAGAMENTO.includes(form.metodo) ? METODOS_PAGAMENTO : [...METODOS_PAGAMENTO, form.metodo];
+  const metodoAntigo = isEdit && !normalizarMetodo(despesa.metodoPagamento) ? despesa.metodoPagamento : '';
 
   // Parcelas só para cartão de crédito. Na edição, preserva parcelas antigas de outros métodos.
   const mostrarParcelas =
     isCartaoCredito(form.metodo) ||
-    (isEdit && form.metodo === despesa.metodoPagamento && Number(despesa.parcelas) > 0);
+    (isEdit && form.metodo === normalizarMetodo(despesa.metodoPagamento) && Number(despesa.parcelas) > 1);
 
   const valorNumero = parseValor(form.valor);
 
@@ -167,14 +172,26 @@ export default function ExpenseModal({ despesa, categorias, despesas, onClose, o
     const e = {};
     if (Number.isNaN(valorNumero)) e.valor = 'Informe um valor válido, como 1.234,56.';
     else if (valorNumero <= 0) e.valor = 'Informe um valor maior que zero.';
-    else if (valorNumero > VALOR_MAXIMO) e.valor = 'Valor acima do limite permitido.';
+    else if (valorNumero > LIMITES.valorMaximo) e.valor = 'O valor máximo é R$ 10.000,00.';
 
-    if (!form.descricao.trim()) e.descricao = 'Dê um nome para a despesa.';
+    const descricao = form.descricao.trim();
+    if (!descricao) e.descricao = 'Dê um nome para a despesa.';
+    else if (descricao.length > LIMITES.descricao) e.descricao = `Use no máximo ${LIMITES.descricao} caracteres.`;
 
-    if (form.categoria === OUTRA && !form.outraCategoria.trim()) e.categoria = 'Digite o nome da categoria.';
-    else if (!form.categoria) e.categoria = 'Escolha uma categoria.';
+    const categoria = form.categoria === OUTRA ? form.outraCategoria.trim() : form.categoria;
+    if (form.categoria === OUTRA && !categoria) e.categoria = 'Digite o nome da categoria.';
+    else if (!categoria) e.categoria = 'Escolha uma categoria.';
+    else if (categoria.length > LIMITES.categoria) e.categoria = `O nome da categoria pode ter até ${LIMITES.categoria} caracteres.`;
 
-    if (!form.metodo) e.metodoPagamento = 'Escolha a forma de pagamento.';
+    if (!form.metodo) {
+      e.metodoPagamento = metodoAntigo
+        ? `"${metodoAntigo}" não é mais aceito. Escolha PIX, débito ou crédito.`
+        : 'Escolha a forma de pagamento.';
+    }
+
+    if (mostrarParcelas && !(Number.isInteger(form.parcelas) && form.parcelas >= 1 && form.parcelas <= MAX_PARCELAS)) {
+      e.parcelas = `Escolha de 1 a ${MAX_PARCELAS} parcelas.`;
+    }
     return e;
   }
 
@@ -211,7 +228,7 @@ export default function ExpenseModal({ despesa, categorias, despesas, onClose, o
       valor: valorNumero,
       categoria: form.categoria === OUTRA ? form.outraCategoria.trim() : form.categoria,
       metodoPagamento: form.metodo,
-      parcelas: mostrarParcelas ? form.parcelas : 0,
+      parcelas: mostrarParcelas ? form.parcelas : 1,
       status: form.status
     };
 
@@ -329,7 +346,7 @@ export default function ExpenseModal({ despesa, categorias, despesas, onClose, o
                 className={`input ${errors.descricao ? 'invalid' : ''}`}
                 placeholder="Ex.: aluguel, mercado, farmácia"
                 autoComplete="off"
-                maxLength={120}
+                maxLength={LIMITES.descricao}
                 value={form.descricao}
                 onChange={(e) => atualizar('descricao', e.target.value)}
                 {...erroProps('descricao')}
@@ -355,7 +372,7 @@ export default function ExpenseModal({ despesa, categorias, despesas, onClose, o
                     ref={outraRef}
                     className={`input ${errors.categoria ? 'invalid' : ''}`}
                     placeholder="Nome da categoria, ex.: Assinaturas"
-                    maxLength={50}
+                    maxLength={LIMITES.categoria}
                     value={form.outraCategoria}
                     onChange={(e) => {
                       setForm((f) => ({ ...f, outraCategoria: e.target.value }));
@@ -371,13 +388,22 @@ export default function ExpenseModal({ despesa, categorias, despesas, onClose, o
             <div className="field">
               <span className="field-label" id="rotulo-metodo">Forma de pagamento</span>
               <ChipGroup
-                options={metodosOpcoes.map((m) => ({ value: m, label: m }))}
+                options={METODOS_PAGAMENTO.map((m) => ({ value: m, label: ROTULOS_METODO[m] }))}
                 value={form.metodo}
                 onChange={trocarMetodo}
                 labelledBy="rotulo-metodo"
                 invalid={Boolean(errors.metodoPagamento)}
-                describedBy={errors.metodoPagamento ? 'erro-metodoPagamento' : undefined}
+                describedBy={
+                  [errors.metodoPagamento && 'erro-metodoPagamento', metodoAntigo && !form.metodo && 'aviso-metodo']
+                    .filter(Boolean)
+                    .join(' ') || undefined
+                }
               />
+              {metodoAntigo && !form.metodo && !errors.metodoPagamento && (
+                <span className="hint" id="aviso-metodo">
+                  Esta despesa usava "{metodoAntigo}", que não é mais aceito. Escolha uma das opções.
+                </span>
+              )}
               {mensagemErro('metodoPagamento')}
             </div>
 
@@ -419,8 +445,8 @@ export default function ExpenseModal({ despesa, categorias, despesas, onClose, o
                   className="segmented full"
                   chipClassName=""
                   options={[
-                    { value: 'pago', label: 'Pago', icon: CircleCheck, className: 'is-pago' },
-                    { value: 'pendente', label: 'Pendente', icon: Clock, className: 'is-pend' }
+                    { value: 'PAGO', label: ROTULOS_STATUS.PAGO, icon: CircleCheck, className: 'is-pago' },
+                    { value: 'PENDENTE', label: ROTULOS_STATUS.PENDENTE, icon: Clock, className: 'is-pend' }
                   ]}
                   value={form.status}
                   onChange={(s) => {
@@ -434,6 +460,8 @@ export default function ExpenseModal({ despesa, categorias, despesas, onClose, o
                 {mensagemErro('status')}
               </div>
             </div>
+            {/* Erro de parcelas vindo do servidor quando o campo está oculto (PIX/débito). */}
+            {!mostrarParcelas && mensagemErro('parcelas')}
           </div>
 
           <div className="modal-foot">

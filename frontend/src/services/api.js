@@ -2,16 +2,16 @@
 // Regra principal: nunca transformar uma falha em sucesso simulado.
 // Toda resposta que não for 2xx vira ApiError, e quem chamou decide o que mostrar.
 
-import { toPayload } from '../utils/despesas';
+import { normalizarMetodo, normalizarStatus, toPayload } from '../utils/despesas';
 
 const DESPESAS_URL = '/despesas';
 const CATEGORIAS_URL = '/categorias';
 
 // Dados de exemplo usados só em desenvolvimento, quando o backend não está de pé.
 const FALLBACK_DESPESAS = [
-  { id: 1, descricao: 'Supermercado Mensal', valor: 450.0, categoria: 'Alimentação', metodoPagamento: 'PIX', parcelas: 0, status: 'pago' },
-  { id: 2, descricao: 'Conta de Energia', valor: 185.3, categoria: 'Moradia', metodoPagamento: 'Boleto', parcelas: 0, status: 'pendente' },
-  { id: 3, descricao: 'Notebook para Trabalho', valor: 3600.0, categoria: 'Tecnologia', metodoPagamento: 'Cartão de Crédito', parcelas: 10, status: 'pago' }
+  { id: 1, descricao: 'Supermercado Mensal', valor: 450.0, categoria: 'Alimentação', metodoPagamento: 'PIX', parcelas: 1, status: 'PAGO' },
+  { id: 2, descricao: 'Conta de Energia', valor: 185.3, categoria: 'Moradia', metodoPagamento: 'DEBITO', parcelas: 1, status: 'PENDENTE' },
+  { id: 3, descricao: 'Notebook para Trabalho', valor: 3600.0, categoria: 'Tecnologia', metodoPagamento: 'CREDITO', parcelas: 10, status: 'PAGO' }
 ];
 
 // kind: 'network' (sem conexão), 'validation' (400), 'not_found' (404) ou 'server' (outros).
@@ -65,8 +65,16 @@ async function request(url, options = {}) {
 }
 
 // O Postgres devolve NUMERIC como string ("450.00"). Na tela, tratamos como número.
+// Linhas antigas: status minúsculo e métodos com nome por extenso viram os valores do contrato.
+// Método sem equivalente (ex.: "Boleto") fica como veio, para exibir e forçar a troca na edição.
 function normalizarDespesa(d) {
-  return { ...d, valor: Number(d.valor) || 0, parcelas: Number(d.parcelas) || 0 };
+  return {
+    ...d,
+    valor: Number(d.valor) || 0,
+    parcelas: Number(d.parcelas) || 0,
+    status: normalizarStatus(d.status),
+    metodoPagamento: normalizarMetodo(d.metodoPagamento) ?? d.metodoPagamento
+  };
 }
 
 // Devolve { data, isFallback, error }. Nunca lança.

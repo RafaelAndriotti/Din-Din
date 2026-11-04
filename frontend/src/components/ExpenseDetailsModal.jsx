@@ -3,6 +3,7 @@ import { X, CircleCheck, Clock, Pencil, Trash2 } from 'lucide-react';
 import useDialog from '../hooks/useDialog';
 import { StatusBadge, CategoryDot } from './ExpenseList';
 import { formatCurrency, formatParcelas, isPago } from '../utils/format';
+import { rotuloMetodo } from '../utils/despesas';
 
 // Abre com o item que já está na lista: não precisa de GET /despesas/:id.
 export default function ExpenseDetailsModal({ expense, categorias, onClose, onEdit, onDelete, onTogglePaid }) {
@@ -44,7 +45,7 @@ export default function ExpenseDetailsModal({ expense, categorias, onClose, onEd
               </span>
             </dd>
             <dt>Forma de pagamento</dt>
-            <dd>{expense.metodoPagamento || 'Não informado'}</dd>
+            <dd>{rotuloMetodo(expense.metodoPagamento)}</dd>
             <dt>Parcelas</dt>
             <dd className="money">{formatParcelas(expense.parcelas, expense.valor)}</dd>
           </dl>

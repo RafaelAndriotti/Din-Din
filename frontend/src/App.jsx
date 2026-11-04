@@ -17,6 +17,7 @@ const TOAST_DURACAO = 5000;
 function mensagemDeErro(err) {
   if (err?.kind === 'network') return 'Sem conexão com o servidor.';
   if (err?.kind === 'not_found') return 'Essa despesa não existe mais.';
+  if (err?.kind === 'validation') return 'Ela tem dados que o servidor não aceita mais.';
   return 'O servidor encontrou um erro.';
 }
 
@@ -157,14 +158,14 @@ export default function App() {
   }
 
   async function handleTogglePaid(item) {
-    const novoStatus = isPago(item) ? 'pendente' : 'pago';
+    const novoStatus = isPago(item) ? 'PENDENTE' : 'PAGO';
     setDespesas((prev) => prev.map((d) => (d.id === item.id ? { ...d, status: novoStatus } : d)));
 
     try {
       const atualizada = await updateDespesa(item.id, { ...item, status: novoStatus });
       setDespesas((prev) => prev.map((d) => (d.id === item.id ? atualizada : d)));
       showToast({
-        message: novoStatus === 'pago'
+        message: novoStatus === 'PAGO'
           ? `"${item.descricao}" marcada como paga.`
           : `"${item.descricao}" voltou para pendente.`
       });
@@ -178,8 +179,10 @@ export default function App() {
       showToast({
         variant: 'error',
         message: `Não foi possível atualizar "${item.descricao}". ${mensagemDeErro(err)}`,
-        actionLabel: 'Tentar de novo',
-        onAction: () => handleTogglePaid(item)
+        // 400 não se resolve repetindo: leva para a edição (ex.: forma de pagamento antiga).
+        ...(err.kind === 'validation'
+          ? { actionLabel: 'Editar', onAction: () => setModal({ type: 'form', despesa: item }) }
+          : { actionLabel: 'Tentar de novo', onAction: () => handleTogglePaid(item) })
       });
     }
   }

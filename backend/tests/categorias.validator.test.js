@@ -18,7 +18,7 @@ describe('CategoriasValidator - Validações do Zod e Middleware', () => {
                 descricao: 'Combustível e passagens',
                 cor: '#3B82F6',
                 limiteMensal: 350.00,
-                tipoCusto: 'variavel'
+                tipoCusto: 'VARIAVEL'
             }
         };
 
@@ -70,6 +70,8 @@ describe('CategoriasValidator - Validações do Zod e Middleware', () => {
         const req = {
             body: {
                 nome: 'Saúde',
+                descricao: 'Consultas e remédios',
+                limiteMensal: 200,
                 cor: 'cor-invalida' // Cor deve ser regex hex ex: #FFFFFF
             }
         };
@@ -84,6 +86,9 @@ describe('CategoriasValidator - Validações do Zod e Middleware', () => {
         validarCategoria(req, res, next);
 
         expect(res.status).toHaveBeenCalledWith(400);
+        // Body completo: o único erro precisa ser a cor, senão o teste passa pelo motivo errado
+        const { erros } = res.json.mock.calls[0][0];
+        expect(erros.map((e) => e.path[0])).toEqual(['cor']);
         expect(next).not.toHaveBeenCalled();
     });
 });
