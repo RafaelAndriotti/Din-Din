@@ -1,12 +1,12 @@
 import React, { useRef } from 'react';
-import { X, CircleCheck, Clock, Pencil, Trash2 } from 'lucide-react';
+import { X, Pencil, Trash2 } from 'lucide-react';
 import useDialog from '../hooks/useDialog';
 import { StatusBadge, CategoryDot } from './ExpenseList';
 import { formatCurrency, formatParcelas, isPago } from '../utils/format';
 import { rotuloMetodo } from '../utils/despesas';
 
 // Abre com o item que já está na lista: não precisa de GET /despesas/:id.
-export default function ExpenseDetailsModal({ expense, categorias, onClose, onEdit, onDelete, onTogglePaid }) {
+export default function ExpenseDetailsModal({ expense, categorias, carimbada = false, onClose, onEdit, onDelete, onTogglePaid }) {
   const dialogRef = useRef(null);
   const acaoPrincipalRef = useRef(null);
   useDialog({ dialogRef, initialFocusRef: acaoPrincipalRef, onClose });
@@ -31,9 +31,9 @@ export default function ExpenseDetailsModal({ expense, categorias, onClose, onEd
         </div>
 
         <div className="modal-body">
-          <div className="detail-hero">
+          <div className={`detail-hero ${pago ? 'is-paid' : ''}`}>
             <span className="detail-value money">{formatCurrency(expense.valor)}</span>
-            <StatusBadge despesa={expense} />
+            <StatusBadge despesa={expense} fresh={carimbada} />
           </div>
 
           <dl className="dl">
@@ -54,10 +54,9 @@ export default function ExpenseDetailsModal({ expense, categorias, onClose, onEd
           <button
             ref={acaoPrincipalRef}
             type="button"
-            className={`btn full-width ${pago ? 'btn-ghost' : 'btn-primary'}`}
+            className={`btn full-width ${pago ? 'btn-secondary' : 'btn-primary'}`}
             onClick={() => onTogglePaid(expense)}
           >
-            {pago ? <Clock size={18} aria-hidden="true" /> : <CircleCheck size={18} aria-hidden="true" />}
             {pago ? 'Marcar como pendente' : 'Marcar como pago'}
           </button>
         </div>

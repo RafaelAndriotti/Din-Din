@@ -1,5 +1,6 @@
 import React from 'react';
-import { Wallet, Plus, RefreshCw } from 'lucide-react';
+import { Moon, Plus, RefreshCw, Sun } from 'lucide-react';
+import useTema from '../hooks/useTema';
 
 const CONEXAO = {
   ready: { texto: 'API conectada', classe: 'on' },
@@ -9,16 +10,13 @@ const CONEXAO = {
 
 export default function Header({ status, onOpenModal, onRefresh, refreshing }) {
   const conexao = CONEXAO[status];
+  const { tema, alternar } = useTema();
+  const noturno = tema === 'dark';
 
   return (
     <header className="app-header">
       <div className="header-inner">
-        <div className="brand">
-          <div className="brand-logo" aria-hidden="true">
-            <Wallet size={20} />
-          </div>
-          <span className="brand-name">Din-Din</span>
-        </div>
+        <span className="brand-name">Din-Din</span>
 
         <div className="header-actions">
           {conexao && (
@@ -38,7 +36,22 @@ export default function Header({ status, onOpenModal, onRefresh, refreshing }) {
             <RefreshCw size={18} className={refreshing ? 'spinning' : ''} aria-hidden="true" />
           </button>
 
-          <button type="button" className="btn btn-primary hide-sm" onClick={onOpenModal}>
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={alternar}
+            aria-pressed={noturno}
+            aria-label="Modo noturno"
+            title={noturno ? 'Voltar ao modo claro' : 'Ativar modo noturno'}
+          >
+            {noturno ? (
+              <Sun size={18} aria-hidden="true" />
+            ) : (
+              <Moon size={18} aria-hidden="true" />
+            )}
+          </button>
+
+          <button type="button" className="btn btn-on-bar hide-sm" onClick={onOpenModal}>
             <Plus size={18} aria-hidden="true" />
             Nova despesa
           </button>

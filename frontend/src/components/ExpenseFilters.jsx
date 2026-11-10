@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, X, Clock, CircleCheck } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 
 const STATUS_LABEL = { pending: 'Pendentes', paid: 'Pagos' };
 
@@ -18,8 +18,8 @@ export default function ExpenseFilters({
 }) {
   const statusOptions = [
     { value: 'all', label: 'Todos', count: counts.all },
-    { value: 'pending', label: 'Pendentes', count: counts.pending, Icon: Clock },
-    { value: 'paid', label: 'Pagos', count: counts.paid, Icon: CircleCheck }
+    { value: 'pending', label: 'Pendentes', count: counts.pending },
+    { value: 'paid', label: 'Pagos', count: counts.paid }
   ];
 
   const ativos = [];
@@ -28,7 +28,7 @@ export default function ExpenseFilters({
   if (categoryFilter !== 'all') ativos.push({ key: 'cat', label: categoryFilter, onRemove: () => onCategoryFilterChange('all') });
 
   return (
-    <section className="card filters" aria-label="Filtros">
+    <section className="filters" aria-label="Filtros">
       <div className="search">
         <label htmlFor="busca" className="sr-only">Buscar despesas</label>
         <Search size={18} className="search-icon" aria-hidden="true" />
@@ -50,14 +50,13 @@ export default function ExpenseFilters({
 
       <div className="filters-row">
         <div className="segmented" role="group" aria-label="Status">
-          {statusOptions.map(({ value, label, count, Icon }) => (
+          {statusOptions.map(({ value, label, count }) => (
             <button
               key={value}
               type="button"
               aria-pressed={statusFilter === value}
               onClick={() => onStatusFilterChange(value)}
             >
-              {Icon && <Icon size={14} aria-hidden="true" />}
               {label} <span className="count">{count}</span>
             </button>
           ))}

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Plus, Minus, CircleAlert, CircleCheck, Clock } from 'lucide-react';
+import { X, Plus, Minus, CircleAlert } from 'lucide-react';
 import useDialog from '../hooks/useDialog';
 import ChipGroup from './ChipGroup';
 import { formatDecimal, formatParcelas, parseValor } from '../utils/format';
@@ -445,8 +445,8 @@ export default function ExpenseModal({ despesa, categorias, despesas, onClose, o
                   className="segmented full"
                   chipClassName=""
                   options={[
-                    { value: 'PAGO', label: ROTULOS_STATUS.PAGO, icon: CircleCheck, className: 'is-pago' },
-                    { value: 'PENDENTE', label: ROTULOS_STATUS.PENDENTE, icon: Clock, className: 'is-pend' }
+                    { value: 'PAGO', label: ROTULOS_STATUS.PAGO },
+                    { value: 'PENDENTE', label: ROTULOS_STATUS.PENDENTE }
                   ]}
                   value={form.status}
                   onChange={(s) => {

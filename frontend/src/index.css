@@ -1,50 +1,59 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
 /* =========================================================
-   DESIGN TOKENS (ver .claude/reports/design-proposta-2026-10-30.md)
-   Contrastes calculados sobre --surface-1 (#121826).
+   DESIGN TOKENS: "Carbon Copy" (ver DESIGN.md).
+   Papel branco de cupom, tinta azul-marinho, valores em roxo-carbono,
+   carimbo de status em verde (PAGO) e vermelho (PENDENTE);
+   o vermelho também marca erros e exclusão.
+   Contrastes calculados sobre --paper (#FBFBF8).
    ========================================================= */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* superfícies sólidas: contraste previsível e sem custo de blur no celular */
-  --bg: #0B0F19;
-  --surface-1: #121826;      /* cards, tabela, modal */
-  --surface-2: #1A2233;      /* inputs, hover, blocos internos */
-  --surface-3: #232C3D;      /* trilho de barras, skeleton */
-  --border-subtle: #232C3D;  /* divisórias decorativas */
-  --border-control: #64748B; /* borda de controles: 3,34:1 sobre surface-2 */
+  /* papel */
+  --paper: #FBFBF8;       /* fundo da página e dos modais */
+  --paper-field: #FFFFFF; /* campos de formulário */
+  --wash: #ECEEF4;        /* hover, faixa de aviso, skeleton */
 
-  /* texto */
-  --text-1: #F1F5F9; /* 16,2:1 */
-  --text-2: #A1AAB8; /* 7,6:1 */
-  --text-3: #8B95A7; /* 5,9:1 */
+  /* tinta */
+  --ink: #14285A;         /* texto, barra do topo, botão primário: 13,6:1 */
+  --ink-hover: #0E1D45;
+  --ink-2: #4A5A82;       /* texto secundário: 6,6:1 */
+  --ink-3: #56638A;       /* lançamentos pagos, dicas: 5,7:1 */
+  --rule: #C9CFDD;        /* linhas entre lançamentos */
+  --control: #7C89AB;     /* borda de controles: 3,4:1 */
 
-  /* marca */
-  --accent: #818CF8;         /* texto e ícone sobre escuro: 5,9:1 */
-  --accent-soft: #A5B4FC;    /* texto sobre fundo tingido: 6,75:1 */
-  --accent-bg: #4F46E5;      /* fundo do botão primário: branco 6,29:1 */
-  --accent-bg-hover: #4338CA;
-  --accent-tint: rgba(129, 140, 248, 0.14);
-  --focus-ring: #A5B4FC;
+  /* papel-carbono: valor que ainda falta pagar (e o anel de foco) */
+  --carbon: #6B3FA0;      /* 7,1:1 */
 
-  /* semântica financeira */
-  --positive: #34D399;
-  --positive-tint: rgba(52, 211, 153, 0.14);
-  --warning: #FBBF24;
-  --warning-tint: rgba(251, 191, 36, 0.14);
-  --danger: #F87171;
-  --danger-tint: rgba(248, 113, 113, 0.14);
-  --danger-bg: #B91C1C;
+  /* vermelho: carimbo PENDENTE, erros e exclusão */
+  --stamp: #D8262F;       /* 4,8:1 */
+  --stamp-hover: #B81D26; /* carimbo sobre --wash (hover): 5,6:1 */
 
-  /* tipografia */
-  --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --fs-xs: 0.75rem;  /* 12 */
-  --fs-sm: 0.875rem; /* 14 */
-  --fs-md: 1rem;     /* 16 */
-  --fs-lg: 1.25rem;  /* 20 */
-  --fs-xl: 1.5rem;   /* 24 */
-  --fs-2xl: 2rem;    /* 32 */
+  /* carimbo PAGO */
+  --pago: #177A43;        /* 5,2:1 */
+  --pago-hover: #126337;  /* sobre --wash: 6,3:1 */
+
+  /* texto sobre preenchimentos de tinta (botão primário, chip marcado, toast)
+     e sobre o vermelho cheio (hover de excluir) */
+  --on-ink: #FFFFFF;
+  --on-stamp: #FFFFFF;
+
+  /* barra do topo: azul-marinho nos dois modos */
+  --bar: #14285A;
+  --scrim: rgba(14, 29, 69, 0.6);
+
+  /* estado da conexão, sobre a barra azul-marinho */
+  --on-bar-ok: #7BE0A3;
+  --on-bar-warn: #FFD166;
+  --on-bar-error: #FF9AA0;
+
+  /* tipografia: uma família só; títulos usam o eixo de largura (condensado) */
+  --font: 'Archivo Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fs-xs: 0.8125rem; /* 13 */
+  --fs-sm: 0.875rem;  /* 14 */
+  --fs-md: 1rem;      /* 16 */
+  --fs-lg: 1.25rem;   /* 20 */
+  --fs-xl: 1.75rem;   /* 28 */
+  --fs-display: clamp(2.75rem, 1.6rem + 3.4vw, 3.75rem);
 
   /* espaço (grid de 4 px) */
   --sp-1: 4px;
@@ -56,13 +65,60 @@
   --sp-8: 32px;
   --sp-12: 48px;
 
-  /* raios, sombra e controles */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-full: 9999px;
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  /* cantos quase retos, como papel cortado */
+  --radius: 3px;
+  --shadow-overlay: 0 18px 40px -12px rgba(20, 40, 90, 0.45);
   --control-h: 44px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* =========================================================
+   MODO NOTURNO: o verso do papel-carbono.
+   Fundo grafite neutro (nunca azul-marinho como fundo: é o visual
+   rejeitado), tinta vira o branco do cupom, roxo e vermelho clareiam
+   para manter o contraste. A barra do topo continua azul-marinho.
+   Contrastes calculados sobre --paper (#141519).
+   O atributo data-theme é definido em index.html antes do primeiro
+   desenho (sem piscar) e mantido por useTema.
+   ========================================================= */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --paper: #141519;
+  --paper-field: #1B1D22;
+  --wash: #262930;
+
+  --ink: #ECEAE2;         /* 15,2:1 */
+  --ink-hover: #D4D1C6;
+  --ink-2: #AEB2BF;       /* 8,6:1 */
+  --ink-3: #8F95A5;       /* 6,1:1 */
+  --rule: #33363F;
+  --control: #737A8C;     /* 4,3:1 */
+
+  --carbon: #BB9AF0;      /* 7,8:1 */
+
+  --stamp: #FF5C62;       /* 6,1:1 */
+  --stamp-hover: #FF8589; /* sobre --wash: 6,2:1 */
+
+  --pago: #4CC98A;        /* 8,7:1 */
+  --pago-hover: #6BD6A0;  /* sobre --wash: 8,2:1 */
+
+  --on-ink: #141519;
+  --on-stamp: #141519;
+
+  --scrim: rgba(0, 0, 0, 0.66);
+  --shadow-overlay: 0 18px 40px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* Chevron do select: o traço segue a tinta clara. */
+:root[data-theme='dark'] .select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23ECEAE2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* A barra azul-marinho precisa de borda sobre o grafite. */
+:root[data-theme='dark'] .app-header {
+  border-bottom: 1px solid #2B3D6B;
 }
 
 * {
@@ -71,14 +127,26 @@
   box-sizing: border-box;
 }
 
+html {
+  scrollbar-color: var(--control) transparent;
+  scrollbar-width: thin;
+}
+
 body {
   font-family: var(--font);
   font-size: var(--fs-md);
-  background-color: var(--bg);
-  color: var(--text-1);
-  line-height: 1.5;
+  background-color: var(--paper);
+  color: var(--ink);
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  caret-color: var(--carbon);
+  accent-color: var(--ink);
+}
+
+::selection {
+  background: var(--carbon);
+  color: var(--on-ink);
 }
 
 input,
@@ -101,9 +169,17 @@ button:disabled {
 
 /* Foco visível sempre. Nunca outline: none sem substituto. */
 :focus-visible {
-  outline: 2px solid var(--focus-ring);
+  outline: 3px solid var(--carbon);
   outline-offset: 2px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
+}
+
+/* Títulos de seção e cabeçalhos de coluna: caixa alta condensada. */
+.caps {
+  font-stretch: 80%;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* Valores: algarismos de largura fixa, sem trocar a fonte por monospace. */

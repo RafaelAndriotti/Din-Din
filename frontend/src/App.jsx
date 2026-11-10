@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, TriangleAlert } from 'lucide-react';
 import Header from './components/Header';
-import SummaryCards, { SummarySkeleton } from './components/SummaryCards';
+import FaltaPagar, { FaltaPagarSkeleton } from './components/FaltaPagar';
 import ExpenseFilters from './components/ExpenseFilters';
 import ExpenseList, { LoadError } from './components/ExpenseList';
 import ExpenseModal from './components/ExpenseModal';
@@ -9,10 +9,12 @@ import ExpenseDetailsModal from './components/ExpenseDetailsModal';
 import Toast from './components/Toast';
 import useDelayedFlag from './hooks/useDelayedFlag';
 import { getDespesas, getCategorias, createDespesa, updateDespesa, deleteDespesa } from './services/api';
-import { isPago, pluralize } from './utils/format';
+import { isPago } from './utils/format';
 import './App.css';
 
 const TOAST_DURACAO = 5000;
+// Tempo em que a conta recém-paga fica visível, carimbada, antes de sair de "Falta pagar".
+const CARIMBO_DURACAO = 900;
 
 function mensagemDeErro(err) {
   if (err?.kind === 'network') return 'Sem conexão com o servidor.';
@@ -44,6 +46,11 @@ export default function App() {
   // null | { type: 'form', despesa? } | { type: 'details', id }
   const [modal, setModal] = useState(null);
   const [toast, setToast] = useState(null);
+  // Despesa que acabou de ser marcada como paga: o carimbo dela entra animado.
+  const [carimbadaId, setCarimbadaId] = useState(null);
+  const carimboTimer = useRef(null);
+
+  useEffect(() => () => clearTimeout(carimboTimer.current), []);
   const toastRef = useRef(null);
   const toastSeq = useRef(0);
 
@@ -159,6 +166,11 @@ export default function App() {
 
   async function handleTogglePaid(item) {
     const novoStatus = isPago(item) ? 'PENDENTE' : 'PAGO';
+    clearTimeout(carimboTimer.current);
+    // O carimbo bate nos dois sentidos: PAGO ao pagar, PENDENTE ao desfazer.
+    setCarimbadaId(item.id);
+    // Limpa depois da animação, para o carimbo não bater de novo se a linha for remontada.
+    carimboTimer.current = setTimeout(() => setCarimbadaId(null), CARIMBO_DURACAO);
     setDespesas((prev) => prev.map((d) => (d.id === item.id ? { ...d, status: novoStatus } : d)));
 
     try {
@@ -286,50 +298,69 @@ export default function App() {
   // ---------- Conteúdo principal ----------
   let conteudo;
   if (status === 'error') {
-    conteudo = <LoadError onRetry={loadData} />;
+    conteudo = (
+      <div className="cols single">
+        <div className="ledger">
+          <LoadError onRetry={loadData} />
+        </div>
+      </div>
+    );
   } else if (isInitialLoading) {
     // Antes de 300 ms não mostra nada; depois, skeleton. Nunca R$ 0,00 falso.
     conteudo = showSkeleton ? (
-      <>
-        <SummarySkeleton />
-        <ExpenseList loading despesas={[]} totalCount={0} filters={{}} categorias={categorias} />
-      </>
+      <div className="cols">
+        <FaltaPagarSkeleton />
+        <div className="ledger">
+          <ExpenseList loading despesas={[]} totalCount={0} filters={{}} categorias={categorias} />
+        </div>
+      </div>
     ) : (
       <div className="loading-placeholder" aria-busy="true" aria-label="Carregando despesas" />
     );
   } else {
     conteudo = (
-      <>
-        {temDespesas && <SummaryCards despesas={despesas} onFilterStatus={handleFilterStatus} />}
+      <div className={`cols ${temDespesas ? '' : 'single'}`}>
         {temDespesas && (
-          <ExpenseFilters
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-            categoryFilter={categoryFilter}
-            onCategoryFilterChange={setCategoryFilter}
-            categories={categoriasFiltro}
-            sortBy={sortBy}
-            onSortByChange={setSortBy}
-            counts={counts}
-            onClearAll={clearFilters}
+          <FaltaPagar
+            despesas={despesas}
+            onFilterStatus={handleFilterStatus}
+            onTogglePaid={handleTogglePaid}
+            carimbadaId={carimbadaId}
+            onOpenDetails={(item) => setModal({ type: 'details', id: item.id })}
           />
         )}
-        <ExpenseList
-          loading={false}
-          despesas={filteredDespesas}
-          totalCount={despesas.length}
-          filters={{ searchTerm: searchTerm.trim(), statusFilter, categoryFilter }}
-          categorias={categorias}
-          onOpenNew={openNew}
-          onClearFilters={clearFilters}
-          onOpenDetails={(item) => setModal({ type: 'details', id: item.id })}
-          onEdit={(item) => setModal({ type: 'form', despesa: item })}
-          onDelete={handleDelete}
-          onTogglePaid={handleTogglePaid}
-        />
-      </>
+        <div className="ledger">
+          <ExpenseList
+            loading={false}
+            toolbar={temDespesas && (
+              <ExpenseFilters
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
+                categoryFilter={categoryFilter}
+                onCategoryFilterChange={setCategoryFilter}
+                categories={categoriasFiltro}
+                sortBy={sortBy}
+                onSortByChange={setSortBy}
+                counts={counts}
+                onClearAll={clearFilters}
+              />
+            )}
+            despesas={filteredDespesas}
+            totalCount={despesas.length}
+            filters={{ searchTerm: searchTerm.trim(), statusFilter, categoryFilter }}
+            categorias={categorias}
+            onOpenNew={openNew}
+            onClearFilters={clearFilters}
+            onOpenDetails={(item) => setModal({ type: 'details', id: item.id })}
+            onEdit={(item) => setModal({ type: 'form', despesa: item })}
+            onDelete={handleDelete}
+            onTogglePaid={handleTogglePaid}
+            carimbadaId={carimbadaId}
+          />
+        </div>
+      </div>
     );
   }
 
@@ -337,14 +368,9 @@ export default function App() {
     <div className="app-layout">
       <Header status={status} onOpenModal={openNew} onRefresh={loadData} refreshing={loading} />
 
-      <main className="page">
-        <div className="page-head">
-          <h1>Visão geral</h1>
-          {hasLoaded && <p>{pluralize(despesas.length, 'despesa registrada', 'despesas registradas')}</p>}
-        </div>
-
-        {status === 'demo' && (
-          <div className="banner" role="status">
+      {status === 'demo' && (
+        <div className="banner" role="status">
+          <div className="banner-inner">
             <TriangleAlert size={18} className="banner-icon" aria-hidden="true" />
             <div>
               <b>Exibindo dados de exemplo.</b> Alterações não serão salvas.
@@ -353,8 +379,11 @@ export default function App() {
               Reconectar
             </button>
           </div>
-        )}
+        </div>
+      )}
 
+      <main className="page">
+        <h1 className="sr-only">Din-Din: controle de despesas</h1>
         {conteudo}
       </main>
 
@@ -383,6 +412,7 @@ export default function App() {
         <ExpenseDetailsModal
           expense={selected}
           categorias={categorias}
+          carimbada={selected.id === carimbadaId}
           onClose={closeModal}
           onEdit={(item) => setModal({ type: 'form', despesa: item })}
           onDelete={handleDelete}

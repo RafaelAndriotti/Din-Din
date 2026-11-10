@@ -3,7 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DinDin - Controle Financeiro</title>
+    <meta name="theme-color" content="#14285A" />
+    <title>Din-Din: controle financeiro</title>
+    <script>
+      // Aplica o tema antes do primeiro desenho. Mesma regra de src/hooks/useTema.js.
+      (function () {
+        var tema = null;
+        try { tema = localStorage.getItem('din-din-tema'); } catch (e) {}
+        if (tema !== 'dark' && tema !== 'light') {
+          tema = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.dataset.theme = tema;
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
