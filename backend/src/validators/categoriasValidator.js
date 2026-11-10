@@ -19,18 +19,4 @@ const categoriaSchema = z.object({
             .default('tag')
 })
 
-export function validarCategoria(req, res, next) {
-    const validacao = categoriaSchema.safeParse(req.body);
-
-    if (!validacao.success) {
-        return res.status(400).json({
-            message: "Dados invalidos",
-            erros: validacao.error.issues
-        })
-    }
-
-    req.body = validacao.data;
-    next();
-}
-
 export default categoriaSchema

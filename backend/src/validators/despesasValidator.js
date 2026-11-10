@@ -31,19 +31,5 @@ export const despesaCredito = despesaBase.extend({
 
 export const despesaSchema = z.discriminatedUnion('metodoPagamento', [despesaAVista, despesaCredito]);
 
-export function validarDespesa(req, res, next){
-    //Se a validacao falhar, retorna 400 com os erros detalhados
-        const validacao = despesaSchema.safeParse(req.body);
-
-            if(!validacao.success) {
-                return res.status(400).json({
-                    message: "Dados invalidos",
-                    erros: validacao.error.issues //Mostra qual o campo faltou ou veio com tipo errado
-                });
-            }
-
-            req.body = validacao.data
-            next();
-}
 
 export default despesaSchema;
