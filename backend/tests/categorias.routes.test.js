@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import express from 'express';
-import CategoriasController from '../src/controllers/categoriasController.js';
+import routes from '../src/routes/index.js';
 import pool from '../src/db/db.js';
 
 // Mock do banco de dados (Pool do pg)
@@ -23,18 +23,14 @@ describe('Rotas de Categorias (HTTP com Supertest)', () => {
     let app;
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        vi.resetAllMocks();
 
         // Cria uma aplicação Express para teste isolado das rotas
         app = express();
         app.use(express.json());
 
-        // Montagem das rotas de categoria
-        app.get('/categorias', CategoriasController.listarCategorias);
-        app.get('/categorias/:id', CategoriasController.buscarCategoriaPorId);
-        app.post('/categorias', CategoriasController.criarCategoria);
-        app.put('/categorias/:id', CategoriasController.atualizarCategoria);
-        app.delete('/categorias/:id', CategoriasController.deletarCategoria);
+        // Rotas reais (com validate), nao so os controllers
+        routes(app);
     });
 
     describe('GET /categorias', () => {
@@ -133,6 +129,52 @@ describe('Rotas de Categorias (HTTP com Supertest)', () => {
             const response = await request(app).delete('/categorias/1');
 
             expect(response.status).toBe(204);
+        });
+    });
+
+    // Validacao do :id (COR-3): id invalido nao pode chegar no banco
+    describe.each([
+        ['GET', 'get'],
+        ['PUT', 'put'],
+        ['DELETE', 'delete']
+    ])('%s /categorias/:id - validacao do id', (_, metodo) => {
+        const corpoValido = { nome: 'Lazer', descricao: 'Cinema', limiteMensal: 100 };
+
+        it.each(['abc', '0', '-1', '1.5', '99999999999'])('id %s retorna 400 sem consultar o banco', async (id) => {
+            const response = await request(app)[metodo]('/categorias/' + id).send(corpoValido);
+
+            expect(response.status).toBe(400);
+            expect(Array.isArray(response.body.erros)).toBe(true);
+            expect(pool.query).not.toHaveBeenCalled();
+        });
+
+        it('id valido passa o id como numero para o banco', async () => {
+            pool.query.mockResolvedValueOnce({ rows: [{ id: 1 }], rowCount: 1 });
+
+            const response = await request(app)[metodo]('/categorias/1').send(corpoValido);
+
+            expect(response.status).toBe(metodo === 'delete' ? 204 : 200);
+            expect(pool.query.mock.calls[0][1]).toContain(1);
+        });
+    });
+
+    describe('POST /categorias - body invalido', () => {
+        it('retorna 400 sem consultar o banco', async () => {
+            const response = await request(app).post('/categorias').send({ descricao: 'sem nome' });
+
+            expect(response.status).toBe(400);
+            expect(Array.isArray(response.body.erros)).toBe(true);
+            expect(pool.query).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('PUT /categorias/:id - body invalido', () => {
+        it('id valido com body invalido retorna 400 sem consultar o banco', async () => {
+            const response = await request(app).put('/categorias/1').send({ descricao: 'sem nome' });
+
+            expect(response.status).toBe(400);
+            expect(Array.isArray(response.body.erros)).toBe(true);
+            expect(pool.query).not.toHaveBeenCalled();
         });
     });
 });

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { validarDespesa, despesaSchema } from '../src/validators/despesasValidator.js';
+import { despesaSchema } from '../src/validators/despesasValidator.js';
+import { validate } from '../src/middleware/validate.js';
 
 /**
  * Testes do validador de despesas (src/validators/despesasValidator.js) — COR-1 e COR-11.
@@ -141,23 +142,23 @@ describe('despesaSchema - textos e status', () => {
     });
 });
 
-describe('validarDespesa - middleware', () => {
+describe('validate({ body: despesaSchema }) - middleware', () => {
     const criarRes = () => ({
         status: vi.fn().mockReturnThis(),
         json: vi.fn().mockReturnThis()
     });
 
-    it('chama next() e troca req.body pelos dados validados', () => {
+    it('chama next() e grava os dados validados em req.validacao.body', () => {
         const req = { body: { ...pix, parcelas: 5, descricao: '  Mercado  ' } };
         const res = criarRes();
         const next = vi.fn();
 
-        validarDespesa(req, res, next);
+        validate({ body: despesaSchema })(req, res, next);
 
         expect(next).toHaveBeenCalled();
         expect(res.status).not.toHaveBeenCalled();
-        expect(req.body.parcelas).toBe(1);
-        expect(req.body.descricao).toBe('Mercado');
+        expect(req.validacao.body.parcelas).toBe(1);
+        expect(req.validacao.body.descricao).toBe('Mercado');
     });
 
     it('responde 400 com a lista de erros e não chama next()', () => {
@@ -165,7 +166,7 @@ describe('validarDespesa - middleware', () => {
         const res = criarRes();
         const next = vi.fn();
 
-        validarDespesa(req, res, next);
+        validate({ body: despesaSchema })(req, res, next);
 
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith(
