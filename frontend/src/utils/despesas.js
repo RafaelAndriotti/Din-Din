@@ -43,7 +43,13 @@ export function corDaCategoria(nome, categoriasApi = []) {
   if (!nome) return COR_NEUTRA;
   const chave = nome.toLowerCase();
   const daApi = categoriasApi.find((c) => c.nome?.toLowerCase() === chave);
-  return daApi?.cor || CORES_PADRAO[chave] || COR_NEUTRA;
+  return corSegura(daApi?.cor) || CORES_PADRAO[chave] || COR_NEUTRA;
+}
+
+// A cor vem da API e vai direto para um style inline. Só aceitamos hexadecimal:
+// um valor como url(https://...) faria o navegador chamar um servidor de fora.
+function corSegura(cor) {
+  return typeof cor === 'string' && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(cor) ? cor : null;
 }
 
 function semAcento(texto) {
