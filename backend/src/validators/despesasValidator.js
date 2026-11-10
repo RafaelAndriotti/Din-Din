@@ -18,9 +18,7 @@ export const despesaBase = z.object({
 })
 
 export const despesaAVista = despesaBase.extend({
-    metodoPagamento: z.enum(['PIX', 'DEBITO']),
-    parcelas: z.number()
-               .default(1)
+    metodoPagamento: z.enum(['PIX', 'DEBITO'])
 })
 
 export const despesaCredito = despesaBase.extend({
