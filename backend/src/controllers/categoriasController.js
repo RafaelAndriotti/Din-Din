@@ -17,7 +17,7 @@ class CategoriasController {
 
     static async buscarCategoriaPorId(req, res, next) {
         try {
-            const { rows } = await pool.query(`SELECT ${COLUNAS} FROM categorias WHERE id = $1`, [req.params.id]);
+            const { rows } = await pool.query(`SELECT ${COLUNAS} FROM categorias WHERE id = $1`, [req.validacao.params.id]);
 
             if(!rows[0]){
                 return res.status(404).json({ message: "Registro nao encontrado" })
@@ -31,7 +31,7 @@ class CategoriasController {
 
     static async criarCategoria(req, res, next){
         try {
-            const { nome, ativo, descricao, cor, limiteMensal, tipoCusto, icone } = req.body
+            const { nome, ativo, descricao, cor, limiteMensal, tipoCusto, icone } = req.validacao.body
             const { rows } = await pool.query(`INSERT INTO  categorias (nome, ativo, descricao, cor, limite_mensal, tipo_custo, icone)
                                                VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING ${COLUNAS}`, [nome, ativo, descricao, cor, limiteMensal, tipoCusto, icone]);
             
@@ -44,8 +44,8 @@ class CategoriasController {
 
     static async atualizarCategoria(req, res, next){
         try {
-            const { id } = req.params;
-            const { nome, ativo, descricao, cor, limiteMensal, tipoCusto, icone } = req.body;
+            const { id } = req.validacao.params;
+            const { nome, ativo, descricao, cor, limiteMensal, tipoCusto, icone } = req.validacao.body;
 
             const { rows } = await pool.query(
                 `UPDATE categorias
@@ -66,7 +66,7 @@ class CategoriasController {
 
     static async deletarCategoria(req, res, next){
         try {
-            const { id } = req.params;
+            const { id } = req.validacao.params;
             const { rowCount } = await pool.query(`DELETE FROM categorias WHERE id = $1`, [id])
 
             if(rowCount === 0){

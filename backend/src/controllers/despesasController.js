@@ -21,7 +21,7 @@ class DespesasController {
     }
 
     static async criarDespesa (req, res, next){
-        const { descricao, valor, categoria, metodoPagamento, parcelas, status } = req.body;
+        const { descricao, valor, categoria, metodoPagamento, parcelas, status } = req.validacao.body;
         try {
             const { rows } = await pool.query(
                 `INSERT INTO despesas (descricao, valor, categoria, metodo_pagamento, parcelas, status)
@@ -41,7 +41,7 @@ class DespesasController {
         try {
             const { rows } = await pool.query(
                 `SELECT ${COLUNAS} FROM despesas WHERE id = $1`,
-                [req.params.id]
+                [req.validacao.params.id]
             );
 
             if(rows.length === 0){
@@ -57,8 +57,8 @@ class DespesasController {
 
     static async atualizarDespesa (req, res, next) {
         try {
-            const { id } = req.params
-            const { descricao, valor, categoria, metodoPagamento, parcelas, status } = req.body
+            const { id } = req.validacao.params
+            const { descricao, valor, categoria, metodoPagamento, parcelas, status } = req.validacao.body
             const { rows } = await pool.query(
                 `UPDATE despesas
                     SET descricao=$1,
@@ -85,7 +85,7 @@ class DespesasController {
 
     static async deletarDespesa(req, res, next){
         try {
-            const { id } = req.params
+            const { id } = req.validacao.params
             const { rowCount } = await pool.query(
                 `DELETE FROM despesas WHERE id=$1`,
                 [id]

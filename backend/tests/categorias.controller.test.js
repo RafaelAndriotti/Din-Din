@@ -20,10 +20,7 @@ describe('CategoriasController - Testes Unitários', () => {
         vi.clearAllMocks();
 
         // Mocks dos objetos de requisição e resposta do Express
-        req = {
-            params: {},
-            body: {}
-        };
+        req = { validacao: { params: {}, body: {} } };
 
         res = {
             status: vi.fn().mockReturnThis(),
@@ -68,7 +65,7 @@ describe('CategoriasController - Testes Unitários', () => {
     describe('buscarCategoriaPorId', () => {
         it('deve retornar a categoria e status 200 quando encontrada', async () => {
             const categoriaMock = { id: 1, nome: 'Educação', cor: '#0000FF' };
-            req.params = { id: '1' };
+            req.validacao.params = { id: 1 };
 
             pool.query.mockResolvedValueOnce({ rows: [categoriaMock] });
 
@@ -76,14 +73,14 @@ describe('CategoriasController - Testes Unitários', () => {
 
             expect(pool.query).toHaveBeenCalledWith(
                 expect.stringContaining('FROM categorias WHERE id = $1'),
-                ['1']
+                [1]
             );
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith(categoriaMock);
         });
 
         it('deve retornar status 500 se o banco falhar ao buscar por id', async () => {
-            req.params = { id: '1' };
+            req.validacao.params = { id: 1 };
             pool.query.mockRejectedValueOnce(new Error('Erro no DB'));
 
             await CategoriasController.buscarCategoriaPorId(req, res, next);
@@ -108,7 +105,7 @@ describe('CategoriasController - Testes Unitários', () => {
                 tipoCusto: 'variavel',
                 ativo: true
             };
-            req.body = novaCategoria;
+            req.validacao.body = novaCategoria;
 
             const categoriaCriadaMock = { id: 10, ...novaCategoria };
             pool.query.mockResolvedValueOnce({ rows: [categoriaCriadaMock] });
@@ -120,7 +117,7 @@ describe('CategoriasController - Testes Unitários', () => {
         });
 
         it('deve retornar status 500 se o banco falhar na criação', async () => {
-            req.body = { nome: 'Lazer' };
+            req.validacao.body = { nome: 'Lazer' };
             pool.query.mockRejectedValueOnce(new Error('Erro de chave duplicada'));
 
             await CategoriasController.criarCategoria(req, res, next);
@@ -136,8 +133,8 @@ describe('CategoriasController - Testes Unitários', () => {
 
     describe('atualizarCategoria', () => {
         it('deve atualizar uma categoria e retornar status 200', async () => {
-            req.params = { id: '1' };
-            req.body = {
+            req.validacao.params = { id: 1 };
+            req.validacao.body = {
                 nome: 'Alimentação Atualizada',
                 tipo: 'despesa',
                 descricao: 'Restaurantes e compras',
@@ -147,7 +144,7 @@ describe('CategoriasController - Testes Unitários', () => {
                 ativo: true
             };
 
-            const categoriaAtualizadaMock = { id: 1, ...req.body };
+            const categoriaAtualizadaMock = { id: 1, ...req.validacao.body };
             pool.query.mockResolvedValueOnce({ rows: [categoriaAtualizadaMock] });
 
             await CategoriasController.atualizarCategoria(req, res, next);
@@ -157,8 +154,8 @@ describe('CategoriasController - Testes Unitários', () => {
         });
 
         it('deve retornar status 500 se houver erro ao atualizar', async () => {
-            req.params = { id: '1' };
-            req.body = { nome: 'Erro' };
+            req.validacao.params = { id: 1 };
+            req.validacao.body = { nome: 'Erro' };
             pool.query.mockRejectedValueOnce(new Error('Erro no DB'));
 
             await CategoriasController.atualizarCategoria(req, res, next);
@@ -169,20 +166,20 @@ describe('CategoriasController - Testes Unitários', () => {
 
     describe('deletarCategoria', () => {
         it('deve deletar a categoria e retornar status 204', async () => {
-            req.params = { id: '1' };
+            req.validacao.params = { id: 1 };
             pool.query.mockResolvedValueOnce({ rows: [{ id: 1 }] });
 
             await CategoriasController.deletarCategoria(req, res, next);
 
             expect(pool.query).toHaveBeenCalledWith(
                 'DELETE FROM categorias WHERE id = $1',
-                ['1']
+                [1]
             );
             expect(res.status).toHaveBeenCalledWith(204);
         });
 
         it('deve retornar status 500 se houver falha ao deletar', async () => {
-            req.params = { id: '1' };
+            req.validacao.params = { id: 1 };
             pool.query.mockRejectedValueOnce(new Error('Erro no DB'));
 
             await CategoriasController.deletarCategoria(req, res, next);

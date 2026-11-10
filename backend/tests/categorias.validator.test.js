@@ -10,7 +10,8 @@ import { describe, it, expect, vi } from 'vitest';
 describe('CategoriasValidator - Validações do Zod e Middleware', () => {
     it('deve validar e avançar quando os dados da categoria forem válidos', async () => {
         // Importação dinâmica para capturar erros de sintaxe caso o arquivo ainda não tenha sido corrigido
-        const { validarCategoria, default: categoriaSchema } = await import('../src/validators/categoriasValidator.js');
+        const { default: categoriaSchema } = await import('../src/validators/categoriasValidator.js');
+        const { validate } = await import('../src/middleware/validate.js');
 
         const req = {
             body: {
@@ -29,15 +30,17 @@ describe('CategoriasValidator - Validações do Zod e Middleware', () => {
 
         const next = vi.fn();
 
-        validarCategoria(req, res, next);
+        validate({ body: categoriaSchema })(req, res, next);
 
         // Se os dados são válidos, não deve retornar 400 e deve chamar next()
         expect(res.status).not.toHaveBeenCalledWith(400);
         expect(next).toHaveBeenCalled();
+        expect(req.validacao.body.nome).toBe('Transporte');
     });
 
     it('deve retornar 400 com lista de erros quando o nome estiver ausente', async () => {
-        const { validarCategoria } = await import('../src/validators/categoriasValidator.js');
+        const { default: categoriaSchema } = await import('../src/validators/categoriasValidator.js');
+        const { validate } = await import('../src/middleware/validate.js');
 
         const req = {
             body: {
@@ -52,7 +55,7 @@ describe('CategoriasValidator - Validações do Zod e Middleware', () => {
 
         const next = vi.fn();
 
-        validarCategoria(req, res, next);
+        validate({ body: categoriaSchema })(req, res, next);
 
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith(
@@ -65,7 +68,8 @@ describe('CategoriasValidator - Validações do Zod e Middleware', () => {
     });
 
     it('deve rejeitar uma cor hexadecimal inválida', async () => {
-        const { validarCategoria } = await import('../src/validators/categoriasValidator.js');
+        const { default: categoriaSchema } = await import('../src/validators/categoriasValidator.js');
+        const { validate } = await import('../src/middleware/validate.js');
 
         const req = {
             body: {
@@ -83,7 +87,7 @@ describe('CategoriasValidator - Validações do Zod e Middleware', () => {
 
         const next = vi.fn();
 
-        validarCategoria(req, res, next);
+        validate({ body: categoriaSchema })(req, res, next);
 
         expect(res.status).toHaveBeenCalledWith(400);
         // Body completo: o único erro precisa ser a cor, senão o teste passa pelo motivo errado
