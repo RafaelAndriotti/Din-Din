@@ -37,6 +37,10 @@ export default defineConfig({
     port: 5173,
     // 127.0.0.1, não localhost: a API só escuta em IPv4 local, e localhost pode resolver para ::1.
     proxy: {
+      '/auth': {
+        target: 'http://127.0.0.1:3000',
+        changeOrigin: true
+      },
       '/despesas': {
         target: 'http://127.0.0.1:3000',
         changeOrigin: true
