@@ -100,3 +100,32 @@ describe('Respostas de erro (O1, O2)', () => {
         expect(response.headers['x-powered-by']).toBeUndefined();
     });
 });
+
+describe('Rate limit (O4)', () => {
+    beforeEach(() => {
+        vi.resetAllMocks();
+    });
+
+    it('/auth aceita 10 tentativas por IP a cada 15 minutos; a 11ª responde 429', async () => {
+        const app = criarApp();
+        pool.query.mockResolvedValue({ rows: [] });
+        const tentar = () => request(app).post('/auth/login').send({ email: 'ana@exemplo.com', senha: 'chute-123' });
+
+        for (let i = 0; i < 10; i += 1) {
+            expect((await tentar()).status).toBe(401);
+        }
+        const bloqueada = await tentar();
+
+        expect(bloqueada.status).toBe(429);
+        expect(bloqueada.body).toHaveProperty('message');
+    });
+
+    it('as demais rotas aceitam 100 requisições por minuto por IP; a 101ª responde 429', async () => {
+        const app = criarApp();
+        const respostas = await Promise.all(Array.from({ length: 101 }, () => request(app).get('/')));
+        const status = respostas.map((r) => r.status);
+
+        expect(status.filter((s) => s === 200)).toHaveLength(100);
+        expect(status.filter((s) => s === 429)).toHaveLength(1);
+    });
+});
