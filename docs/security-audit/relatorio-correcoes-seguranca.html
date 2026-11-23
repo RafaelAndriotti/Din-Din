@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório de Correções de Segurança — Din-Din</title>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm;
+    @top-left { content: "Relatório de Correções de Segurança — Din-Din"; font: 600 7.4pt "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: #14285A; vertical-align: bottom; padding-bottom: 3mm; border-bottom: .6pt solid #CBD5E1; }
+    @top-right { content: "23/11/2026 · fix/auditoria-seguranca"; font: 7.4pt "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: #64748B; vertical-align: bottom; padding-bottom: 3mm; border-bottom: .6pt solid #CBD5E1; }
+    @bottom-left { content: "Din-Din · correções da auditoria de segurança"; font: 7.4pt "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: #64748B; vertical-align: top; padding-top: 3mm; border-top: .6pt solid #CBD5E1; }
+    @bottom-right { content: "Página " counter(page) " de " counter(pages); font: 600 7.4pt "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: #14285A; vertical-align: top; padding-top: 3mm; border-top: .6pt solid #CBD5E1; }
+  }
+  :root {
+    --ink: #0F172A; --ink2: #334155; --ink3: #64748B; --linha: #E2E8F0; --suave: #F8FAFC; --azul: #14285A;
+    --sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: "Cascadia Mono", Consolas, "Courier New", monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font: 9pt/1.48 var(--sans); color: var(--ink); background: #fff; }
+  h1, h2, h3 { color: var(--azul); line-height: 1.2; margin: 0; }
+  p { margin: 0 0 2.2mm; }
+  code { font-family: var(--mono); font-size: .86em; background: #EEF2F7; border-radius: 2pt; padding: 0 2pt; color: #0B1F4A; }
+  strong { font-weight: 700; }
+  section.pagina { break-before: page; }
+  h1.sec { font-size: 16pt; font-weight: 800; padding-bottom: 2.4mm; border-bottom: 1.6pt solid var(--azul); margin-bottom: 4.5mm; break-after: avoid; }
+  h1.sec::before { content: attr(data-num); padding-right: 3.2mm; color: var(--ink3); font-weight: 700; }
+  h1.sec-cont { margin-top: 8mm; }
+  h2.sub-sec { font-size: 11pt; margin: 2mm 0 2.6mm; break-after: avoid; }
+  h3.mini { font-size: 7.4pt; font-weight: 700; text-transform: uppercase; letter-spacing: .7pt; color: var(--ink3); margin: 4mm 0 1.8mm; break-after: avoid; }
+  .sem-quebra code, .nw { white-space: nowrap; }
+  .mini-nota { font-size: 7.8pt; color: var(--ink3); }
+  .lead { font-size: 9.3pt; line-height: 1.52; color: var(--ink2); }
+
+  .chip { display: inline-block; background: var(--c); color: #fff; font: 700 6.6pt/1 var(--sans); letter-spacing: .35pt; text-transform: uppercase; padding: 2.3pt 5.5pt 2.1pt; border-radius: 9pt; white-space: nowrap; }
+  .catn { display: inline-flex; align-items: center; justify-content: center; width: 5.4mm; height: 5.4mm; border-radius: 50%; background: var(--azul); color: #fff; font: 700 7.4pt/1 var(--sans); flex: none; }
+  .catn.grande { width: 7.4mm; height: 7.4mm; font-size: 10pt; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+  th { text-align: left; font: 700 6.8pt/1.2 var(--sans); text-transform: uppercase; letter-spacing: .5pt; color: var(--ink3); background: var(--suave); padding: 2mm 2.4mm; border-bottom: .8pt solid #CBD5E1; }
+  td { padding: 2.4mm 2.4mm; border-bottom: .6pt solid var(--linha); vertical-align: top; }
+
+  /* capa */
+  .capa { padding-top: 2mm; }
+  .kicker { font: 700 7.4pt/1 var(--sans); letter-spacing: 1.8pt; text-transform: uppercase; color: #B91C1C; }
+  .capa h1 { font-size: 23pt; font-weight: 800; line-height: 1.1; letter-spacing: -.3pt; margin: 3.4mm 0 2.2mm; }
+  .capa .sub { font-size: 10pt; color: var(--ink2); margin-bottom: 4.5mm; }
+  .faixa { display: flex; height: 6.4mm; border-radius: 2.4pt; overflow: hidden; gap: .8mm; }
+  .faixa span { display: flex; align-items: center; justify-content: center; color: #fff; font: 800 8pt var(--sans); }
+  .faixa-leg { display: flex; flex-wrap: wrap; gap: 1.2mm 4.5mm; font-size: 7.8pt; color: var(--ink2); margin: 2mm 0 4.5mm; }
+  .faixa-leg i, .leg-barras i { display: inline-block; width: 2.8mm; height: 2.8mm; border-radius: 1pt; margin-right: 1.3mm; vertical-align: -.3mm; }
+  .meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-top: .6pt solid #CBD5E1; border-bottom: .6pt solid #CBD5E1; }
+  .meta-grid > div { padding: 2.6mm 2.4mm 2.6mm 0; }
+  .meta-grid .k { font: 700 6.4pt/1.2 var(--sans); letter-spacing: .6pt; text-transform: uppercase; color: var(--ink3); margin-bottom: 1mm; }
+  .meta-grid .v { font-weight: 700; font-size: 9.2pt; }
+  .duas { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm; }
+  table.stack th { width: 25mm; background: none; text-transform: none; letter-spacing: 0; font: 700 7.8pt/1.35 var(--sans); color: var(--ink); border-bottom: .6pt solid var(--linha); padding: 1.6mm 2mm 1.6mm 0; vertical-align: top; }
+  table.stack td { font-size: 7.9pt; padding: 1.6mm 0; line-height: 1.38; }
+  ul.escopo { margin: 0; padding-left: 4mm; font-size: 7.8pt; line-height: 1.4; }
+  ul.escopo li { margin-bottom: .9mm; }
+  table.metodo td { font-size: 7.8pt; line-height: 1.4; padding: 1.7mm 2.4mm 1.7mm 0; }
+  table.metodo td.m-cat { width: 44mm; }
+  table.metodo .catn { margin-right: 2mm; vertical-align: middle; }
+  table.metodo .m-sub { display: block; color: var(--ink3); font-size: 7.1pt; margin: .5mm 0 0 7.4mm; }
+  .nota-final { font-size: 7.5pt; color: var(--ink3); margin-top: 2.4mm; }
+
+  /* resumo */
+  .kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3mm; margin: 3.4mm 0 4mm; }
+  .kpi { border: .6pt solid var(--linha); border-top: 2.4pt solid var(--k); border-radius: 2pt; padding: 2.2mm 3mm; }
+  .kpi .n { font-size: 18pt; font-weight: 800; color: var(--k); line-height: 1; }
+  .kpi .t { font-size: 7.3pt; color: var(--ink2); margin-top: 1.2mm; line-height: 1.3; }
+  .graficos { display: grid; grid-template-columns: 62mm 1fr; gap: 5mm; margin-bottom: 1mm; align-items: start; }
+  .chart { border: .6pt solid var(--linha); border-radius: 2pt; padding: 3mm 4mm; break-inside: avoid; }
+  .chart-t { font-size: 7.4pt; font-weight: 700; text-transform: uppercase; letter-spacing: .6pt; color: var(--ink3); margin-bottom: 2mm; }
+  svg.rosca { display: block; width: 33mm; height: 33mm; margin: 0 auto 2.4mm; }
+  svg .r-num { font: 800 36px var(--sans); fill: #14285A; }
+  svg .r-lbl { font: 600 10.5px var(--sans); fill: #64748B; letter-spacing: .4px; }
+  ul.legenda { list-style: none; padding: 0; margin: 0; font-size: 7.9pt; }
+  ul.legenda li { display: grid; grid-template-columns: 3.2mm 1fr 6mm 11mm; align-items: center; gap: 1.6mm; padding: .6mm 0; border-bottom: .5pt solid var(--linha); }
+  ul.legenda li:last-child { border-bottom: 0; }
+  .sw { width: 3.2mm; height: 3.2mm; border-radius: 1pt; display: inline-block; }
+  .lg-n { text-align: right; font-weight: 800; }
+  .lg-p { text-align: right; color: var(--ink3); }
+  svg.barras { display: block; width: 100%; height: auto; }
+  svg .grade { stroke: #E2E8F0; stroke-width: .7; }
+  svg .tick { font: 500 8.5px var(--sans); fill: #94A3B8; }
+  svg .cat-r { font: 700 10.2px var(--sans); fill: #0F172A; }
+  svg .cat-s { font: 500 8.2px var(--sans); fill: #94A3B8; }
+  svg .val { font: 800 9.5px var(--sans); fill: #0F172A; }
+  svg .val-f { fill: #059669; }
+  .leg-barras { display: flex; flex-wrap: wrap; gap: 1mm 3.4mm; font-size: 7.2pt; color: var(--ink2); margin-top: 2.4mm; }
+  table.rubrica td { font-size: 8pt; padding: 1.4mm 1.6mm 1.4mm 0; line-height: 1.35; }
+  table.rubrica td:first-child { width: 24mm; }
+  .caixa { background: var(--suave); border: .6pt solid var(--linha); border-left: 2.4pt solid var(--azul); border-radius: 2pt; padding: 3mm 4mm 2mm; margin-top: 4mm; break-inside: avoid; }
+  .caixa h3 { font-size: 8.8pt; margin-bottom: 2mm; }
+  .caixa ul { margin: 0; padding-left: 4.2mm; font-size: 7.8pt; line-height: 1.4; }
+  .caixa ul.colunas { columns: 2; column-gap: 8mm; }
+  .caixa li { margin-bottom: 1.4mm; break-inside: avoid; }
+
+  /* fortes e fracos */
+  ol.fracos { list-style: none; counter-reset: f; padding: 0; margin: 0 0 6mm; }
+  ol.fracos li { position: relative; padding: 2.2mm 2mm 2.2mm 9mm; border-bottom: .6pt solid var(--linha); counter-increment: f; }
+  ol.fracos li::before { content: counter(f); position: absolute; left: 0; top: 2.1mm; width: 5.4mm; height: 5.4mm; border-radius: 50%; background: #B91C1C; color: #fff; font: 700 7.4pt/5.4mm var(--sans); text-align: center; }
+  table.fortes col.k1 { width: 10mm; }
+  table.fortes col.k3 { width: 60mm; }
+  table.fortes td { border-bottom-color: #D1FAE5; }
+  table.fortes .catn { background: #059669; }
+  .pf-tit { font-weight: 700; color: #065F46; margin-bottom: .8mm; }
+  .pf-txt { font-size: 8.3pt; color: var(--ink2); }
+
+  /* referências e trechos */
+  .ref { font-family: var(--mono); font-size: 7.2pt; line-height: 1.3; margin-bottom: 1.6mm; overflow-wrap: anywhere; }
+  .ref-dir { display: block; color: var(--ink3); font-size: 6.5pt; }
+  .ref-arq { color: var(--ink); font-weight: 600; }
+  .ref-arq b { color: var(--azul); font-weight: 800; }
+  .ref-livre { color: var(--ink2); }
+  .ref-nota { font-size: 6.9pt; line-height: 1.3; color: var(--ink3); margin: -1mm 0 2mm; }
+  .ref-nota code { font-size: .92em; }
+  table.achados { margin-bottom: 6mm; }
+  table.achados tr { break-inside: auto; }
+  table.achados td p { orphans: 2; widows: 2; }
+  table.achados col.k1 { width: 20mm; }
+  table.achados col.k2 { width: 50mm; }
+  table.achados td { font-size: 8.3pt; }
+  .f-tit { font-weight: 700; font-size: 9pt; color: var(--ink); margin-bottom: 1.4mm; line-height: 1.35; }
+  .fid { display: inline-block; font: 800 6.8pt/1 var(--mono); color: var(--azul); background: #E8EDF7; border-radius: 2pt; padding: 1.6pt 3pt; margin-right: 1.8mm; vertical-align: 1pt; }
+  .f-sub { font-size: 8pt; color: var(--ink2); }
+  .f-sub b { color: var(--ink); }
+  figure.snip { margin: 1.6mm 0 2mm; border: .6pt solid var(--linha); border-left: 2pt solid var(--c); border-radius: 2pt; background: #FBFCFE; break-inside: avoid; }
+  figure.snip figcaption { font: 600 6.4pt/1 var(--mono); color: var(--ink3); padding: 1.6mm 2.4mm 0; }
+  figure.snip pre { margin: 0; padding: 1.2mm 2.4mm 1.7mm; font: 7.1pt/1.4 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; color: #0B1F4A; }
+  .f-issue { font-size: 7pt; color: var(--ink3); margin: 0; }
+
+  /* categorias */
+  .cat { margin-bottom: 2mm; }
+  .cat-h { display: flex; align-items: center; flex-wrap: wrap; gap: 2.4mm; margin: 3mm 0 2.4mm; break-after: avoid; }
+  .cat-h h2 { font-size: 12.4pt; font-weight: 800; }
+  .cat-sub { font-size: 8.4pt; font-weight: 500; color: var(--ink3); }
+  .cat-cnt { margin-left: auto; display: inline-flex; align-items: center; gap: 1mm; }
+  .cat-cnt .cnt { font: 800 8pt var(--sans); color: var(--ink); margin: 0 1.6mm 0 .6mm; }
+  .cat-box { background: var(--suave); border: .6pt solid var(--linha); border-radius: 2pt; padding: 2.6mm 3.4mm; margin-bottom: 2.6mm; font-size: 8.4pt; break-inside: avoid; break-after: avoid; }
+  .cat-box p:last-child { margin-bottom: 0; }
+  .cobertura { color: var(--ink3); font-size: 7.8pt; }
+
+  /* índice por arquivo */
+  table.indice col.k1 { width: 26mm; }
+  table.indice col.k2 { width: 11mm; }
+  table.indice col.k3 { width: 23mm; }
+  table.indice td { font-size: 7.8pt; padding: 1.5mm 2.2mm; line-height: 1.35; }
+  table.indice tr.grupo td { background: #EEF2F7; font: 700 7.4pt var(--mono); color: var(--azul); padding: 1.5mm 2.2mm; border-bottom: 0; }
+  table.indice tr.grupo { break-after: avoid; }
+  table.indice td.lin { font-family: var(--mono); font-size: 7.2pt; overflow-wrap: anywhere; }
+  td.id { font: 800 7.2pt var(--mono); color: var(--azul); }
+  .ix-nota { color: var(--ink3); }
+
+  /* recomendações e evidências */
+  .rec { display: grid; grid-template-columns: 13mm 1fr; gap: 3.4mm; border: .6pt solid var(--linha); border-radius: 2pt; padding: 3mm 4mm 2.4mm 3mm; margin-bottom: 2.8mm; break-inside: avoid; }
+  .rec .p { display: flex; align-items: center; justify-content: center; height: 10mm; border-radius: 2pt; background: var(--azul); color: #fff; font: 800 12pt/1 var(--sans); }
+  .rec h3 { font-size: 9.6pt; margin-bottom: .8mm; }
+  .rec .meta { font-size: 7.3pt; color: var(--ink3); margin-bottom: 1.6mm; }
+  .rec ul { margin: 0; padding-left: 4.2mm; font-size: 8.2pt; }
+  .rec li { margin-bottom: .8mm; }
+  dl.evid { margin: 0; }
+  dl.evid > div { display: grid; grid-template-columns: 9mm 42mm 1fr; gap: 2.4mm; padding: 2mm 0; border-bottom: .6pt solid var(--linha); font-size: 8pt; break-inside: avoid; }
+  .e-id { font: 800 7.4pt var(--mono); color: var(--azul); }
+  .e-tit { font-weight: 700; }
+
+  /* issues */
+  table.indice-issues { margin-bottom: 6mm; }
+  table.indice-issues col.k1 { width: 8mm; }
+  table.indice-issues col.k2 { width: 24mm; }
+  table.indice-issues col.k4 { width: 44mm; }
+  table.indice-issues td { font-size: 8pt; padding: 1.7mm 2.2mm; }
+  .ix-ach { color: var(--ink3); font-size: 7.4pt !important; }
+  .issue { margin-bottom: 6mm; }
+  .issue-head { display: flex; align-items: center; gap: 2.6mm; padding: 2mm 3.2mm; background: var(--azul); color: #fff; border-radius: 2pt 2pt 0 0; font-size: 8.2pt; break-after: avoid; }
+  .issue-head .t { font-weight: 700; }
+  .issue-head .a { margin-left: auto; color: #C7D2FE; font-size: 7.4pt; }
+  pre.issue-md { margin: 0; border: .6pt solid #CBD5E1; border-top: 0; border-radius: 0 0 2pt 2pt; padding: 3mm 3.4mm; font: 7.6pt/1.42 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; background: #FBFCFE; color: #0F172A; }
+  
+  .capa-c .kicker { color: #059669; }
+  .faixa .faixa-fora { background: #CBD5E1; color: #334155; }
+  .faixa-leg i.i-fora { background: #CBD5E1; }
+  .como-ler { font-size: 8pt; color: var(--ink2); line-height: 1.45; }
+  td.c-sev .est { margin-top: 1.4mm; }
+  .selos, .ref, .cat-h, .cat.curta { break-inside: avoid; }
+  .acao { background: #EFF6FF; border: .6pt solid #BFDBFE; border-left: 2.4pt solid #2563EB; border-radius: 2pt; padding: 1.8mm 2.6mm; font-size: 7.9pt; color: var(--ink2); margin: 1.4mm 0 .6mm; break-inside: avoid; }
+  .acao b { color: #1E3A8A; }
+  .cat-box.ad { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .ad .k { font: 700 6.6pt/1.2 var(--sans); letter-spacing: .6pt; text-transform: uppercase; color: var(--ink3); margin-bottom: 1mm; }
+  .ad .k.dep { color: #059669; }
+  .leg-nota { color: var(--ink3); }
+  table.antes-depois { margin-bottom: 1mm; }
+  table.antes-depois col.k1 { width: 34mm; }
+  table.antes-depois col.k4 { width: 20mm; }
+  table.antes-depois td { font-size: 7.8pt; line-height: 1.4; padding: 1.8mm 2.2mm; }
+  table.antes-depois td.m-cat { font-size: 7.9pt; }
+  table.antes-depois .catn { margin-right: 1.6mm; vertical-align: middle; }
+  .ad-n { font: 800 9pt var(--sans); white-space: nowrap; text-align: right; }
+  .ad-n .zero { color: #059669; }
+  .ad-n .resta { color: #64748B; }
+  .ad-n small { display: block; font: 500 6.4pt var(--sans); color: var(--ink3); }
+  table.fluxo col.k1 { width: 10mm; }
+  table.fluxo col.k2 { width: 58mm; }
+  table.fluxo col.k4 { width: 25mm; }
+  table.fluxo td { font-size: 8.1pt; padding: 2mm 2.2mm; }
+  table.fluxo .ref { margin-bottom: 0; }
+  .fx-c { font-weight: 700; margin-bottom: .8mm; }
+  .fx-i { font: 700 7pt/1.35 var(--mono); color: var(--azul); }
+  dl.decisoes { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; margin: 0; }
+  dl.decisoes > div { border: .6pt solid var(--linha); border-left: 2.4pt solid var(--azul); border-radius: 2pt; padding: 2.4mm 3mm; break-inside: avoid; }
+  dl.decisoes dt { font-weight: 700; color: var(--azul); font-size: 8.6pt; margin-bottom: 1mm; }
+  dl.decisoes dd { margin: 0; font-size: 8pt; color: var(--ink2); line-height: 1.42; }
+  table.arquivos col.k1 { width: 64mm; }
+  table.arquivos col.k2 { width: 17mm; }
+  table.arquivos col.k3 { width: 28mm; }
+  table.arquivos .ref { margin-bottom: 0; }
+  .novo { display: inline-block; font: 700 5.8pt/1 var(--sans); text-transform: uppercase; letter-spacing: .4pt; color: #065F46; background: #D1FAE5; border-radius: 2pt; padding: 1.2pt 3pt; margin-top: .8mm; }
+  .ar-n { font: 600 7.2pt var(--mono); white-space: nowrap; }
+  .mais { color: #059669; }
+  .menos { color: #B91C1C; }
+  table.fora col.k1 { width: 24mm; }
+  ol.limites li::before { background: #D97706; }
+  pre.cmd { margin: 1.6mm 0 0; padding: 1.8mm 2.4mm; font: 7.3pt/1.45 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; background: #0F172A; color: #E2E8F0; border-radius: 2pt; }
+  .rec p { font-size: 8.2pt; margin-bottom: 0; color: var(--ink2); }
+  .resumo-aceite { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2mm; margin: 0 0 5mm; }
+  .resumo-aceite .cnt { font: 800 8.4pt var(--sans); color: var(--ink); margin: 0 3mm 0 .6mm; }
+  .issue { break-inside: auto; }
+  .issue-tit { font-weight: 700; font-size: 8.6pt; padding: 2mm 3.2mm; border: .6pt solid #CBD5E1; border-top: 0; background: var(--suave); break-after: avoid; }
+  table.aceite { border: .6pt solid #CBD5E1; border-top: 0; }
+  table.aceite col.k1 { width: 30mm; }
+  table.aceite col.k3 { width: 68mm; }
+  table.aceite td { font-size: 7.9pt; padding: 1.7mm 2.2mm; line-height: 1.38; }
+  td.ac-como { color: var(--ink2); font-size: 7.4pt; }
+</style>
+</head>
+<body>
+<section class="capa capa-c">
+    <div class="kicker">Correções da auditoria de segurança · 5 categorias</div>
+    <h1>Relatório de Correções de Segurança — <span class="nw">Din-Din</span></h1>
+    <p class="sub">O que mudou no projeto para fechar os achados críticos, altos, médios e baixos da auditoria de segurança</p>
+    <div class="faixa" aria-hidden="true"><span style="flex:1;background:#B91C1C">1</span><span style="flex:3;background:#EA580C">3</span><span style="flex:8;background:#D97706">8</span><span style="flex:6;background:#2563EB">6</span><span class="faixa-fora" style="flex:2">2</span></div>
+    <div class="faixa-leg"><span><i style="background:#B91C1C"></i>1 crítica corrigida</span><span><i style="background:#EA580C"></i>3 altas corrigidas</span><span><i style="background:#D97706"></i>8 médias corrigidas</span><span><i style="background:#2563EB"></i>6 baixas corrigidas</span><span><i class="i-fora"></i>2 informativas fora do escopo</span></div>
+    <div class="meta-grid">
+      <div><div class="k">Data</div><div class="v">23/11/2026</div></div>
+      <div><div class="k">Branch</div><div class="v">fix/auditoria-seguranca</div></div>
+      <div><div class="k">Versão auditada</div><div class="v">main @ ace7aec</div></div>
+      <div><div class="k">Alterações</div><div class="v">42 arquivos · +1.400 −313</div></div>
+    </div>
+    <div class="duas">
+      <div>
+        <h3 class="mini">O que entrou no projeto</h3>
+        <table class="stack"><tr><th>Autenticação</th><td>JWT HS256 de 1 hora (<code>jsonwebtoken</code>, já instalado) e senha com scrypt do <code>node:crypto</code></td></tr><tr><th>Banco</th><td>Role <code>din_din_app</code> sem superusuário; tabela <code>usuarios</code>; <code>usuario_id</code> com FK</td></tr><tr><th>Configuração</th><td><code>.env</code> validado com Zod no boot (<code>backend/src/config.js</code>)</td></tr><tr><th>Rede</th><td>API e Postgres só em <code>127.0.0.1</code></td></tr><tr><th>Limites</th><td><code>express-rate-limit</code> 8 (única dependência nova) e paginação</td></tr><tr><th>Frontend</th><td>Tela de login, token no <code>Authorization</code> e volta ao login no 401</td></tr></table>
+      </div>
+      <div>
+        <h3 class="mini">Escopo das correções</h3>
+        <ul class="escopo"><li>Pedido: aplicar as correções de todos os achados críticos, altos, médios e baixos da auditoria de 23/11/2026, ou seja, F01–F14 e as observações O1–O4.</li><li>Fora: os dois informativos, F15 e F16 (a issue 7 e parte da 6). A seção 6 diz o que falta neles.</li><li>Base: <code>main</code> @ <code>ace7aec</code>, a versão auditada, mais o commit do relatório da auditoria (<code>816e56d</code>).</li><li>Na geração deste relatório, as mudanças estavam na árvore de trabalho da branch <code>fix/auditoria-seguranca</code>, ainda sem commit.</li><li>Verificado com a suíte de testes, com Postgres 16 e a API reais em contêiner descartável, e no navegador.</li></ul>
+      </div>
+    </div>
+    <h3 class="mini">Como ler este relatório</h3>
+    <p class="como-ler">Cada achado mantém o ID e a severidade da auditoria (F01–F16, O1–O4), e as referências de arquivo e linha apontam para o código novo. A seção 1 resume o antes e o depois de cada categoria, e a 2 mostra o caminho de uma requisição depois das correções e as decisões de desenho. As seções 3 e 4 explicam cada correção: o que mudou, por que desse jeito e como foi verificado. A 5 lista cada arquivo alterado, a 6 o que ficou de fora, a 7 as verificações, a 8 como aplicar na sua máquina, e a 9 confere os critérios de aceite das 8 issues.</p>
+  </section>
+<section class="pagina">
+    <h1 class="sec" data-num="1">Resumo executivo</h1>
+    <p class="lead">A auditoria apontou uma causa raiz: a API não tinha autenticação nem dono dos dados. A correção atacou essa causa primeiro e, sobre ela, fechou o resto. <strong>Agora toda rota fora de <code>/auth</code> exige um token, toda query de despesas e categorias filtra pelo dono do token, e o registro de outra pessoa responde 404.</strong> Por baixo, entraram as duas camadas que faltavam: a API conecta ao banco com uma role sem superusuário, e API e Postgres só aceitam conexões da própria máquina. A configuração é validada no boot, os erros não vazam detalhes internos, e as listagens têm paginação e rate limit. Os 18 itens do escopo foram corrigidos e verificados com testes automatizados, com Postgres real e no navegador. Ficaram de fora os dois informativos (F15 e F16), que não são exploráveis hoje.</p>
+    <div class="kpis"><div class="kpi" style="--k:#14285A"><div class="n">18</div><div class="t">itens corrigidos: 14 achados e 4 observações</div></div><div class="kpi" style="--k:#059669"><div class="n">4/4</div><div class="t">achados críticos e altos fechados</div></div><div class="kpi" style="--k:#14285A"><div class="n">198</div><div class="t">testes passando em 9 arquivos; antes, 2 falhavam</div></div><div class="kpi" style="--k:#059669"><div class="n">45</div><div class="t">verificações com Postgres, API e navegador reais</div></div><div class="kpi" style="--k:#64748B"><div class="n">2</div><div class="t">informativos fora do escopo</div></div></div>
+    <div class="graficos"><div class="chart">
+    <h3 class="chart-t">Itens corrigidos por severidade</h3>
+    <svg viewBox="0 0 160 160" class="rosca" role="img" aria-label="18 corrigidos. Crítica: 1, Alta: 3, Média: 8, Baixa: 6">
+      <circle cx="80" cy="80" r="54" fill="none" stroke="#EEF2F7" stroke-width="22"/>
+      <circle cx="80" cy="80" r="54" fill="none" stroke="#B91C1C" stroke-width="22" stroke-dasharray="17.25 339.29" stroke-dashoffset="0.00" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#EA580C" stroke-width="22" stroke-dasharray="54.95 339.29" stroke-dashoffset="-18.85" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#D97706" stroke-width="22" stroke-dasharray="149.20 339.29" stroke-dashoffset="-75.40" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#2563EB" stroke-width="22" stroke-dasharray="111.50 339.29" stroke-dashoffset="-226.19" transform="rotate(-90 80 80)"/>
+      <text x="80" y="89" text-anchor="middle" class="r-num">18</text>
+      <text x="80" y="105" text-anchor="middle" class="r-lbl">corrigidos</text>
+    </svg>
+    <ul class="legenda"><li><span class="sw" style="background:#B91C1C"></span><span>Crítica</span><span class="lg-n">1</span><span class="lg-p">5,6%</span></li><li><span class="sw" style="background:#EA580C"></span><span>Alta</span><span class="lg-n">3</span><span class="lg-p">16,7%</span></li><li><span class="sw" style="background:#D97706"></span><span>Média</span><span class="lg-n">8</span><span class="lg-p">44,4%</span></li><li><span class="sw" style="background:#2563EB"></span><span>Baixa</span><span class="lg-n">6</span><span class="lg-p">33,3%</span></li></ul>
+  </div><div class="chart">
+    <h3 class="chart-t">Achados abertos por categoria: antes e depois</h3>
+    <svg viewBox="0 0 352 228" class="barras" role="img" aria-label="Banco sem tranca: 5 antes, 0 depois; Permissão no navegador: 1 antes, 0 depois; IDOR: 6 antes, 0 depois; Chaves expostas: 2 antes, 0 depois; Inputs (XSS): 2 antes, 2 depois"><line x1="140" y1="4" x2="140" y2="210" class="grade"/><text x="140" y="222" text-anchor="middle" class="tick">0</text><line x1="171.66666666666666" y1="4" x2="171.66666666666666" y2="210" class="grade"/><text x="171.66666666666666" y="222" text-anchor="middle" class="tick">1</text><line x1="203.33333333333331" y1="4" x2="203.33333333333331" y2="210" class="grade"/><text x="203.33333333333331" y="222" text-anchor="middle" class="tick">2</text><line x1="235" y1="4" x2="235" y2="210" class="grade"/><text x="235" y="222" text-anchor="middle" class="tick">3</text><line x1="266.66666666666663" y1="4" x2="266.66666666666663" y2="210" class="grade"/><text x="266.66666666666663" y="222" text-anchor="middle" class="tick">4</text><line x1="298.33333333333337" y1="4" x2="298.33333333333337" y2="210" class="grade"/><text x="298.33333333333337" y="222" text-anchor="middle" class="tick">5</text><line x1="330" y1="4" x2="330" y2="210" class="grade"/><text x="330" y="222" text-anchor="middle" class="tick">6</text><text x="132" y="19" text-anchor="end" class="cat-r">1. Banco sem tranca</text><text x="132" y="35" text-anchor="end" class="cat-s">antes · depois</text><rect x="140.00" y="9" width="30.77" height="13" rx="1.6" fill="#B91C1C"/><rect x="171.67" y="9" width="30.77" height="13" rx="1.6" fill="#EA580C"/><rect x="203.33" y="9" width="94.10" height="13" rx="1.6" fill="#D97706"/><text x="302.33" y="19.5" class="val">5</text><text x="144.00" y="35.5" class="val val-f">0</text><text x="132" y="61" text-anchor="end" class="cat-r">2. Permissão no navegador</text><text x="132" y="77" text-anchor="end" class="cat-s">antes · depois</text><rect x="140.00" y="51" width="30.77" height="13" rx="1.6" fill="#D97706"/><text x="175.67" y="61.5" class="val">1</text><text x="144.00" y="77.5" class="val val-f">0</text><text x="132" y="103" text-anchor="end" class="cat-r">3. IDOR</text><text x="132" y="119" text-anchor="end" class="cat-s">antes · depois</text><rect x="140.00" y="93" width="62.43" height="13" rx="1.6" fill="#EA580C"/><rect x="203.33" y="93" width="94.10" height="13" rx="1.6" fill="#D97706"/><rect x="298.33" y="93" width="30.77" height="13" rx="1.6" fill="#2563EB"/><text x="334.00" y="103.5" class="val">6</text><text x="144.00" y="119.5" class="val val-f">0</text><text x="132" y="145" text-anchor="end" class="cat-r">4. Chaves expostas</text><text x="132" y="161" text-anchor="end" class="cat-s">antes · depois</text><rect x="140.00" y="135" width="30.77" height="13" rx="1.6" fill="#D97706"/><rect x="171.67" y="135" width="30.77" height="13" rx="1.6" fill="#2563EB"/><text x="207.33" y="145.5" class="val">2</text><text x="144.00" y="161.5" class="val val-f">0</text><text x="132" y="187" text-anchor="end" class="cat-r">5. Inputs (XSS)</text><text x="132" y="203" text-anchor="end" class="cat-s">antes · depois</text><rect x="140.00" y="177" width="62.43" height="13" rx="1.6" fill="#64748B"/><text x="207.33" y="187.5" class="val">2</text><rect x="140.00" y="193" width="62.43" height="13" rx="1.6" fill="#64748B"/><text x="207.33" y="203.5" class="val">2</text></svg>
+    <div class="leg-barras"><span><i style="background:#B91C1C"></i>Crítica</span><span><i style="background:#EA580C"></i>Alta</span><span><i style="background:#D97706"></i>Média</span><span><i style="background:#2563EB"></i>Baixa</span><span><i style="background:#64748B"></i>Informativa</span><span class="leg-nota">Depois: só os informativos, fora do escopo.</span></div>
+  </div></div>
+    <h3 class="mini">Antes e depois, por categoria</h3>
+    <table class="antes-depois">
+      <colgroup><col class="k1"><col><col><col class="k4"></colgroup>
+      <thead><tr><th>Categoria</th><th>Antes</th><th>Depois</th><th>Abertos</th></tr></thead>
+      <tbody><tr><td class="m-cat"><span class="catn">1</span><b>Banco sem tranca</b></td><td>Nenhum mecanismo de isolamento: sem autenticação, sem coluna de dono e sem RLS. A API conectava como superusuário, e API e banco escutavam em todas as interfaces.</td><td><strong>Autenticação JWT e dono em toda query.</strong> Toda rota fora de <code>/auth</code> exige token, e despesas e categorias têm <code>usuario_id NOT NULL</code> com FK. A API conecta com uma role sem superusuário, e API e banco só escutam em <code>127.0.0.1</code>.</td><td class="ad-n">5 → <span class="zero">0</span></td></tr><tr><td class="m-cat"><span class="catn">2</span><b>Permissão no navegador</b></td><td>As escritas em <code>/categorias</code> não tinham UI, mas respondiam a qualquer cliente.</td><td><strong>Quem decide é o servidor, não a interface.</strong> As escritas em <code>/categorias</code> exigem token e só alcançam as categorias do dono.</td><td class="ad-n">1 → <span class="zero">0</span></td></tr><tr><td class="m-cat"><span class="catn">3</span><b>IDOR</b></td><td>Os 6 handlers por ID filtravam só por <code>id</code>, e os IDs são sequenciais: ler, alterar ou apagar tudo era um laço de 1 a N.</td><td><strong>Posse dentro do WHERE.</strong> Os 6 handlers filtram por <code>id</code> e por <code>usuario_id</code>. Registro de outro usuário responde 404, como um inexistente.</td><td class="ad-n">6 → <span class="zero">0</span></td></tr><tr><td class="m-cat"><span class="catn">4</span><b>Chaves expostas</b></td><td>Nenhum segredo versionado, mas os placeholders públicos do <code>.env.example</code> eram aceitos sem validação, e o <code>.gitignore</code> não cobria <code>.env.*</code>.</td><td><strong>Configuração validada no boot.</strong> Com placeholder, variável faltando ou senha curta, a API não sobe. O <code>.gitignore</code> cobre <code>.env.*</code>.</td><td class="ad-n">2 → <span class="zero">0</span></td></tr><tr><td class="m-cat"><span class="catn">5</span><b>Inputs (XSS)</b></td><td>Nenhuma XSS explorável. Dois informativos: HTML bruto guardado sem trava de regressão no lint, e falta de cabeçalhos de segurança.</td><td><strong>Sem mudança de risco.</strong> Continua sem XSS explorável, e a API não envia mais <code>X-Powered-By</code>. O lint anti-XSS e os cabeçalhos do servidor do front ficaram fora do escopo (informativos).</td><td class="ad-n">2 → <span class="resta">2</span><small>informativos</small></td></tr></tbody>
+    </table>
+    <div class="caixa">
+      <h3>Falta na sua máquina</h3>
+      <ul class="colunas">
+        <li>Completar o <code>.env</code> com <code>APP_DB_USER</code>, <code>APP_DB_PASSWORD</code> e <code>JWT_SECRET</code>: sem eles, a API não sobe.</li>
+        <li>Recriar o contêiner do banco, que hoje ainda está publicado em <code>0.0.0.0:5434</code>.</li>
+        <li>Rodar o <code>init.sql</code> novo, que cria a tabela de usuários, a coluna de dono e a role da API.</li>
+        <li>Criar a conta na tela de login e, se havia despesas, rodar a <code>migracao-001</code> com o seu e-mail. Passo a passo na seção 8.</li>
+      </ul>
+    </div>
+  </section>
+<section>
+    <h1 class="sec sec-cont" data-num="2">Como uma requisição passa agora</h1>
+    <p>A ordem dos middlewares é a tranca. Uma requisição a <code>/despesas</code> ou <code>/categorias</code> atravessa todas as camadas abaixo, e cada uma recusa cedo o que não deveria seguir. <code>/auth</code> sai no passo 3 e não chega ao passo 4.</p>
+    <table class="fluxo">
+      <colgroup><col class="k1"><col class="k2"><col><col class="k4"></colgroup>
+      <thead><tr><th>#</th><th>Camada e arquivo</th><th>O que faz</th><th>Fecha</th></tr></thead>
+      <tbody><tr>
+      <td class="fx-n"><span class="catn">1</span></td>
+      <td><div class="fx-c">Rate limit geral</div><div class="ref"><span class="ref-dir">backend/src/</span><span class="ref-arq">app.js<b>:10</b></span></div></td>
+      <td>100 requisições por minuto por IP. Acima disso, 429.</td>
+      <td class="fx-i">O4</td>
+    </tr><tr>
+      <td class="fx-n"><span class="catn">2</span></td>
+      <td><div class="fx-c"><code>express.json()</code></div><div class="ref"><span class="ref-dir">backend/src/</span><span class="ref-arq">app.js<b>:11</b></span></div></td>
+      <td>Lê o corpo. JSON malformado vira erro e vai direto ao último passo.</td>
+      <td class="fx-i">O2</td>
+    </tr><tr>
+      <td class="fx-n"><span class="catn">3</span></td>
+      <td><div class="fx-c"><code>/auth</code> (público)</div><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">index.js<b>:10</b></span></div></td>
+      <td>Limite próprio de 10 tentativas a cada 15 minutos. Registro e login devolvem o token.</td>
+      <td class="fx-i">F01, O4</td>
+    </tr><tr>
+      <td class="fx-n"><span class="catn">4</span></td>
+      <td><div class="fx-c"><code>autenticar</code></div><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">index.js<b>:12</b></span></div></td>
+      <td>Sem <code>Authorization: Bearer</code> válido, 401. Com ele, <code>req.usuarioId</code> recebe o dono.</td>
+      <td class="fx-i">F01, F06</td>
+    </tr><tr>
+      <td class="fx-n"><span class="catn">5</span></td>
+      <td><div class="fx-c"><code>validate</code> (Zod)</div><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">despesasRoutes.js<b>:10-14</b></span></div></td>
+      <td>Valida <code>params</code>, <code>query</code> (página e limite) e <code>body</code>. O controller só lê <code>req.validacao</code>.</td>
+      <td class="fx-i">O3, O4</td>
+    </tr><tr>
+      <td class="fx-n"><span class="catn">6</span></td>
+      <td><div class="fx-c">Controller</div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:6-8</b></span></div></td>
+      <td>Toda query leva <code>usuario_id = req.usuarioId</code>. Registro de outro dono: 404.</td>
+      <td class="fx-i">F02, F03, F07–F12</td>
+    </tr><tr>
+      <td class="fx-n"><span class="catn">7</span></td>
+      <td><div class="fx-c">Pool do <code>pg</code></div><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">db.js<b>:7-13</b></span></div></td>
+      <td>Conecta como <code>din_din_app</code>, sem superusuário, em <code>127.0.0.1:5434</code>.</td>
+      <td class="fx-i">F04, F05</td>
+    </tr><tr>
+      <td class="fx-n"><span class="catn">8</span></td>
+      <td><div class="fx-c">Handler de erro</div><div class="ref"><span class="ref-dir">backend/src/middleware/</span><span class="ref-arq">erros.js<b>:5-22</b></span></div></td>
+      <td>Todo erro termina aqui: 400, 409 ou 500 genérico. O detalhe fica no log do servidor.</td>
+      <td class="fx-i">O1, O2</td>
+    </tr></tbody>
+    </table>
+    <h2 class="sub-sec">Decisões de desenho, e por quê</h2>
+    <dl class="decisoes"><div><dt>Token no cabeçalho, não em cookie</dt><dd>Com <code>Authorization: Bearer</code>, o navegador não envia a credencial sozinho, então não existe CSRF. O custo é guardar o token em JavaScript (ver a seção 6).</dd></div><div><dt>scrypt da biblioteca padrão</dt><dd>O <code>node:crypto</code> já traz o scrypt, um hash lento de propósito, como argon2 e bcrypt, sem dependência nativa para compilar. Os parâmetros (N=2^15, r=8, p=3, do OWASP) ficam gravados no próprio hash, então dá para endurecê-los depois sem invalidar as senhas existentes.</dd></div><div><dt>Posse dentro da query, 404 para o que não é seu</dt><dd><code>WHERE id = $1 AND usuario_id = $2</code> confere e age numa ida só ao banco, sem janela entre checar e alterar. Responder 404, e não 403, não confirma que o ID existe.</dd></div><div><dt>O dono vem do token, nunca do cliente</dt><dd><code>usuario_id</code> não existe nos schemas Zod, então o <code>z.object</code> descarta o campo se ele vier no body. O controller usa só <code>req.usuarioId</code>.</dd></div><div><dt>Duas roles no banco</dt><dd>O admin do contêiner é dono das tabelas e só roda o <code>init.sql</code>. A API usa <code>din_din_app</code>, que só lê e grava linhas. Sem <code>BYPASSRLS</code>, essa role também deixa o caminho aberto para RLS no futuro.</dd></div><div><dt>Migração de dados explícita</dt><dd>O <code>init.sql</code> não adivinha de quem são as despesas antigas: elas ficam sem dono, invisíveis, até a <code>migracao-001</code> passá-las para o e-mail informado, numa transação.</dd></div><div><dt>Erros num lugar só</dt><dd>O Express 5 encaminha a rejeição de funções async ao middleware de erro. Os controllers ficaram sem <code>try/catch</code>, e o handler central decide o que o cliente vê.</dd></div><div><dt>Falhar cedo na configuração</dt><dd>O <code>config.js</code> roda antes de qualquer conexão. Uma API que não sobe com o <code>.env</code> errado é mais segura do que uma que sobe e falha na primeira query.</dd></div></dl>
+  </section>
+<section class="pagina">
+    <h1 class="sec" data-num="3">Correções detalhadas por categoria</h1>
+    <p>Em cada linha, o título é o achado como a auditoria o descreveu. Abaixo dele: o que mudou, por que desse jeito, o código novo e como foi verificado. Os códigos E1–E10 remetem à seção 7.</p>
+    <div class="cat">
+      <div class="cat-h"><span class="catn grande">1</span><h2>Banco sem tranca</h2><span class="cat-sub">isolamento de dono ou inquilino</span><span class="cat-cnt"><span class="chip" style="--c:#B91C1C">Crítica</span><span class="cnt">1</span> <span class="chip" style="--c:#EA580C">Alta</span><span class="cnt">1</span> <span class="chip" style="--c:#D97706">Média</span><span class="cnt">3</span></span></div>
+      <div class="cat-box ad">
+        <div><div class="k">Antes</div>Nenhum mecanismo de isolamento: sem autenticação, sem coluna de dono e sem RLS. A API conectava como superusuário, e API e banco escutavam em todas as interfaces.</div>
+        <div><div class="k dep">Depois</div><strong>Autenticação JWT e dono em toda query.</strong> Toda rota fora de <code>/auth</code> exige token, e despesas e categorias têm <code>usuario_id NOT NULL</code> com FK. A API conecta com uma role sem superusuário, e API e banco só escutam em <code>127.0.0.1</code>.</div>
+      </div>
+      <table class="achados">
+  <colgroup><col class="k1"><col class="k2"><col></colgroup>
+  <thead><tr><th>Severidade</th><th>Arquivo:linha (código novo)</th><th>Achado da auditoria e correção</th></tr></thead>
+  <tbody><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#B91C1C">Crítica</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">index.js<b>:9-14</b></span></div><div class="ref-nota">um middleware na frente de todos os routers</div><div class="ref"><span class="ref-dir">backend/src/middleware/</span><span class="ref-arq">autenticar.js<b>:5-15</b></span></div><div class="ref"><span class="ref-dir">backend/src/auth/</span><span class="ref-arq">token.js<b>:8-17</b></span></div><div class="ref-nota">algoritmo fixo na verificação; vale 1 hora</div><div class="ref"><span class="ref-dir">backend/src/auth/</span><span class="ref-arq">senha.js<b>:10-31</b></span></div><div class="ref-nota">scrypt com N=2^15, r=8, p=3 (OWASP), sal de 16 bytes e comparação com <code>timingSafeEqual</code></div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">authController.js<b>:9-10,<wbr>37-42</b></span></div><div class="ref-nota">e-mail inexistente e senha errada: mesma resposta, mesmo tempo</div><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">init.sql<b>:28-33,<wbr>37,<wbr>48</b></span></div><div class="ref-nota">tabela <code>usuarios</code>; <code>usuario_id INTEGER NOT NULL REFERENCES usuarios (id)</code> nas duas tabelas</div><div class="ref"><span class="ref-dir">frontend/src/services/</span><span class="ref-arq">api.js<b>:84-115</b></span></div><div class="ref-nota">envia o Bearer; 401 com token descarta a sessão e volta ao login</div><div class="ref"><span class="ref-dir">frontend/src/components/</span><span class="ref-arq">Login.jsx<b>:1-111</b></span></div><div class="ref-nota">tela de entrada e de criação de conta</div></td><td class="c-desc"><div class="f-tit"><span class="fid">F01</span>API sem autenticação e dados sem dono: não existe mecanismo de isolamento</div><p>Autenticação por e-mail e senha. As rotas públicas <code>POST /auth/registro</code> e <code>POST /auth/login</code> devolvem um JWT assinado com HS256 que vale 1 hora. O middleware <code>autenticar</code>, montado em <code>routes/index.js</code> antes dos routers de despesas e categorias, exige <code>Authorization: Bearer &lt;token&gt;</code> e grava o dono em <code>req.usuarioId</code>; sem token válido, a resposta é 401. A tabela nova <code>usuarios</code> guarda o e-mail e o hash da senha, e <code>despesas</code> e <code>categorias</code> ganharam <code>usuario_id NOT NULL</code> com FK. No frontend, a tela de login cria a conta ou entra, e o token vai em toda chamada.</p><p class="f-sub"><b>Por que assim:</b> Um middleware só, na frente de todos os routers, protege também as rotas que ainda vão ser criadas: não depende de lembrar a autenticação rota a rota. O algoritmo é fixo na verificação (<code>algorithms: [&#39;HS256&#39;]</code>), então um token com <code>&quot;alg&quot;: &quot;none&quot;</code> é recusado. No login, e-mail inexistente e senha errada recebem a mesma resposta e levam o mesmo tempo: quando a conta não existe, a senha é conferida contra um hash falso, e o tempo de resposta não revela quem tem conta.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/routes/index.js:9-14</figcaption><pre>// Públicas. Limite apertado contra força bruta de senha: 10 tentativas por IP a cada 15 minutos.
+app.use(&#39;/auth&#39;, limitar({ minutos: 15, maximo: 10 }), authRoutes);
+// Daqui para baixo, toda rota exige token válido (F01): sem ele, 401.
+app.use(autenticar);
+app.use(despesasRoutes);
+app.use(categoriasRoutes);</pre></figure><figure class="snip" style="--c:#059669"><figcaption>backend/src/middleware/autenticar.js:5-15</figcaption><pre>export function autenticar(req, res, next) {
+    const [tipo, token] = (req.get(&#39;authorization&#39;) ?? &#39;&#39;).split(&#39; &#39;);
+    const usuarioId = tipo === &#39;Bearer&#39; &amp;&amp; token ? lerToken(token) : null;
+
+    if (!usuarioId) {
+        return res.status(401).set(&#39;WWW-Authenticate&#39;, &#39;Bearer&#39;).json({ message: &#39;Faça login para continuar.&#39; });
+    }
+
+    req.usuarioId = usuarioId;
+    next();
+}</pre></figure><figure class="snip" style="--c:#059669"><figcaption>backend/src/auth/token.js:8-17</figcaption><pre>export const emitirToken = (usuarioId) =&gt;
+    jwt.sign({}, config.JWT_SECRET, { algorithm: &#39;HS256&#39;, expiresIn: VALIDADE, subject: String(usuarioId) });
+…
+        const { sub } = jwt.verify(token, config.JWT_SECRET, { algorithms: [&#39;HS256&#39;] });
+        const id = Number(sub);
+        return Number.isInteger(id) &amp;&amp; id &gt; 0 ? id : null;</pre></figure><figure class="snip" style="--c:#059669"><figcaption>backend/src/controllers/authController.js:9-10,37-42</figcaption><pre>const hashSemConta = () =&gt; (hashFalso ??= gerarHash(randomUUID()));
+…
+const senhaConfere = await conferirSenha(senha, usuario?.senha_hash ?? await hashSemConta());
+…
+if (!usuario || !senhaConfere) {
+    return res.status(401).json({ message: &#39;E-mail ou senha incorretos.&#39; });
+}</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>seguranca.test.js</code>: as 10 rotas de dados sem token respondem 401 sem consultar o banco; token vencido, assinado com outro segredo, com <code>alg: none</code>, sem <code>sub</code> ou malformado também. <code>auth.test.js</code>: hash, registro, 409 e a mesma resposta 401 para e-mail inexistente e senha errada. Ponta a ponta com Postgres real (E4) e no navegador (E8).</p><div class="acao"><b>Falta na sua máquina:</b> Se o seu banco já tinha despesas, elas ficam sem dono e invisíveis até a <code>migracao-001</code> passá-las para a sua conta (seção 8, passo 6).</div></td></tr><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#EA580C">Alta</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:13-19</b></span></div><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">despesasRoutes.js<b>:10</b></span></div><div class="ref"><span class="ref-dir">backend/src/validators/</span><span class="ref-arq">paginacaoSchema.js<b>:4-7</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F02</span><code>GET /despesas</code> devolve todas as despesas, sem filtro de dono e sem limite</div><p>A listagem filtra por <code>usuario_id = $1</code> e é paginada: <code>ORDER BY id LIMIT $2 OFFSET $3</code>. <code>?pagina=</code> e <code>?limite=</code> passam pelo <code>paginacaoSchema</code>, com padrão de 50 itens e teto de 100.</p><p class="f-sub"><b>Por que assim:</b> O dono vem de <code>req.usuarioId</code>, preenchido pelo middleware a partir do token, e nunca do body ou da query: o cliente não escolhe de quem são os dados que lê. O <code>ORDER BY id</code> deixa as páginas estáveis, porque sem ele o Postgres não garante a mesma ordem entre uma página e outra.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/controllers/despesasController.js:13-19</figcaption><pre>const { rows } = await pool.query(
+    `SELECT ${COLUNAS} FROM despesas
+    WHERE usuario_id = $1
+    ORDER BY id
+    LIMIT $2 OFFSET $3`,
+    [req.usuarioId, limite, (pagina - 1) * limite]
+);</pre></figure><figure class="snip" style="--c:#059669"><figcaption>backend/src/routes/despesasRoutes.js:10</figcaption><pre>routes.get(&#39;/despesas&#39;, validate({ query: paginacaoSchema }), DespesasController.listarDespesas);</pre></figure><figure class="snip" style="--c:#059669"><figcaption>backend/src/validators/paginacaoSchema.js:4-7</figcaption><pre>export const paginacaoSchema = z.object({
+    pagina: z.coerce.number().int().min(1).max(1000000).default(1),
+    limite: z.coerce.number().int().min(1).max(100).default(50)
+});</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>despesas.routes.test.js</code>: a query recebe o dono do token e 50 por página; <code>?pagina=3&amp;limite=20</code> pula 40; <code>limite=101</code>, <code>limite=0</code>, <code>pagina=0</code> e <code>pagina=abc</code> respondem 400 sem consultar o banco. Ponta a ponta: Bruno lista e não vê nada de Ana (E4).</p></td></tr><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#D97706">Média</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">categoriasController.js<b>:13-19</b></span></div><div class="ref-nota">mesmo filtro por dono e mesma paginação</div><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">categoriasRoutes.js<b>:11</b></span></div><div class="ref-nota"><code>validate({ query: paginacaoSchema })</code></div><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">init.sql<b>:62-66</b></span></div><div class="ref"><span class="ref-dir">backend/src/middleware/</span><span class="ref-arq">erros.js<b>:11-14</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F03</span><code>GET /categorias</code> devolve todas as categorias, sem filtro de dono</div><p>Mesmo filtro e mesma paginação da listagem de despesas. O <code>UNIQUE</code> global em <code>nome</code> virou o índice único <code>(usuario_id, nome)</code>. Nome repetido para o mesmo dono responde 409, com mensagem genérica.</p><p class="f-sub"><b>Por que assim:</b> Com o <code>UNIQUE</code> global, a categoria &quot;Lazer&quot; de um usuário bloquearia o nome para todos os outros, e o erro de duplicidade revelaria que alguém já a criou. O 409 vem do handler central, pelo código <code>23505</code> do Postgres, sem expor o nome da constraint.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/db/init.sql:62-66</figcaption><pre>ALTER TABLE categorias DROP CONSTRAINT IF EXISTS categorias_nome_key;
+…
+-- Nome único por dono: a categoria de um usuário não bloqueia o nome para os outros (F03).
+CREATE UNIQUE INDEX IF NOT EXISTS categorias_usuario_nome_key ON categorias (usuario_id, nome);</pre></figure><figure class="snip" style="--c:#059669"><figcaption>backend/src/middleware/erros.js:11-14</figcaption><pre>// unique_violation do Postgres: o registro já existe (ex.: categoria com o mesmo nome).
+if (err.code === &#39;23505&#39;) {
+    return res.status(409).json({ message: &#39;Já existe um registro com esses dados.&#39; });
+}</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>categorias.routes.test.js</code>: lista do dono e 409 para nome repetido. Ponta a ponta: Bruno cria &quot;Lazer&quot; (201) mesmo com Ana tendo uma; Ana repetindo o nome recebe 409, sem nome de constraint na resposta (E4).</p></td></tr><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#D97706">Média</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">init.sql<b>:68-78</b></span></div><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">init.sql<b>:12-26</b></span></div><div class="ref-nota">lê a senha do ambiente do contêiner e recusa rodar se a role da API for o próprio admin</div><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">db.js<b>:6-13</b></span></div><div class="ref"><span class="ref-dir">backend/src/</span><span class="ref-arq">config.js<b>:23-26</b></span></div><div class="ref-nota"><code>APP_DB_USER</code> igual a <code>POSTGRES_USER</code> é recusado no boot</div></td><td class="c-desc"><div class="f-tit"><span class="fid">F04</span>A API conecta ao Postgres com o superusuário criado pela imagem</div><p>A API conecta com uma role própria, <code>APP_DB_USER</code> (padrão <code>din_din_app</code>), que o <code>init.sql</code> cria com <code>NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE</code>. Ela recebe só <code>SELECT, INSERT, UPDATE, DELETE</code> em <code>despesas</code> e <code>categorias</code>, <code>SELECT, INSERT</code> em <code>usuarios</code> e <code>USAGE</code> nas sequences. As tabelas continuam do admin do contêiner, que só aplica o <code>init.sql</code>. O <code>config.js</code> recusa subir se <code>APP_DB_USER</code> for igual a <code>POSTGRES_USER</code>.</p><p class="f-sub"><b>Por que assim:</b> Menor privilégio: se um dia houver uma injeção ou a senha da API vazar, o estrago fica em ler e alterar linhas, sem <code>DROP</code>, sem ler outros bancos e sem <code>COPY … TO PROGRAM</code>. A senha da role vem do ambiente do contêiner (<code>\getenv</code>), então não fica escrita em nenhum arquivo versionado. <code>REVOKE CREATE ON SCHEMA public FROM PUBLIC</code> impede a role de criar tabelas próprias.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/db/init.sql:68-78</figcaption><pre>-- Role da API: sem superusuário, sem BYPASSRLS, sem criar banco nem role.
+SELECT format(&#39;CREATE ROLE %I&#39;, :&#39;usuario_app&#39;)
+ WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :&#39;usuario_app&#39;) \gexec
+ALTER ROLE :&quot;usuario_app&quot; LOGIN PASSWORD :&#39;senha_app&#39; NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE;
+
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+…
+GRANT SELECT, INSERT ON usuarios TO :&quot;usuario_app&quot;;
+GRANT SELECT, INSERT, UPDATE, DELETE ON despesas, categorias TO :&quot;usuario_app&quot;;
+GRANT USAGE ON SEQUENCE usuarios_id_seq, despesas_id_seq, categorias_id_seq TO :&quot;usuario_app&quot;;</pre></figure><figure class="snip" style="--c:#059669"><figcaption>backend/src/db/db.js:6-13</figcaption><pre>// A API conecta com a role da aplicação (APP_DB_USER), sem superusuário, e não com o admin do contêiner (F04).
+const pool = new Pool({
+    …
+    user: config.APP_DB_USER,
+    password: config.APP_DB_PASSWORD,
+    …
+});</pre></figure><p class="f-sub"><b>Como foi verificado:</b> Em Postgres 16 descartável: <code>rolsuper</code>, <code>rolbypassrls</code>, <code>rolcreatedb</code> e <code>rolcreaterole</code> falsos, e as tabelas pertencem ao admin (E3). Como a role da API, <code>DROP TABLE</code>, <code>CREATE TABLE</code>, <code>ALTER TABLE</code>, <code>UPDATE usuarios</code>, ler <code>pg_authid</code> e <code>COPY … TO PROGRAM</code> falham com <code>42501</code> (E5).</p><div class="acao"><b>Falta na sua máquina:</b> Pôr <code>APP_DB_USER</code> e <code>APP_DB_PASSWORD</code> no <code>.env</code>, recriar o contêiner e rodar o <code>init.sql</code> (seção 8, passos 2 a 4).</div></td></tr><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#D97706">Média</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/</span><span class="ref-arq">server.js<b>:5-8</b></span></div><div class="ref"><span class="ref-dir">backend/</span><span class="ref-arq">docker-compose.yml<b>:8-10</b></span></div><div class="ref"><span class="ref-dir">frontend/</span><span class="ref-arq">vite.config.js<b>:38-42</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F05</span>API e Postgres escutam em todas as interfaces de rede</div><p>A API escuta só em <code>127.0.0.1</code>, e o compose publica o Postgres em <code>127.0.0.1:5434</code>. O proxy do Vite passou a apontar para <code>127.0.0.1:3000</code> e ganhou a rota <code>/auth</code>.</p><p class="f-sub"><b>Por que assim:</b> Isso tira a dependência do Firewall do Windows: mesmo com um “Permitir” no aviso, ninguém de fora alcança as portas. O proxy usa <code>127.0.0.1</code> e não <code>localhost</code> porque <code>localhost</code> pode resolver para <code>::1</code> (IPv6), onde a API não escuta mais. Quando for preciso abrir para a rede, o caminho é um proxy com TLS na frente, não trocar o host.</p><figure class="snip" style="--c:#059669"><figcaption>backend/server.js:5-8</figcaption><pre>// Só a própria máquina alcança a API (F05). Abrir para a rede só com um proxy com TLS na frente.
+const HOST = &#39;127.0.0.1&#39;
+
+app.listen(config.PORT, HOST, () =&gt; {</pre></figure><figure class="snip" style="--c:#059669"><figcaption>backend/docker-compose.yml:8-10</figcaption><pre># Só a própria máquina alcança o banco (F05). Sem o 127.0.0.1, o Docker publica em todas as interfaces.
+ports:
+  - &quot;127.0.0.1:5434:5432&quot;</pre></figure><figure class="snip" style="--c:#059669"><figcaption>frontend/vite.config.js:38-42</figcaption><pre>// 127.0.0.1, não localhost: a API só escuta em IPv4 local, e localhost pode resolver para ::1.
+proxy: {
+  &#39;/auth&#39;: {
+    target: &#39;http://127.0.0.1:3000&#39;,
+    …</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>netstat</code> mostrou a API e o Postgres de teste só em <code>127.0.0.1</code>. Num compose de teste, a porta saiu publicada em <code>127.0.0.1</code>, e mudar o <code>.env</code> recriou o contêiner. O frontend funcionou pelo proxy do Vite (E8, E9).</p><div class="acao"><b>Falta na sua máquina:</b> O seu <code>postgres-dev</code> continua publicado em <code>0.0.0.0:5434</code>, porque foi criado com o compose antigo. <code>docker compose -f backend/docker-compose.yml up -d</code> recria o contêiner na porta nova, e os dados ficam no volume (seção 8, passo 3).</div></td></tr></tbody>
+</table>
+    </div><div class="cat">
+      <div class="cat-h"><span class="catn grande">2</span><h2>Permissão definida no navegador</h2><span class="cat-sub">gate de papel só no frontend</span><span class="cat-cnt"><span class="chip" style="--c:#D97706">Média</span><span class="cnt">1</span></span></div>
+      <div class="cat-box ad">
+        <div><div class="k">Antes</div>As escritas em <code>/categorias</code> não tinham UI, mas respondiam a qualquer cliente.</div>
+        <div><div class="k dep">Depois</div><strong>Quem decide é o servidor, não a interface.</strong> As escritas em <code>/categorias</code> exigem token e só alcançam as categorias do dono.</div>
+      </div>
+      <table class="achados">
+  <colgroup><col class="k1"><col class="k2"><col></colgroup>
+  <thead><tr><th>Severidade</th><th>Arquivo:linha (código novo)</th><th>Achado da auditoria e correção</th></tr></thead>
+  <tbody><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#D97706">Média</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">index.js<b>:11-14</b></span></div><div class="ref-nota">o mesmo <code>autenticar</code> cobre as rotas sem UI</div><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">categoriasRoutes.js<b>:13-15</b></span></div><div class="ref-nota"><code>POST</code>, <code>PUT</code> e <code>DELETE</code>: token obrigatório e filtro pelo dono</div></td><td class="c-desc"><div class="f-tit"><span class="fid">F06</span>Escritas em <code>/categorias</code>: sem UI no frontend, abertas no servidor</div><p><code>POST</code>, <code>PUT</code> e <code>DELETE /categorias</code> exigem token, como todas as rotas fora de <code>/auth</code>, e só alcançam as categorias do dono do token.</p><p class="f-sub"><b>Por que assim:</b> Esconder o botão no frontend não protege nada: quem decide é o servidor. Com o middleware na frente dos routers, uma rota sem UI tem a mesma proteção de uma com UI.</p><p class="f-sub"><b>Como foi verificado:</b> <code>seguranca.test.js</code>: <code>POST</code>, <code>PUT</code> e <code>DELETE /categorias</code> sem token respondem 401. Ponta a ponta: Bruno recebe 404 ao alterar ou apagar uma categoria de Ana (E4).</p></td></tr></tbody>
+</table>
+    </div><div class="cat">
+      <div class="cat-h"><span class="catn grande">3</span><h2>IDOR</h2><span class="cat-sub">objeto por ID sem checagem de posse</span><span class="cat-cnt"><span class="chip" style="--c:#EA580C">Alta</span><span class="cnt">2</span> <span class="chip" style="--c:#D97706">Média</span><span class="cnt">3</span> <span class="chip" style="--c:#2563EB">Baixa</span><span class="cnt">1</span></span></div>
+      <div class="cat-box ad">
+        <div><div class="k">Antes</div>Os 6 handlers por ID filtravam só por <code>id</code>, e os IDs são sequenciais: ler, alterar ou apagar tudo era um laço de 1 a N.</div>
+        <div><div class="k dep">Depois</div><strong>Posse dentro do WHERE.</strong> Os 6 handlers filtram por <code>id</code> e por <code>usuario_id</code>. Registro de outro usuário responde 404, como um inexistente.</div>
+      </div>
+      <table class="achados">
+  <colgroup><col class="k1"><col class="k2"><col></colgroup>
+  <thead><tr><th>Severidade</th><th>Arquivo:linha (código novo)</th><th>Achado da auditoria e correção</th></tr></thead>
+  <tbody><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#EA580C">Alta</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:53-64</b></span></div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:66-68</b></span></div><div class="ref-nota">nenhuma linha: 404, igual a inexistente</div></td><td class="c-desc"><div class="f-tit"><span class="fid">F07</span>IDOR: <code>PUT /despesas/:id</code> altera qualquer despesa</div><p><code>UPDATE … WHERE id = $7 AND usuario_id = $8</code>. A despesa de outro usuário não casa com o WHERE, <code>rows</code> volta vazio e a resposta é 404, a mesma de uma despesa inexistente.</p><p class="f-sub"><b>Por que assim:</b> A posse é conferida dentro da própria query, não num <code>SELECT</code> anterior: não há janela entre conferir e alterar, e é uma ida só ao banco. Responder 404, e não 403, não revela que o ID existe.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/controllers/despesasController.js:53-64</figcaption><pre>const { rows } = await pool.query(
+    `UPDATE despesas
+        SET descricao=$1,
+        …
+    WHERE id = $7 AND usuario_id = $8
+    RETURNING ${COLUNAS}`,
+    [descricao, valor, categoria, metodoPagamento, parcelas, status, id, req.usuarioId]
+);</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>despesas.routes.test.js</code>: o id e o dono vão para o banco, e id de outro dono responde 404. Ponta a ponta: o PUT de Bruno numa despesa de Ana responde 404, e a despesa continua intacta (E4).</p></td></tr><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#EA580C">Alta</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:75-82</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F08</span>IDOR: <code>DELETE /despesas/:id</code> apaga qualquer despesa</div><p><code>DELETE FROM despesas WHERE id = $1 AND usuario_id = $2</code>. Com <code>rowCount</code> 0, a resposta é 404.</p><p class="f-sub"><b>Por que assim:</b> Mesmo princípio do F07. O DELETE é físico, então esta era a falha de maior estrago: um laço apagava o histórico de todos.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/controllers/despesasController.js:75-82</figcaption><pre>const { rowCount } = await pool.query(
+    `DELETE FROM despesas WHERE id = $1 AND usuario_id = $2`,
+    [id, req.usuarioId]
+)
+
+if (rowCount === 0){
+    return res.status(404).json({ message: &#39;Despesa nao encontrada.&#39; })
+}</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>despesas.routes.test.js</code>: id de outro dono responde 404. Ponta a ponta: o DELETE de Bruno numa despesa de Ana responde 404, e ela continua no banco (E4).</p></td></tr><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#D97706">Média</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:38-41</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F09</span>IDOR: <code>GET /despesas/:id</code> lê qualquer despesa</div><p><code>SELECT … WHERE id = $1 AND usuario_id = $2</code>. A despesa de outro usuário responde 404, então a diferença entre 200 e 404 não revela mais quais IDs existem.</p><p class="f-sub"><b>Por que assim:</b> Mesmo princípio do F07, em leitura.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/controllers/despesasController.js:38-41</figcaption><pre>const { rows } = await pool.query(
+    `SELECT ${COLUNAS} FROM despesas WHERE id = $1 AND usuario_id = $2`,
+    [req.validacao.params.id, req.usuarioId]
+);</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>despesas.routes.test.js</code>: id de outro dono responde 404. Ponta a ponta: Bruno recebe 404 numa despesa de Ana (E4).</p></td></tr><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#D97706">Média</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">categoriasController.js<b>:50-54</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F10</span>IDOR: <code>PUT /categorias/:id</code> altera qualquer categoria</div><p><code>UPDATE categorias … WHERE id = $8 AND usuario_id = $9</code>. A categoria de outro usuário responde 404.</p><p class="f-sub"><b>Por que assim:</b> Mesmo princípio do F07.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/controllers/categoriasController.js:50-54</figcaption><pre>const { rows } = await pool.query(
+    `UPDATE categorias
+    SET nome = $1, ativo = $2, descricao = $3, cor = $4, limite_mensal = $5, tipo_custo = $6, icone = $7
+    WHERE id = $8 AND usuario_id = $9
+    RETURNING ${COLUNAS}`,[nome, ativo, descricao, cor, limiteMensal, tipoCusto, icone, id, req.usuarioId]);</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>categorias.routes.test.js</code>: o id e o dono vão para o banco, e id de outro dono responde 404. Ponta a ponta: o PUT de Bruno numa categoria de Ana responde 404, e ela fica intacta (E4).</p></td></tr><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#D97706">Média</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">categoriasController.js<b>:65</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F11</span>IDOR: <code>DELETE /categorias/:id</code> apaga qualquer categoria</div><p><code>DELETE FROM categorias WHERE id = $1 AND usuario_id = $2</code>. Com <code>rowCount</code> 0, a resposta é 404.</p><p class="f-sub"><b>Por que assim:</b> Mesmo princípio do F07.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/controllers/categoriasController.js:65</figcaption><pre>const { rowCount } = await pool.query(`DELETE FROM categorias WHERE id = $1 AND usuario_id = $2`, [id, req.usuarioId])</pre></figure><p class="f-sub"><b>Como foi verificado:</b> Ponta a ponta: o DELETE de Bruno numa categoria de Ana responde 404, e ela continua no banco (E4).</p></td></tr><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#2563EB">Baixa</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">categoriasController.js<b>:25-28</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F12</span>IDOR: <code>GET /categorias/:id</code> lê qualquer categoria</div><p><code>SELECT … WHERE id = $1 AND usuario_id = $2</code>. A categoria de outro usuário responde 404.</p><p class="f-sub"><b>Por que assim:</b> Mesmo princípio do F07, em leitura.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/controllers/categoriasController.js:25-28</figcaption><pre>const { rows } = await pool.query(
+    `SELECT ${COLUNAS} FROM categorias WHERE id = $1 AND usuario_id = $2`,
+    [req.validacao.params.id, req.usuarioId]
+);</pre></figure><p class="f-sub"><b>Como foi verificado:</b> Ponta a ponta: Bruno recebe 404 numa categoria de Ana (E4).</p></td></tr></tbody>
+</table>
+    </div><div class="cat">
+      <div class="cat-h"><span class="catn grande">4</span><h2>Chaves expostas</h2><span class="cat-sub">segredos e credenciais no código</span><span class="cat-cnt"><span class="chip" style="--c:#D97706">Média</span><span class="cnt">1</span> <span class="chip" style="--c:#2563EB">Baixa</span><span class="cnt">1</span></span></div>
+      <div class="cat-box ad">
+        <div><div class="k">Antes</div>Nenhum segredo versionado, mas os placeholders públicos do <code>.env.example</code> eram aceitos sem validação, e o <code>.gitignore</code> não cobria <code>.env.*</code>.</div>
+        <div><div class="k dep">Depois</div><strong>Configuração validada no boot.</strong> Com placeholder, variável faltando ou senha curta, a API não sobe. O <code>.gitignore</code> cobre <code>.env.*</code>.</div>
+      </div>
+      <table class="achados">
+  <colgroup><col class="k1"><col class="k2"><col></colgroup>
+  <thead><tr><th>Severidade</th><th>Arquivo:linha (código novo)</th><th>Achado da auditoria e correção</th></tr></thead>
+  <tbody><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#D97706">Média</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/</span><span class="ref-arq">config.js<b>:8-21</b></span></div><div class="ref"><span class="ref-dir">backend/src/</span><span class="ref-arq">config.js<b>:29-37</b></span></div><div class="ref-nota">a mensagem traz o nome da variável, nunca o valor</div><div class="ref"><span class="ref-dir">backend/</span><span class="ref-arq">server.js<b>:1-3</b></span></div><div class="ref-nota">com o <code>.env</code> inválido, a API nem sobe</div><div class="ref"><span class="ref-arq">.env.example<b>:9-22</b></span></div><div class="ref-nota">variáveis novas, placeholders em <code>_aqui</code>, sem <code>DATABASE_URL</code></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F13</span>Credenciais placeholder públicas aceitas sem validação no boot</div><p>Novo <code>backend/src/config.js</code>: um schema Zod valida o <code>process.env</code> assim que a API sobe. Ele recusa variável faltando, valor de exemplo (tudo que termina em <code>_aqui</code>), senha com menos de 12 caracteres, <code>JWT_SECRET</code> com menos de 32 e <code>APP_DB_USER</code> igual ao admin. A mensagem lista o nome de cada variável com problema, nunca o valor. <code>db.js</code>, <code>token.js</code> e <code>server.js</code> leem do <code>config</code>, não de <code>process.env</code>. O <code>DATABASE_URL</code>, duplicado e não usado, saiu do <code>.env.example</code>.</p><p class="f-sub"><b>Por que assim:</b> Falhar no boot é melhor que falhar na primeira query, ou subir com uma credencial publicada no repositório. Todos os placeholders do <code>.env.example</code> terminam em <code>_aqui</code> de propósito, para que uma regra só pegue todos. O <code>.env.example</code> traz o comando que gera um segredo aleatório.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/config.js:8-21</figcaption><pre>const semExemplo = (schema) =&gt; schema.refine((v) =&gt; !v.endsWith(&#39;_aqui&#39;), &#39;ainda é o valor de exemplo do .env.example&#39;);
+…
+POSTGRES_PASSWORD: semExemplo(z.string().min(12)),
+…
+APP_DB_PASSWORD: semExemplo(z.string().min(12)),
+…
+JWT_SECRET: semExemplo(z.string().min(32)),</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>config.test.js</code>: 9 casos de recusa (o exemplo copiado sem editar, senha do admin ausente, curta ou de exemplo, senha da API ausente ou curta, <code>JWT_SECRET</code> ausente ou curto, API conectando como admin) e a mensagem sem o valor. Boot com o <code>.env.example</code> sem editar: sai com código 1 e lista as variáveis (E7).</p></td></tr><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#2563EB">Baixa</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-arq">.gitignore<b>:3-5</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F14</span><code>.gitignore</code> da raiz não cobre variações de <code>.env</code></div><p>O <code>.gitignore</code> da raiz ganhou <code>.env.*</code> e a exceção <code>!.env.example</code>, a mesma regra do <code>frontend/.gitignore</code>.</p><p class="f-sub"><b>Por que assim:</b> Um <code>.env.local</code> ou <code>.env.production</code> criado na raiz não entra mais num <code>git add .</code>, e o arquivo de exemplo continua versionado.</p><figure class="snip" style="--c:#059669"><figcaption>.gitignore:3-5</figcaption><pre>.env
+.env.*
+!.env.example</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>git check-ignore -v .env.local .env.production .env.test</code> lista os três pela regra <code>.env.*</code>, e o <code>.env.example</code> não é ignorado.</p></td></tr></tbody>
+</table>
+    </div><div class="cat curta">
+      <div class="cat-h"><span class="catn grande">5</span><h2>Inputs sem tratamento (XSS)</h2><span class="cat-sub">injeção de HTML ou JS no navegador</span><span class="cat-cnt"></span></div>
+      <div class="cat-box ad">
+        <div><div class="k">Antes</div>Nenhuma XSS explorável. Dois informativos: HTML bruto guardado sem trava de regressão no lint, e falta de cabeçalhos de segurança.</div>
+        <div><div class="k dep">Depois</div><strong>Sem mudança de risco.</strong> Continua sem XSS explorável, e a API não envia mais <code>X-Powered-By</code>. O lint anti-XSS e os cabeçalhos do servidor do front ficaram fora do escopo (informativos).</div>
+      </div>
+      <p class="mini-nota">Os 2 achados desta categoria são informativos e ficaram fora do escopo: veja a seção 6.</p>
+    </div>
+    <h1 class="sec sec-cont" data-num="4">Observações fora das cinco categorias</h1>
+    <p>As quatro observações da auditoria, todas de severidade baixa, também foram corrigidas.</p>
+    <table class="achados">
+  <colgroup><col class="k1"><col class="k2"><col></colgroup>
+  <thead><tr><th>Severidade</th><th>Arquivo:linha (código novo)</th><th>Achado da auditoria e correção</th></tr></thead>
+  <tbody><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#2563EB">Baixa</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/middleware/</span><span class="ref-arq">erros.js<b>:5-22</b></span></div><div class="ref"><span class="ref-dir">backend/src/</span><span class="ref-arq">app.js<b>:15</b></span></div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:6-8</b></span></div><div class="ref-nota">controllers sem <code>try/catch</code></div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">categoriasController.js<b>:6-8</b></span></div><div class="ref-nota">idem</div></td><td class="c-desc"><div class="f-tit"><span class="fid">O1</span>Respostas 500 devolvem <code>error.message</code> do banco</div><p>Os 10 <code>try/catch</code> dos controllers saíram. O Express 5 encaminha o erro de uma função async ao handler central <code>tratarErros</code>, o último middleware do <code>app.js</code>. Ele loga o erro no servidor e responde <code>500 { message: &#39;Erro interno do servidor&#39; }</code>.</p><p class="f-sub"><b>Por que assim:</b> Um lugar só decide o que o cliente vê, então não há como esquecer um <code>error.message</code> num controller novo. O detalhe continua no log do servidor, onde serve para depurar.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/middleware/erros.js:5-22</figcaption><pre>export function tratarErros(err, req, res, next) {
+    if (res.headersSent) return next(err);
+    …
+    console.error(err);
+    return res.status(500).json({ message: &#39;Erro interno do servidor&#39; });
+}</pre></figure><figure class="snip" style="--c:#059669"><figcaption>backend/src/app.js:15</figcaption><pre>app.use(tratarErros) // O1 e O2: sempre por último</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>seguranca.test.js</code> e <code>categorias.routes.test.js</code>: erro do banco responde 500 genérico, sem a mensagem do banco, e o <code>console.error</code> recebe o erro.</p></td></tr><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#2563EB">Baixa</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/middleware/</span><span class="ref-arq">erros.js<b>:8-18</b></span></div><div class="ref"><span class="ref-dir">backend/src/</span><span class="ref-arq">app.js<b>:9</b></span></div><div class="ref-nota">parte do F16</div></td><td class="c-desc"><div class="f-tit"><span class="fid">O2</span>JSON malformado devolve página HTML com stack trace</div><p>O handler central responde 400 <code>{ message: &#39;JSON inválido.&#39; }</code> para <code>entity.parse.failed</code> e repassa o status dos demais erros 4xx do body-parser com uma mensagem genérica. A página HTML padrão do Express não é mais alcançada.</p><p class="f-sub"><b>Por que assim:</b> Com o handler respondendo antes, a stack e os caminhos do disco não saem mais, com ou sem <code>NODE_ENV=production</code>.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/middleware/erros.js:8-18</figcaption><pre>if (err.type === &#39;entity.parse.failed&#39;) {
+    return res.status(400).json({ message: &#39;JSON inválido.&#39; });
+}
+…
+// Demais erros do body-parser (corpo grande demais, charset inválido) já trazem um status 4xx.
+if (err.status &gt;= 400 &amp;&amp; err.status &lt; 500) {
+    return res.status(err.status).json({ message: &#39;Requisição inválida.&#39; });
+}</pre></figure><figure class="snip" style="--c:#059669"><figcaption>backend/src/app.js:9</figcaption><pre>app.disable(&#39;x-powered-by&#39;); // não anuncia o framework em toda resposta</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>seguranca.test.js</code>: JSON malformado responde 400 em JSON, sem stack. Ponta a ponta: idem, e sem <code>X-Powered-By</code> (E4).</p></td></tr><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#2563EB">Baixa</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/validators/</span><span class="ref-arq">categoriasValidator.js<b>:6-27</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">O3</span>Schema de categorias sem limites de conteúdo e de faixa</div><p><code>nome</code> ficou com <code>trim().min(1).max(50)</code> e <code>descricao</code> com <code>trim().max(200)</code>. <code>limiteMensal</code> não aceita negativo, vai até 99.999.999,99 e tem no máximo 2 casas. <code>icone</code> só aceita o formato dos nomes do lucide (<code>^[a-z0-9-]{1,30}$</code>).</p><p class="f-sub"><b>Por que assim:</b> O teto de <code>limiteMensal</code> é o do <code>NUMERIC(10, 2)</code> da coluna: acima dele o Postgres estourava com 500, e agora é um 400 antes de chegar ao banco. O formato do ícone impede texto livre, inclusive HTML, num campo que só precisa de um nome.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/validators/categoriasValidator.js:6-27</figcaption><pre>nome: z.string()
+       .trim()
+       .min(1)
+       .max(50),
+…
+descricao: z.string()
+            .trim()
+            .max(200),
+…
+limiteMensal: z.number()
+               .nonnegative()
+               .max(99999999.99)
+               .multipleOf(0.01),
+…
+icone: z.string()
+        .regex(/^[a-z0-9-]{1,30}$/)</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>categorias.validator.test.js</code>: recusa nome só com espaços, vazio ou com 51 caracteres, descrição de 10 kB, limite negativo, <code>1e12</code> ou com 3 casas, e ícone com HTML ou com maiúsculas; aceita limites de 0, 0,01, 1.200,5 e 99.999.999,99.</p></td></tr><tr><td class="c-sev"><div class="selos"><span class="chip" style="--c:#2563EB">Baixa</span><div class="est"><span class="chip" style="--c:#059669">Corrigido</span></div></div></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/middleware/</span><span class="ref-arq">limites.js<b>:6-12</b></span></div><div class="ref"><span class="ref-dir">backend/src/</span><span class="ref-arq">app.js<b>:7-10</b></span></div><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">index.js<b>:10</b></span></div><div class="ref-nota">10 tentativas a cada 15 minutos em <code>/auth</code></div><div class="ref"><span class="ref-dir">frontend/src/services/</span><span class="ref-arq">api.js<b>:137-146</b></span></div><div class="ref-nota">o front busca as páginas até vir uma incompleta</div></td><td class="c-desc"><div class="f-tit"><span class="fid">O4</span>Listagens sem paginação e sem rate limit</div><p>As duas listagens são paginadas, com teto de 100 por página. O <code>express-rate-limit</code> limita a API toda a 100 requisições por minuto por IP e <code>/auth</code> a 10 a cada 15 minutos; acima disso, a resposta é 429 em JSON. O frontend busca as páginas em sequência até receber uma incompleta.</p><p class="f-sub"><b>Por que assim:</b> O limite apertado em <code>/auth</code> freia a força bruta de senha, que o scrypt já torna cara de propósito. O <code>app.js</code> virou a fábrica <code>criarApp()</code>, para que cada teste tenha os contadores zerados.</p><figure class="snip" style="--c:#059669"><figcaption>backend/src/middleware/limites.js:6-12</figcaption><pre>export const limitar = ({ minutos, maximo }) =&gt; rateLimit({
+    windowMs: minutos * 60 * 1000,
+    limit: maximo,
+    standardHeaders: &#39;draft-8&#39;,
+    legacyHeaders: false,
+    message: { message: &#39;Muitas requisições. Tente de novo em alguns minutos.&#39; }
+});</pre></figure><figure class="snip" style="--c:#059669"><figcaption>backend/src/app.js:7-10</figcaption><pre>export function criarApp() {
+    const app = express();
+    app.disable(&#39;x-powered-by&#39;); // não anuncia o framework em toda resposta
+    app.use(limitar({ minutos: 1, maximo: 100 })); // O4: teto geral por IP</pre></figure><p class="f-sub"><b>Como foi verificado:</b> <code>seguranca.test.js</code>: a 11ª tentativa em <code>/auth</code> e a 101ª requisição numa rota comum respondem 429. Ponta a ponta: 429 na 11ª requisição a <code>/auth</code> (E4).</p></td></tr></tbody>
+</table>
+  </section>
+<section class="pagina">
+    <h1 class="sec" data-num="5">Alterações por arquivo</h1>
+    <p>42 arquivos fora desta pasta: 16 novos e 26 alterados, com 1.400 linhas adicionadas e 313 removidas (<code>git diff --numstat</code>).</p>
+    <table class="indice arquivos">
+      <colgroup><col class="k1"><col class="k2"><col class="k3"><col></colgroup>
+      <thead><tr><th>Arquivo</th><th>Linhas</th><th>Itens</th><th>O que mudou</th></tr></thead>
+      <tbody><tr class="grupo"><td colspan="4">Backend</td></tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/</span><span class="ref-arq">server.js</span></div></td>
+      <td class="ar-n"><span class="mais">+6</span> <span class="menos">−4</span></td>
+      <td class="id">F05, F13</td>
+      <td>Escuta só em <code>127.0.0.1</code> e lê a porta do <code>config</code>.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/</span><span class="ref-arq">app.js</span></div></td>
+      <td class="ar-n"><span class="mais">+14</span> <span class="menos">−4</span></td>
+      <td class="id">O1, O2, O4, F16</td>
+      <td>Fábrica <code>criarApp()</code>, rate limit geral, <code>x-powered-by</code> desligado e handler de erro no fim.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/</span><span class="ref-arq">config.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+37</span> <span class="menos">−0</span></td>
+      <td class="id">F13, F04</td>
+      <td>Valida o <code>.env</code> no boot com Zod.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/auth/</span><span class="ref-arq">senha.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+32</span> <span class="menos">−0</span></td>
+      <td class="id">F01</td>
+      <td>Hash e conferência de senha com scrypt.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/auth/</span><span class="ref-arq">token.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+21</span> <span class="menos">−0</span></td>
+      <td class="id">F01</td>
+      <td>Emite e confere o JWT (HS256, 1 hora).</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/middleware/</span><span class="ref-arq">autenticar.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+15</span> <span class="menos">−0</span></td>
+      <td class="id">F01, F06</td>
+      <td>Exige o Bearer e grava <code>req.usuarioId</code>.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/middleware/</span><span class="ref-arq">erros.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+22</span> <span class="menos">−0</span></td>
+      <td class="id">O1, O2, F03</td>
+      <td>Handler central: 400, 409, 4xx e 500 genéricos.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/middleware/</span><span class="ref-arq">limites.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+12</span> <span class="menos">−0</span></td>
+      <td class="id">O4</td>
+      <td>Rate limit por IP.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">authController.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+48</span> <span class="menos">−0</span></td>
+      <td class="id">F01</td>
+      <td>Registro e login.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js</span></div></td>
+      <td class="ar-n"><span class="mais">+60</span> <span class="menos">−77</span></td>
+      <td class="id">F02, F07–F09, O1, O4</td>
+      <td>Dono em toda query, paginação e sem <code>try/catch</code>.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">categoriasController.js</span></div></td>
+      <td class="ar-n"><span class="mais">+46</span> <span class="menos">−55</span></td>
+      <td class="id">F03, F06, F10–F12, O1, O4</td>
+      <td>Dono em toda query, paginação e sem <code>try/catch</code>.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">index.js</span></div></td>
+      <td class="ar-n"><span class="mais">+8</span> <span class="menos">−1</span></td>
+      <td class="id">F01, F06, O4</td>
+      <td><code>/auth</code> com limite, depois <code>autenticar</code>, depois os routers.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">authRoutes.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+12</span> <span class="menos">−0</span></td>
+      <td class="id">F01</td>
+      <td><code>POST /auth/registro</code> e <code>POST /auth/login</code>.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">despesasRoutes.js</span></div></td>
+      <td class="ar-n"><span class="mais">+2</span> <span class="menos">−1</span></td>
+      <td class="id">O4</td>
+      <td>Valida <code>?pagina=</code> e <code>?limite=</code>.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">categoriasRoutes.js</span></div></td>
+      <td class="ar-n"><span class="mais">+2</span> <span class="menos">−1</span></td>
+      <td class="id">O4</td>
+      <td>Valida <code>?pagina=</code> e <code>?limite=</code>.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/validators/</span><span class="ref-arq">authValidator.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+16</span> <span class="menos">−0</span></td>
+      <td class="id">F01</td>
+      <td>E-mail normalizado e senha de 8 a 128 caracteres.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/validators/</span><span class="ref-arq">paginacaoSchema.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+7</span> <span class="menos">−0</span></td>
+      <td class="id">O4</td>
+      <td>Página e limite, com teto de 100.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/validators/</span><span class="ref-arq">categoriasValidator.js</span></div></td>
+      <td class="ar-n"><span class="mais">+13</span> <span class="menos">−4</span></td>
+      <td class="id">O3</td>
+      <td>Limites de conteúdo e de faixa.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">db.js</span></div></td>
+      <td class="ar-n"><span class="mais">+8</span> <span class="menos">−6</span></td>
+      <td class="id">F04, F13</td>
+      <td>Conecta com a role da API, a partir do <code>config</code>.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">init.sql</span></div></td>
+      <td class="ar-n"><span class="mais">+60</span> <span class="menos">−2</span></td>
+      <td class="id">F01, F03, F04</td>
+      <td>Tabela <code>usuarios</code>, <code>usuario_id</code>, nome único por dono, role da API e permissões.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">migracao-001-dono-dos-dados.sql</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+26</span> <span class="menos">−0</span></td>
+      <td class="id">F01</td>
+      <td>Passa os dados antigos para uma conta e torna <code>usuario_id</code> obrigatório.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/</span><span class="ref-arq">docker-compose.yml</span></div></td>
+      <td class="ar-n"><span class="mais">+2</span> <span class="menos">−1</span></td>
+      <td class="id">F05</td>
+      <td>Postgres publicado só em <code>127.0.0.1:5434</code>.</td>
+    </tr><tr class="grupo"><td colspan="4">Testes</td></tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/tests/</span><span class="ref-arq">seguranca.test.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+131</span> <span class="menos">−0</span></td>
+      <td class="id">F01, O1, O2, O4, F16</td>
+      <td>401 sem token, tokens inválidos, erros genéricos, <code>X-Powered-By</code> e 429.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/tests/</span><span class="ref-arq">auth.test.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+109</span> <span class="menos">−0</span></td>
+      <td class="id">F01</td>
+      <td>Hash, registro, login, 409 e o mesmo 401 nos dois casos.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/tests/</span><span class="ref-arq">config.test.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+43</span> <span class="menos">−0</span></td>
+      <td class="id">F13</td>
+      <td>Boot recusado em 9 casos; mensagem sem o valor.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/tests/</span><span class="ref-arq">despesas.routes.test.js</span></div></td>
+      <td class="ar-n"><span class="mais">+70</span> <span class="menos">−14</span></td>
+      <td class="id">F02, F07–F09, O4</td>
+      <td>Dono do token, 404 de outro dono, <code>usuario_id</code> do body ignorado e paginação.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/tests/</span><span class="ref-arq">categorias.routes.test.js</span></div></td>
+      <td class="ar-n"><span class="mais">+61</span> <span class="menos">−31</span></td>
+      <td class="id">F03, F10–F12, O1</td>
+      <td>O mesmo para categorias, mais 409 e 500 genérico. <code>tipoCusto</code> em maiúsculas corrige 2 testes que já falhavam.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/tests/</span><span class="ref-arq">categorias.controller.test.js</span></div></td>
+      <td class="ar-n"><span class="mais">+52</span> <span class="menos">−55</span></td>
+      <td class="id">F03, F10–F12, O1</td>
+      <td>Controller sem <code>try/catch</code>, com o dono nas queries.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">backend/tests/</span><span class="ref-arq">categorias.validator.test.js</span></div></td>
+      <td class="ar-n"><span class="mais">+37</span> <span class="menos">−0</span></td>
+      <td class="id">O3</td>
+      <td>Casos de limite do schema de categorias.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-arq">vitest.config.js</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+15</span> <span class="menos">−0</span></td>
+      <td class="id">F13</td>
+      <td>Variáveis falsas para a suíte, porque o <code>config</code> valida também nos testes.</td>
+    </tr><tr class="grupo"><td colspan="4">Frontend</td></tr><tr>
+      <td><div class="ref"><span class="ref-dir">frontend/src/services/</span><span class="ref-arq">api.js</span></div></td>
+      <td class="ar-n"><span class="mais">+86</span> <span class="menos">−10</span></td>
+      <td class="id">F01, O4</td>
+      <td>Token na memória e no <code>localStorage</code>, Bearer em toda chamada, volta ao login no 401, busca paginada, <code>entrar</code> e <code>criarConta</code>.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">frontend/src/components/</span><span class="ref-arq">Login.jsx</span></div><span class="novo">novo</span></td>
+      <td class="ar-n"><span class="mais">+111</span> <span class="menos">−0</span></td>
+      <td class="id">F01</td>
+      <td>Tela de entrada e de criação de conta.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">frontend/src/</span><span class="ref-arq">App.jsx</span></div></td>
+      <td class="ar-n"><span class="mais">+32</span> <span class="menos">−2</span></td>
+      <td class="id">F01</td>
+      <td><code>App</code> alterna entre <code>Login</code> e <code>Painel</code>; ao sair, os dados da conta saem da tela.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">frontend/src/components/</span><span class="ref-arq">Header.jsx</span></div></td>
+      <td class="ar-n"><span class="mais">+28</span> <span class="menos">−16</span></td>
+      <td class="id">F01</td>
+      <td>Botão Sair; as ações do painel só aparecem com sessão.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">frontend/src/</span><span class="ref-arq">App.css</span></div></td>
+      <td class="ar-n"><span class="mais">+37</span> <span class="menos">−0</span></td>
+      <td class="id">F01</td>
+      <td>Estilos da tela de login, com as classes do design system.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-dir">frontend/</span><span class="ref-arq">vite.config.js</span></div></td>
+      <td class="ar-n"><span class="mais">+7</span> <span class="menos">−2</span></td>
+      <td class="id">F05, F01</td>
+      <td>Proxy de <code>/auth</code> e alvos em <code>127.0.0.1</code>.</td>
+    </tr><tr class="grupo"><td colspan="4">Configuração e docs</td></tr><tr>
+      <td><div class="ref"><span class="ref-arq">.env.example</span></div></td>
+      <td class="ar-n"><span class="mais">+13</span> <span class="menos">−5</span></td>
+      <td class="id">F13, F04, F01</td>
+      <td>Variáveis novas, placeholders em <code>_aqui</code> e sem <code>DATABASE_URL</code>.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-arq">.gitignore</span></div></td>
+      <td class="ar-n"><span class="mais">+3</span> <span class="menos">−1</span></td>
+      <td class="id">F14</td>
+      <td><code>.env.*</code> e <code>!.env.example</code>.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-arq">package.json</span></div></td>
+      <td class="ar-n"><span class="mais">+1</span> <span class="menos">−0</span></td>
+      <td class="id">O4</td>
+      <td><code>express-rate-limit</code> 8.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-arq">package-lock.json</span></div></td>
+      <td class="ar-n"><span class="mais">+29</span> <span class="menos">−0</span></td>
+      <td class="id">O4</td>
+      <td>Lock do <code>express-rate-limit</code>.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-arq">README.md</span></div></td>
+      <td class="ar-n"><span class="mais">+52</span> <span class="menos">−11</span></td>
+      <td class="id"></td>
+      <td>Setup novo, autenticação, paginação, limites e variáveis.</td>
+    </tr><tr>
+      <td><div class="ref"><span class="ref-arq">CLAUDE.md</span></div></td>
+      <td class="ar-n"><span class="mais">+14</span> <span class="menos">−10</span></td>
+      <td class="id"></td>
+      <td>Layout, setup, convenções e estado atual.</td>
+    </tr></tbody>
+    </table>
+    <p class="mini-nota">Nesta pasta, <code>gerar-relatorio.mjs</code> passou a exportar os helpers, o CSS e a impressão, e o HTML da auditoria sai idêntico, byte a byte. Entraram <code>correcoes.mjs</code> (os dados deste relatório), <code>gerar-relatorio-correcoes.mjs</code> e este relatório em HTML e PDF.</p>
+  </section>
+<section>
+    <h1 class="sec sec-cont" data-num="6">Fora do escopo e limitações conhecidas</h1>
+    <h2 class="sub-sec">Os informativos</h2>
+    <table class="achados fora">
+      <colgroup><col class="k1"><col></colgroup>
+      <thead><tr><th>Severidade</th><th>Achado e situação</th></tr></thead>
+      <tbody><tr>
+      <td class="c-sev"><div class="selos"><span class="chip" style="--c:#64748B">Informativa</span><div class="est"><span class="chip" style="--c:#64748B">Aberto</span></div></div></td>
+      <td class="c-desc"><div class="f-tit"><span class="fid">F15</span>A API guarda HTML bruto; a proteção depende só do escape na saída</div><p>A regra de lint anti-XSS da issue 7 não entrou. O risco não mudou: o frontend continua sem nenhum ponto que renderize HTML, e o <code>icone</code> agora tem formato fixo (O3).</p><p class="f-sub"><b>O que falta:</b> oxlint com <code>react/no-danger</code>, <code>react/no-danger-with-children</code>, <code>react/jsx-no-script-url</code>, <code>no-eval</code> e <code>no-new-func</code> como erro, e a regra registrada no <code>CLAUDE.md</code>.</p></td>
+    </tr><tr>
+      <td class="c-sev"><div class="selos"><span class="chip" style="--c:#64748B">Informativa</span><div class="est"><span class="chip" style="--c:#D97706">Parcial</span></div></div></td>
+      <td class="c-desc"><div class="f-tit"><span class="fid">F16</span>CSP só por <code>&lt;meta&gt;</code> e só no build; sem cabeçalhos de segurança</div><p>A API não envia mais <code>X-Powered-By</code> (<code>app.js:9</code>). O resto depende do servidor que vai publicar o frontend, que ainda não existe.</p><p class="f-sub"><b>O que falta:</b> <code>helmet()</code> na API e, no servidor do front, CSP por cabeçalho com <code>frame-ancestors &#39;none&#39;</code>, <code>X-Content-Type-Options: nosniff</code> e HSTS.</p></td>
+    </tr></tbody>
+    </table>
+    <h2 class="sub-sec">Limitações das correções</h2>
+    <p>Escolhas conscientes, com o limite de cada uma e quando revisar. Nenhuma reabre um achado da auditoria.</p>
+    <ol class="fracos limites"><li><strong>Token no <code>localStorage</code>.</strong> Sobrevive ao recarregar a página, mas um XSS conseguiria lê-lo. Hoje não há XSS (categoria 5). A alternativa é um cookie <code>HttpOnly</code> com <code>SameSite</code>, que pede proteção contra CSRF.</li><li><strong>Sem refresh token nem logout no servidor.</strong> O token vale 1 hora e não pode ser revogado antes disso: &quot;Sair&quot; apaga o token só no navegador.</li><li><strong>O 409 do registro revela que um e-mail tem conta.</strong> O login não revela (mesma resposta e mesmo tempo), mas o cadastro sim. Fechar isso exige confirmação por e-mail.</li><li><strong>Rate limit na memória do processo.</strong> Zera quando a API reinicia e não é dividido entre instâncias. Com mais de uma instância, trocar por um store compartilhado, como Redis. Está marcado com <code>shortcut:</code> em <code>limites.js</code>.</li><li><strong>Paginação por OFFSET.</strong> Uma página alta fica lenta, e uma inserção no meio pode pular ou repetir um item entre duas páginas. Para listas grandes, trocar por cursor (<code>WHERE id &gt; $ultimo</code>). Está marcado com <code>shortcut:</code> em <code>api.js</code>.</li><li><strong><code>JWT_SECRET</code> também chega ao contêiner do banco.</strong> O compose lê o <code>.env</code> inteiro com <code>env_file</code>. Não sai da máquina, mas quem acessa o contêiner vê o segredo. Separar em dois arquivos resolve.</li><li><strong>Não há teste de integração versionado (M1).</strong> A suíte simula o banco. O isolamento entre dois usuários foi verificado com Postgres real por um script desta sessão, que não está no repositório.</li><li><strong>RLS não foi ligado.</strong> O isolamento depende do <code>WHERE usuario_id</code> em cada query. RLS com <code>FORCE ROW LEVEL SECURITY</code> seria a segunda tranca, e a role nova, sem <code>BYPASSRLS</code>, já permite ligá-lo.</li><li><strong><code>npm audit</code>: 2 vulnerabilidades moderadas no <code>nodemon</code>, via <code>minimatch</code>.</strong> Afeta só o ambiente de desenvolvimento. A correção sugerida (<code>npm audit fix --force</code>) troca a versão do <code>nodemon</code> e não foi aplicada.</li><li><strong>Sair durante o &quot;Desfazer&quot;.</strong> Se a pessoa clicar em Sair nos segundos do &quot;Desfazer&quot; de uma exclusão, a exclusão não é enviada, e a despesa continua lá no próximo login. É o lado seguro, mas difere de fechar a aba, que envia a exclusão.</li><li><strong>Dados de exemplo no <code>npm run dev</code>.</strong> Com a API desligada, o painel mostra os dados de exemplo, como antes, mas só para quem já tem um token salvo. Sem token, a tela é a de login.</li></ol>
+  </section>
+<section>
+    <h1 class="sec sec-cont" data-num="7">Evidências de verificação</h1>
+    <p>Executadas nesta máquina, em 23/11/2026. Banco e APIs de teste rodaram em contêineres e portas descartáveis, com segredos aleatórios. O seu banco <code>postgres-dev</code> e o seu <code>.env</code> não foram usados.</p>
+    <dl class="evid"><div><span class="e-id">E1</span><span class="e-tit">Suíte de testes</span><span><code>npm test</code>: 9 arquivos, 198 testes, todos passam. Antes das mudanças, 2 testes de <code>categorias.routes.test.js</code> já falhavam, porque enviavam <code>tipoCusto</code> em minúsculas, que o schema recusa. Os testes reescritos usam maiúsculas.</span></div><div><span class="e-id">E2</span><span class="e-tit">Lint e build do frontend</span><span><code>oxlint</code> sem nenhum aviso. <code>vite build</code> passou depois de um <code>npm ci</code> no <code>frontend/</code>: o <code>node_modules</code> local era anterior ao commit <code>47714fe</code> e não tinha <code>@fontsource-variable/archivo</code>. O lockfile não mudou.</span></div><div><span class="e-id">E3</span><span class="e-tit">Banco novo</span><span>Postgres 16 descartável em <code>127.0.0.1</code>, com segredos aleatórios. O <code>init.sql</code> rodou duas vezes seguidas sem erro. A role <code>din_din_app</code> tem <code>rolsuper</code>, <code>rolbypassrls</code>, <code>rolcreatedb</code> e <code>rolcreaterole</code> falsos, e as tabelas pertencem ao admin.</span></div><div><span class="e-id">E4</span><span class="e-tit">API e banco reais, dois usuários (30 verificações)</span><span>Sem token: 401. Registro e login de Ana e Bruno. Bruno recebe 404 nas 6 operações por ID sobre registros de Ana, e eles continuam intactos. Bruno cria a categoria &quot;Lazer&quot; (201) mesmo com Ana tendo uma; Ana repetindo o nome recebe 409, sem nome de constraint. <code>usuario_id</code> no body é ignorado. Paginação funciona, e <code>limite=101</code> responde 400. JSON malformado: 400 em JSON, sem stack e sem <code>X-Powered-By</code>. O banco guarda o hash scrypt, não a senha. A 11ª requisição a <code>/auth</code> recebe 429.</span></div><div><span class="e-id">E5</span><span class="e-tit">Privilégios da role da API</span><span>Conectado como <code>din_din_app</code>: <code>DROP TABLE</code>, <code>CREATE TABLE</code>, <code>ALTER TABLE</code>, <code>UPDATE usuarios</code>, <code>SELECT</code> em <code>pg_authid</code> e <code>COPY … TO PROGRAM</code> falham com <code>42501</code> (permissão negada).</span></div><div><span class="e-id">E6</span><span class="e-tit">Banco antigo e migração</span><span>Banco criado com o <code>init.sql</code> antigo e com dados. O <code>init.sql</code> novo rodou por cima sem erro: as linhas ficaram sem dono, e <code>categorias_nome_key</code> saiu. Antes da migração, a conta nova vê a lista vazia. A migração com um e-mail sem conta avisa e não muda nada. Com &quot; Carla@Exemplo.COM &quot;, com espaços e maiúsculas: <code>UPDATE 2</code>, <code>UPDATE 1</code> e <code>COMMIT</code>. A conta passa a ver as despesas antigas e a categoria, e as duas colunas <code>usuario_id</code> ficam <code>NOT NULL</code>.</span></div><div><span class="e-id">E7</span><span class="e-tit">Boot com o <code>.env.example</code> sem editar</span><span>A API sai com código 1 e lista <code>POSTGRES_USER</code>, <code>POSTGRES_PASSWORD</code>, <code>APP_DB_PASSWORD</code> e <code>JWT_SECRET</code>, sem mostrar nenhum valor.</span></div><div><span class="e-id">E8</span><span class="e-tit">Interface no navegador (15 verificações)</span><span>Chrome headless, com o Vite em <code>localhost:5173</code> e a API de teste. Sem sessão, abre o login. Criar conta leva ao painel e guarda o token, e a despesa da conta aparece. Sair volta ao login, apaga o token e não deixa dado da conta na página. Senha errada mostra &quot;E-mail ou senha incorretos.&quot;. A conta B não vê a despesa da conta A. Um token recusado volta ao login com &quot;Sua sessão expirou&quot;.</span></div><div><span class="e-id">E9</span><span class="e-tit">Endereços de escuta</span><span><code>netstat</code>: as APIs de teste em <code>127.0.0.1:3000</code> e <code>127.0.0.1:3099</code>, e o Postgres de teste em <code>127.0.0.1:5499</code>. Num compose de teste, a porta saiu publicada em <code>127.0.0.1:5498</code>; ao mudar o <code>.env</code>, <code>docker compose up -d</code> recriou o contêiner com as variáveis novas.</span></div><div><span class="e-id">E10</span><span class="e-tit">Não executado</span><span>Acesso a partir de outra máquina da rede. O seu <code>postgres-dev</code> e o seu <code>.env</code> não foram tocados nem lidos: o contêiner continua em <code>0.0.0.0:5434</code> até a seção 8 ser aplicada. Os contêineres e as APIs de teste foram removidos no fim.</span></div></dl>
+  </section>
+<section class="pagina">
+    <h1 class="sec" data-num="8">Como aplicar na sua máquina</h1>
+    <p>Na raiz do repositório, nesta ordem. O banco existente não perde dados: o <code>init.sql</code> só acrescenta tabelas, colunas e permissões.</p>
+    <div class="rec">
+      <div class="p">1</div>
+      <div>
+        <h3>Instale a dependência nova</h3>
+        <p>Traz o <code>express-rate-limit</code>. Se o build do front reclamar de <code>@fontsource-variable/archivo</code>, o <code>node_modules</code> do front está desatualizado.</p>
+        <pre class="cmd">npm install
+npm --prefix frontend ci</pre>
+      </div>
+    </div><div class="rec">
+      <div class="p">2</div>
+      <div>
+        <h3>Complete o <code>.env</code></h3>
+        <p>Adicione <code>APP_DB_USER</code> (diferente do <code>POSTGRES_USER</code>), <code>APP_DB_PASSWORD</code> (12+ caracteres) e <code>JWT_SECRET</code> (32+). Confira <code>POSTGRES_HOST=127.0.0.1</code> e apague <code>DATABASE_URL</code>. Para gerar o segredo:</p>
+        <pre class="cmd">node -e &quot;console.log(require(&#39;crypto&#39;).randomBytes(32).toString(&#39;base64url&#39;))&quot;</pre>
+      </div>
+    </div><div class="rec">
+      <div class="p">3</div>
+      <div>
+        <h3>Recrie o contêiner do banco</h3>
+        <p>Ele volta em <code>127.0.0.1:5434</code>, com as variáveis novas. Os dados ficam no volume.</p>
+        <pre class="cmd">docker compose -f backend/docker-compose.yml up -d</pre>
+      </div>
+    </div><div class="rec">
+      <div class="p">4</div>
+      <div>
+        <h3>Aplique o schema e a role da API</h3>
+        <p>Roda como o admin do contêiner. Pode repetir sem perder nada.</p>
+        <pre class="cmd">docker exec -i postgres-dev sh -c &#39;psql -U &quot;$POSTGRES_USER&quot; -d &quot;$POSTGRES_DB&quot;&#39; &lt; backend/src/db/init.sql</pre>
+      </div>
+    </div><div class="rec">
+      <div class="p">5</div>
+      <div>
+        <h3>Suba a API e o front e crie a sua conta</h3>
+        <p>A tela de login abre sozinha; use &quot;Criar conta&quot;.</p>
+        <pre class="cmd">npm run dev
+npm run dev:frontend</pre>
+      </div>
+    </div><div class="rec">
+      <div class="p">6</div>
+      <div>
+        <h3>Só se já havia despesas: passe-as para a sua conta</h3>
+        <p>Com o e-mail da conta criada no passo 5. Até lá, as despesas antigas não aparecem para ninguém.</p>
+        <pre class="cmd">docker exec -i postgres-dev sh -c &#39;psql -U &quot;$POSTGRES_USER&quot; -d &quot;$POSTGRES_DB&quot; -v email=voce@exemplo.com&#39; &lt; backend/src/db/migracao-001-dono-dos-dados.sql</pre>
+      </div>
+    </div><div class="rec">
+      <div class="p">7</div>
+      <div>
+        <h3>Confira</h3>
+        <p>Os testes passam, a API escuta só em <code>127.0.0.1:3000</code> e o banco só em <code>127.0.0.1:5434</code>.</p>
+        <pre class="cmd">npm test
+netstat -ano | findstr :3000
+docker port postgres-dev</pre>
+      </div>
+    </div>
+  </section>
+<section class="pagina">
+    <h1 class="sec" data-num="9">Critérios de aceite das issues</h1>
+    <p>Os 36 critérios das 8 issues de <code>issues-github.md</code>, com o texto original, a situação de cada um e como foi verificado. As issues podem ser fechadas com estes critérios marcados; os parciais dependem dos testes de integração (M1), e os da issue 7 ficaram fora do escopo.</p>
+    <div class="resumo-aceite"><span class="chip" style="--c:#059669">Feito</span><span class="cnt">29</span><span class="chip" style="--c:#D97706">Parcial</span><span class="cnt">2</span><span class="chip" style="--c:#2563EB">Na sua máquina</span><span class="cnt">1</span><span class="chip" style="--c:#64748B">Não testado</span><span class="cnt">1</span><span class="chip" style="--c:#475569">Fora do escopo</span><span class="cnt">3</span></div>
+    <div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#B91C1C">Crítica</span><span class="t">Issue 1</span><span class="a">F01 (crítica), F02 (alta), F03 (média), F06 (média)</span></div>
+      <div class="issue-tit">[Segurança] API sem autenticação: qualquer cliente lê, altera e apaga tudo</div>
+      <table class="aceite">
+        <colgroup><col class="k1"><col><col class="k3"></colgroup>
+        <tbody><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>Toda rota, exceto <code>/auth/*</code> e <code>GET /</code>, responde 401 sem token válido.</td><td class="ac-como"><code>seguranca.test.js</code>: as 10 rotas de dados respondem 401 sem token; <code>GET /</code> continua público.</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>Token expirado ou com assinatura inválida responde 401.</td><td class="ac-como"><code>seguranca.test.js</code>: token vencido, assinado com outro segredo, com <code>alg: none</code>, sem <code>sub</code> ou malformado.</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td><code>despesas.usuario_id</code> e <code>categorias.usuario_id</code> existem, <code>NOT NULL</code>, com FK.</td><td class="ac-como">Banco novo: <code>NOT NULL</code> e FK no <code>CREATE TABLE</code>. Banco antigo: a <code>migracao-001</code> aplica o <code>NOT NULL</code> (E6).</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td><code>GET /despesas</code> e <code>GET /categorias</code> devolvem só os registros do usuário do token.</td><td class="ac-como">Testes de rota: a query leva o dono do token. Ponta a ponta: Bruno não vê nada de Ana (E4).</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td><code>POST</code> grava o <code>usuario_id</code> do token, mesmo que o body traga outro valor.</td><td class="ac-como">Testes de rota e ponta a ponta: o <code>usuario_id</code> do body é descartado.</td></tr><tr><td><span class="chip" style="--c:#D97706">Parcial</span></td><td>Teste de integração: o usuário B não vê nenhum registro de A nas listagens.</td><td class="ac-como">Verificado com Postgres real por um script desta sessão (E4), fora do repositório. O teste de integração versionado fica para o M1.</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td><code>npm test</code> passa.</td><td class="ac-como">198 testes passam (E1).</td></tr></tbody>
+      </table>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#EA580C">Alta</span><span class="t">Issue 2</span><span class="a">F07 (alta), F08 (alta), F09 (média), F10 (média), F11 (média), F12 (baixa)</span></div>
+      <div class="issue-tit">[Segurança] IDOR: rotas por ID não verificam o dono do registro</div>
+      <table class="aceite">
+        <colgroup><col class="k1"><col><col class="k3"></colgroup>
+        <tbody><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>As 6 queries por ID incluem <code>usuario_id</code> no WHERE.</td><td class="ac-como"><code>despesasController.js:39,61,76</code> e <code>categoriasController.js:26,53,65</code>.</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>Teste: B recebe 404 em GET, PUT e DELETE de uma despesa de A.</td><td class="ac-como">Ponta a ponta (E4); os testes de rota cobrem o 404 para id de outro dono.</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>Teste: B recebe 404 em GET, PUT e DELETE de uma categoria de A.</td><td class="ac-como">Ponta a ponta (E4).</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>Depois do PUT e do DELETE de B, o registro de A continua intacto no banco.</td><td class="ac-como">Ponta a ponta: a despesa e a categoria de Ana continuam iguais no banco (E4).</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td><code>npm test</code> passa.</td><td class="ac-como">198 testes passam (E1).</td></tr></tbody>
+      </table>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#D97706">Média</span><span class="t">Issue 3</span><span class="a">F05 (média); reduz a exposição de F01–F12</span></div>
+      <div class="issue-tit">[Segurança] API e Postgres escutam em todas as interfaces de rede</div>
+      <table class="aceite">
+        <colgroup><col class="k1"><col><col class="k3"></colgroup>
+        <tbody><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td><code>netstat -ano | findstr :3000</code> mostra <code>127.0.0.1:3000</code>, não <code>0.0.0.0</code> nem <code>[::]</code>.</td><td class="ac-como"><code>netstat</code>: <code>127.0.0.1:3000</code>, sem <code>0.0.0.0</code> nem <code>[::]</code> (E9).</td></tr><tr><td><span class="chip" style="--c:#2563EB">Na sua máquina</span></td><td><code>docker port postgres-dev</code> mostra <code>127.0.0.1:5434</code>.</td><td class="ac-como">Num compose de teste, saiu <code>127.0.0.1</code>. O seu <code>postgres-dev</code> só muda depois do <code>docker compose up -d</code> (seção 8, passo 3).</td></tr><tr><td><span class="chip" style="--c:#64748B">Não testado</span></td><td>De outra máquina da rede, <code>curl http://&lt;ip&gt;:3000/despesas</code> falha na conexão.</td><td class="ac-como">Não havia outra máquina. Decorre do bind em <code>127.0.0.1</code>, confirmado pelo <code>netstat</code>.</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td><code>npm run dev</code> e o proxy do Vite continuam funcionando.</td><td class="ac-como">A interface foi testada pelo proxy do Vite (E8).</td></tr></tbody>
+      </table>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#D97706">Média</span><span class="t">Issue 4</span><span class="a">F04 (média)</span></div>
+      <div class="issue-tit">[Segurança] Aplicação conecta ao Postgres com o superusuário da imagem</div>
+      <table class="aceite">
+        <colgroup><col class="k1"><col><col class="k3"></colgroup>
+        <tbody><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>O Pool conecta com uma role com <code>rolsuper = false</code> e <code>rolbypassrls = false</code>.</td><td class="ac-como"><code>rolsuper</code> e <code>rolbypassrls</code> falsos (E3).</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>A role da API não consegue <code>DROP TABLE despesas</code> nem <code>CREATE TABLE</code>.</td><td class="ac-como">Os dois falham com <code>42501</code> (E5).</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>As tabelas pertencem a outra role (o <code>\dt</code> mostra o dono).</td><td class="ac-como">As tabelas pertencem ao admin do contêiner (E3).</td></tr><tr><td><span class="chip" style="--c:#D97706">Parcial</span></td><td><code>npm start</code> e os testes de integração passam com a nova role.</td><td class="ac-como">A API rodou com a role nova em todos os testes ponta a ponta; os testes de integração versionados (M1) ainda não existem.</td></tr></tbody>
+      </table>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#D97706">Média</span><span class="t">Issue 5</span><span class="a">F13 (média), F14 (baixa)</span></div>
+      <div class="issue-tit">[Segurança] Placeholders do .env.example aceitos sem validação no boot</div>
+      <table class="aceite">
+        <colgroup><col class="k1"><col><col class="k3"></colgroup>
+        <tbody><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>Com o <code>.env</code> copiado sem editar, <code>npm start</code> falha na hora, com mensagem clara.</td><td class="ac-como">Sai com código 1 e lista as variáveis com problema (E7).</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>Sem <code>POSTGRES_PASSWORD</code>, <code>npm start</code> falha na hora.</td><td class="ac-como"><code>config.test.js</code>: senha do admin ausente.</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>Senha com menos de 12 caracteres é recusada no boot.</td><td class="ac-como"><code>config.test.js</code>: senha do admin curta e senha da API com 11 caracteres.</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td><code>git check-ignore .env.local .env.production</code> lista os dois arquivos.</td><td class="ac-como"><code>git check-ignore</code> lista os dois pela regra <code>.env.*</code>.</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>O <code>.env.example</code> não tem mais <code>DATABASE_URL</code> duplicada (ou ela passa a ser usada).</td><td class="ac-como">Removida do <code>.env.example</code>; nenhum código a lia.</td></tr></tbody>
+      </table>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#2563EB">Baixa</span><span class="t">Issue 6</span><span class="a">O1 (baixa), O2 (baixa), F16 (informativa)</span></div>
+      <div class="issue-tit">[Segurança] Erros vazam detalhes internos e faltam cabeçalhos de segurança</div>
+      <table class="aceite">
+        <colgroup><col class="k1"><col><col class="k3"></colgroup>
+        <tbody><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>Nenhuma resposta contém mensagem do banco nem stack trace.</td><td class="ac-como">O handler central responde só mensagens genéricas; o detalhe vai para o log.</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>JSON malformado responde 400 com <code>application/json</code>.</td><td class="ac-como"><code>seguranca.test.js</code> e ponta a ponta (E4).</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>As respostas não têm <code>X-Powered-By</code>.</td><td class="ac-como"><code>app.disable(&#39;x-powered-by&#39;)</code>; coberto em <code>seguranca.test.js</code>.</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>Testes automatizados cobrem o 400 de JSON malformado e o 500 genérico.</td><td class="ac-como"><code>seguranca.test.js</code>: os dois casos.</td></tr></tbody>
+      </table>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#64748B">Informativa</span><span class="t">Issue 7</span><span class="a">F15 (informativa)</span></div>
+      <div class="issue-tit">[Segurança] Travar regressão de XSS no lint do frontend</div>
+      <table class="aceite">
+        <colgroup><col class="k1"><col><col class="k3"></colgroup>
+        <tbody><tr><td><span class="chip" style="--c:#475569">Fora do escopo</span></td><td><code>npm --prefix frontend run lint</code> falha num arquivo com <code>dangerouslySetInnerHTML</code>.</td><td class="ac-como">Informativo (F15), fora do escopo pedido.</td></tr><tr><td><span class="chip" style="--c:#475569">Fora do escopo</span></td><td><code>npm --prefix frontend run lint</code> passa no código atual.</td><td class="ac-como">Informativo (F15), fora do escopo pedido.</td></tr><tr><td><span class="chip" style="--c:#475569">Fora do escopo</span></td><td>A regra de saída está registrada no <code>CLAUDE.md</code>.</td><td class="ac-como">Informativo (F15), fora do escopo pedido.</td></tr></tbody>
+      </table>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#2563EB">Baixa</span><span class="t">Issue 8</span><span class="a">O3 (baixa), O4 (baixa)</span></div>
+      <div class="issue-tit">[Segurança] Schema de categorias e listagens sem limites de entrada</div>
+      <table class="aceite">
+        <colgroup><col class="k1"><col><col class="k3"></colgroup>
+        <tbody><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td><code>POST /categorias</code> com <code>nome: &quot;   &quot;</code>, <code>descricao</code> de 10 kB ou <code>limiteMensal: -1</code> responde 400.</td><td class="ac-como"><code>categorias.validator.test.js</code>: os três casos.</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td><code>limiteMensal: 1e12</code> responde 400, não 500.</td><td class="ac-como"><code>categorias.validator.test.js</code>: <code>1e12</code> recusado pelo schema, antes do banco.</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td><code>GET /despesas</code> devolve no máximo o teto configurado por página.</td><td class="ac-como"><code>limite</code> vai até 100; <code>limite=101</code> responde 400 (testes e E4).</td></tr><tr><td><span class="chip" style="--c:#059669">Feito</span></td><td>Os testes do validator cobrem os casos acima.</td><td class="ac-como"><code>categorias.validator.test.js</code> cobre os casos acima.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</body>
+</html>
