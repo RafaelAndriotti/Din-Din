@@ -156,7 +156,16 @@ Copie o arquivo `.env.example` para criar o seu `.env` na raiz do projeto:
 cp .env.example .env
 ```
 
-Edite o arquivo `.env` recém-criado com suas credenciais (usuário, senha e porta do banco).
+Edite o arquivo `.env` recém-criado e troque **todos** os valores terminados em `_aqui`:
+
+- `POSTGRES_USER` / `POSTGRES_PASSWORD`: admin do banco (o contêiner o cria como superusuário). Serve só para aplicar o `init.sql`.
+- `APP_DB_USER` / `APP_DB_PASSWORD`: role com que a API conecta, sem superusuário. Precisa ser diferente do admin.
+- `JWT_SECRET`: segredo que assina os tokens de login. Gere um com:
+  ```bash
+  node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+  ```
+
+As senhas precisam ter 12 caracteres ou mais, e o `JWT_SECRET`, 32 ou mais. A API não sobe enquanto houver valor de exemplo, variável faltando ou senha curta, e a mensagem diz qual variável corrigir.
 
 ### 3. Instalar dependências
 
@@ -172,12 +181,27 @@ npm --prefix frontend install
 
 ### 4. Inicializar o Banco de Dados com Docker
 
-Suba o contêiner do PostgreSQL via Docker Compose:
+Suba o contêiner do PostgreSQL via Docker Compose (ele só aceita conexões da própria máquina, em `127.0.0.1:5434`):
 ```bash
 docker compose -f backend/docker-compose.yml up -d
 ```
 
-> **Nota:** As tabelas do banco podem ser criadas executando o script SQL contido em `src/db/init.sql` no banco `din_din_db` criado pelo Docker.
+Crie as tabelas e a role da API rodando o `init.sql` como admin. Ele lê `APP_DB_USER` e `APP_DB_PASSWORD` do ambiente do contêiner, que vem do `.env`:
+```bash
+docker exec -i postgres-dev sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < backend/src/db/init.sql
+```
+
+> Se você editar o `.env` depois, rode o `docker compose ... up -d` de novo antes do `init.sql`: o contêiner é recriado com as variáveis novas, e os dados ficam no volume.
+
+#### Já tinha dados de antes da autenticação?
+O `init.sql` pode rodar sobre um banco antigo sem perder nada: as tabelas ganham a coluna `usuario_id` vazia, e as linhas antigas ficam invisíveis até ganharem um dono. Para passá-las para a sua conta:
+
+1. Rode o `init.sql` como acima, suba a API e o frontend e crie a sua conta.
+2. Rode a migração com o e-mail da conta:
+   ```bash
+   docker exec -i postgres-dev sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v email=voce@exemplo.com' < backend/src/db/migracao-001-dono-dos-dados.sql
+   ```
+   Ela roda numa transação e torna `usuario_id` obrigatório. Com um e-mail sem conta, avisa e não muda nada.
 
 ---
 
@@ -201,7 +225,7 @@ Todos os scripts estão centralizados no `package.json` da raiz:
    ```bash
    npm run dev
    ```
-   O servidor estará ativo em: `http://localhost:3000`
+   O servidor estará ativo em: `http://127.0.0.1:3000` (só a própria máquina alcança a API)
 
 2. **Terminal 2 - Iniciar o Frontend:**
    ```bash
@@ -209,17 +233,30 @@ Todos os scripts estão centralizados no `package.json` da raiz:
    ```
    A interface estará disponível em: `http://localhost:5173`
 
-*(O Vite já está pré-configurado com proxy reverso apontando chamadas de `/despesas` para `http://localhost:3000`)*.
+*(O Vite já está pré-configurado com proxy reverso apontando chamadas de `/auth`, `/despesas` e `/categorias` para `http://127.0.0.1:3000`)*. Na primeira vez, crie a sua conta na tela de login.
 
 ---
 
 ## 📡 Documentação da API REST
 
+### Autenticação (`/auth`)
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `POST` | `/auth/registro` | Cria uma conta: `{ "email": "...", "senha": "..." }` (senha com 8+ caracteres). Responde `201` com `{ token, usuario }`, ou `409` se o e-mail já tiver conta |
+| `POST` | `/auth/login` | Entra numa conta. Responde `200` com `{ token, usuario }`, ou `401` com e-mail ou senha incorretos |
+
+Todas as rotas de despesas e categorias exigem o token no cabeçalho `Authorization: Bearer <token>`. Sem token, ou com um token vencido (vale 1 hora), a resposta é `401`. Cada usuário só vê e altera os próprios registros: o registro de outra pessoa responde `404`, como um inexistente.
+
+Limites: as rotas `/auth` aceitam 10 requisições por IP a cada 15 minutos, e as demais, 100 por minuto. Acima disso, a resposta é `429`.
+
+As listagens são paginadas: `?pagina=1&limite=50` (padrão `limite=50`, máximo `100`).
+
 ### Endpoints de Despesas (`/despesas`)
 
 | Método | Rota | Descrição |
 |---|---|---|
-| `GET` | `/despesas` | Retorna a lista de todas as despesas cadastradas |
+| `GET` | `/despesas` | Retorna as despesas do usuário, paginadas (`?pagina=&limite=`) |
 | `GET` | `/despesas/:id` | Retorna os detalhes de uma despesa pelo ID |
 | `POST` | `/despesas` | Cadastra uma nova despesa (com validação Zod) |
 | `PUT` | `/despesas/:id` | Atualiza uma despesa existente pelo ID |
@@ -243,7 +280,7 @@ Todos os scripts estão centralizados no `package.json` da raiz:
 
 | Método | Rota | Descrição |
 |---|---|---|
-| `GET` | `/categorias` | Retorna a lista de todas as categorias cadastradas |
+| `GET` | `/categorias` | Retorna as categorias do usuário, paginadas (`?pagina=&limite=`) |
 | `GET` | `/categorias/:id` | Retorna os dados de uma categoria pelo ID |
 | `POST` | `/categorias` | Cria uma nova categoria |
 | `PUT` | `/categorias/:id` | Atualiza uma categoria pelo ID |
@@ -269,13 +306,17 @@ O arquivo `.env.example` disponibiliza o modelo padrão das variáveis necessár
 
 | Variável | Padrão | Descrição |
 |---|---|---|
-| `POSTGRES_USER` | `seu_usuario_aqui` | Usuário do banco PostgreSQL |
-| `POSTGRES_PASSWORD` | `sua_senha_aqui` | Senha de autenticação do PostgreSQL |
+| `POSTGRES_USER` | `seu_usuario_aqui` | Admin do PostgreSQL (superusuário do contêiner). Só aplica o `init.sql` |
+| `POSTGRES_PASSWORD` | `sua_senha_aqui` | Senha do admin (12+ caracteres) |
 | `POSTGRES_DB` | `din_din_db` | Nome da base de dados utilizada |
-| `POSTGRES_HOST` | `localhost` | Endereço do host do banco |
+| `POSTGRES_HOST` | `127.0.0.1` | Endereço do host do banco |
 | `POSTGRES_PORT` | `5434` | Porta mapeada para o contêiner Docker |
-| `DATABASE_URL` | `postgresql://...` | String de conexão completa |
+| `APP_DB_USER` | `din_din_app` | Role com que a API conecta, sem superusuário (diferente do admin) |
+| `APP_DB_PASSWORD` | `senha_da_api_aqui` | Senha da role da API (12+ caracteres) |
+| `JWT_SECRET` | `segredo_do_jwt_aqui` | Segredo que assina os tokens de login (32+ caracteres aleatórios) |
 | `PORT` | `3000` | Porta onde o Express executará |
+
+Valores terminados em `_aqui` são recusados no boot.
 
 ---
 
