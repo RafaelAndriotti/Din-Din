@@ -3,7 +3,7 @@ import AuthController from '../controllers/authController.js';
 import { validate } from '../middleware/validate.js';
 import { loginSchema, registroSchema } from '../validators/authValidator.js';
 
-// Rotas públicas. Montadas em /auth por routes/index.js.
+// Rotas públicas. Montadas em /auth por routes/index.js, com rate limit contra força bruta.
 const routes = express.Router();
 
 routes.post('/registro', validate({ body: registroSchema }), AuthController.registrar);
