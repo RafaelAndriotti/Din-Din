@@ -258,6 +258,43 @@
   min-height: 320px;
 }
 
+/* ---------- Entrar / criar conta ---------- */
+/* Sem caixa: o título abre o bloco com a régua de 2px, como a cabeça do modal. */
+.auth {
+  max-width: 400px;
+  margin: var(--sp-12) auto;
+}
+
+.auth-titulo {
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  font-stretch: 85%;
+  padding-bottom: var(--sp-2);
+  border-bottom: 2px solid var(--ink);
+}
+
+.auth-sub,
+.auth-troca {
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+
+.auth-sub {
+  margin-top: var(--sp-3);
+}
+
+.auth-form {
+  display: grid;
+  gap: var(--sp-5);
+  margin-top: var(--sp-6);
+}
+
+.auth-troca {
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--rule);
+}
+
 /* ---------- Falta pagar: faixa de canhotos ----------
    O total à esquerda; cada conta pendente é um canhoto ao lado,
    separado por fio. A faixa fecha com o fio grosso que abre o razão. */
