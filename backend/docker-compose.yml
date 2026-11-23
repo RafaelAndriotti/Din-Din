@@ -5,8 +5,9 @@ services:
     restart: unless-stopped
     env_file:
       - ../.env
+    # Só a própria máquina alcança o banco (F05). Sem o 127.0.0.1, o Docker publica em todas as interfaces.
     ports:
-      - "5434:5432"
+      - "127.0.0.1:5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

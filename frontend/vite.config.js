@@ -35,13 +35,14 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // 127.0.0.1, não localhost: a API só escuta em IPv4 local, e localhost pode resolver para ::1.
     proxy: {
       '/despesas': {
-        target: 'http://localhost:3000',
+        target: 'http://127.0.0.1:3000',
         changeOrigin: true
       },
       '/categorias': {
-        target: 'http://localhost:3000',
+        target: 'http://127.0.0.1:3000',
         changeOrigin: true
       }
     }
