@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório de Auditoria de Segurança — Din-Din</title>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm;
+    @top-left { content: "Relatório de Auditoria de Segurança — Din-Din"; font: 600 7.4pt "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: #14285A; vertical-align: bottom; padding-bottom: 3mm; border-bottom: .6pt solid #CBD5E1; }
+    @top-right { content: "23/11/2026 · main @ ace7aec"; font: 7.4pt "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: #64748B; vertical-align: bottom; padding-bottom: 3mm; border-bottom: .6pt solid #CBD5E1; }
+    @bottom-left { content: "Din-Din · auditoria de segurança em 5 categorias"; font: 7.4pt "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: #64748B; vertical-align: top; padding-top: 3mm; border-top: .6pt solid #CBD5E1; }
+    @bottom-right { content: "Página " counter(page) " de " counter(pages); font: 600 7.4pt "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: #14285A; vertical-align: top; padding-top: 3mm; border-top: .6pt solid #CBD5E1; }
+  }
+  :root {
+    --ink: #0F172A; --ink2: #334155; --ink3: #64748B; --linha: #E2E8F0; --suave: #F8FAFC; --azul: #14285A;
+    --sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: "Cascadia Mono", Consolas, "Courier New", monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font: 9pt/1.48 var(--sans); color: var(--ink); background: #fff; }
+  h1, h2, h3 { color: var(--azul); line-height: 1.2; margin: 0; }
+  p { margin: 0 0 2.2mm; }
+  code { font-family: var(--mono); font-size: .86em; background: #EEF2F7; border-radius: 2pt; padding: 0 2pt; color: #0B1F4A; }
+  strong { font-weight: 700; }
+  section.pagina { break-before: page; }
+  h1.sec { font-size: 16pt; font-weight: 800; padding-bottom: 2.4mm; border-bottom: 1.6pt solid var(--azul); margin-bottom: 4.5mm; break-after: avoid; }
+  h1.sec::before { content: attr(data-num); padding-right: 3.2mm; color: var(--ink3); font-weight: 700; }
+  h1.sec-cont { margin-top: 8mm; }
+  h2.sub-sec { font-size: 11pt; margin: 2mm 0 2.6mm; break-after: avoid; }
+  h3.mini { font-size: 7.4pt; font-weight: 700; text-transform: uppercase; letter-spacing: .7pt; color: var(--ink3); margin: 4mm 0 1.8mm; break-after: avoid; }
+  .sem-quebra code, .nw { white-space: nowrap; }
+  .mini-nota { font-size: 7.8pt; color: var(--ink3); }
+  .lead { font-size: 9.3pt; line-height: 1.52; color: var(--ink2); }
+
+  .chip { display: inline-block; background: var(--c); color: #fff; font: 700 6.6pt/1 var(--sans); letter-spacing: .35pt; text-transform: uppercase; padding: 2.3pt 5.5pt 2.1pt; border-radius: 9pt; white-space: nowrap; }
+  .catn { display: inline-flex; align-items: center; justify-content: center; width: 5.4mm; height: 5.4mm; border-radius: 50%; background: var(--azul); color: #fff; font: 700 7.4pt/1 var(--sans); flex: none; }
+  .catn.grande { width: 7.4mm; height: 7.4mm; font-size: 10pt; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead { display: table-header-group; }
+  tr { break-inside: avoid; }
+  th { text-align: left; font: 700 6.8pt/1.2 var(--sans); text-transform: uppercase; letter-spacing: .5pt; color: var(--ink3); background: var(--suave); padding: 2mm 2.4mm; border-bottom: .8pt solid #CBD5E1; }
+  td { padding: 2.4mm 2.4mm; border-bottom: .6pt solid var(--linha); vertical-align: top; }
+
+  /* capa */
+  .capa { padding-top: 2mm; }
+  .kicker { font: 700 7.4pt/1 var(--sans); letter-spacing: 1.8pt; text-transform: uppercase; color: #B91C1C; }
+  .capa h1 { font-size: 23pt; font-weight: 800; line-height: 1.1; letter-spacing: -.3pt; margin: 3.4mm 0 2.2mm; }
+  .capa .sub { font-size: 10pt; color: var(--ink2); margin-bottom: 4.5mm; }
+  .faixa { display: flex; height: 6.4mm; border-radius: 2.4pt; overflow: hidden; gap: .8mm; }
+  .faixa span { display: flex; align-items: center; justify-content: center; color: #fff; font: 800 8pt var(--sans); }
+  .faixa-leg { display: flex; flex-wrap: wrap; gap: 1.2mm 4.5mm; font-size: 7.8pt; color: var(--ink2); margin: 2mm 0 4.5mm; }
+  .faixa-leg i, .leg-barras i { display: inline-block; width: 2.8mm; height: 2.8mm; border-radius: 1pt; margin-right: 1.3mm; vertical-align: -.3mm; }
+  .meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); border-top: .6pt solid #CBD5E1; border-bottom: .6pt solid #CBD5E1; }
+  .meta-grid > div { padding: 2.6mm 2.4mm 2.6mm 0; }
+  .meta-grid .k { font: 700 6.4pt/1.2 var(--sans); letter-spacing: .6pt; text-transform: uppercase; color: var(--ink3); margin-bottom: 1mm; }
+  .meta-grid .v { font-weight: 700; font-size: 9.2pt; }
+  .duas { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm; }
+  table.stack th { width: 25mm; background: none; text-transform: none; letter-spacing: 0; font: 700 7.8pt/1.35 var(--sans); color: var(--ink); border-bottom: .6pt solid var(--linha); padding: 1.6mm 2mm 1.6mm 0; vertical-align: top; }
+  table.stack td { font-size: 7.9pt; padding: 1.6mm 0; line-height: 1.38; }
+  ul.escopo { margin: 0; padding-left: 4mm; font-size: 7.8pt; line-height: 1.4; }
+  ul.escopo li { margin-bottom: .9mm; }
+  table.metodo td { font-size: 7.8pt; line-height: 1.4; padding: 1.7mm 2.4mm 1.7mm 0; }
+  table.metodo td.m-cat { width: 44mm; }
+  table.metodo .catn { margin-right: 2mm; vertical-align: middle; }
+  table.metodo .m-sub { display: block; color: var(--ink3); font-size: 7.1pt; margin: .5mm 0 0 7.4mm; }
+  .nota-final { font-size: 7.5pt; color: var(--ink3); margin-top: 2.4mm; }
+
+  /* resumo */
+  .kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3mm; margin: 3.4mm 0 4mm; }
+  .kpi { border: .6pt solid var(--linha); border-top: 2.4pt solid var(--k); border-radius: 2pt; padding: 2.2mm 3mm; }
+  .kpi .n { font-size: 18pt; font-weight: 800; color: var(--k); line-height: 1; }
+  .kpi .t { font-size: 7.3pt; color: var(--ink2); margin-top: 1.2mm; line-height: 1.3; }
+  .graficos { display: grid; grid-template-columns: 62mm 1fr; gap: 5mm; margin-bottom: 1mm; align-items: start; }
+  .chart { border: .6pt solid var(--linha); border-radius: 2pt; padding: 3mm 4mm; break-inside: avoid; }
+  .chart-t { font-size: 7.4pt; font-weight: 700; text-transform: uppercase; letter-spacing: .6pt; color: var(--ink3); margin-bottom: 2mm; }
+  svg.rosca { display: block; width: 33mm; height: 33mm; margin: 0 auto 2.4mm; }
+  svg .r-num { font: 800 36px var(--sans); fill: #14285A; }
+  svg .r-lbl { font: 600 10.5px var(--sans); fill: #64748B; letter-spacing: .4px; }
+  ul.legenda { list-style: none; padding: 0; margin: 0; font-size: 7.9pt; }
+  ul.legenda li { display: grid; grid-template-columns: 3.2mm 1fr 6mm 11mm; align-items: center; gap: 1.6mm; padding: .6mm 0; border-bottom: .5pt solid var(--linha); }
+  ul.legenda li:last-child { border-bottom: 0; }
+  .sw { width: 3.2mm; height: 3.2mm; border-radius: 1pt; display: inline-block; }
+  .lg-n { text-align: right; font-weight: 800; }
+  .lg-p { text-align: right; color: var(--ink3); }
+  svg.barras { display: block; width: 100%; height: auto; }
+  svg .grade { stroke: #E2E8F0; stroke-width: .7; }
+  svg .tick { font: 500 8.5px var(--sans); fill: #94A3B8; }
+  svg .cat-r { font: 700 10.2px var(--sans); fill: #0F172A; }
+  svg .cat-s { font: 500 8.2px var(--sans); fill: #94A3B8; }
+  svg .val { font: 800 9.5px var(--sans); fill: #0F172A; }
+  svg .val-f { fill: #059669; }
+  .leg-barras { display: flex; flex-wrap: wrap; gap: 1mm 3.4mm; font-size: 7.2pt; color: var(--ink2); margin-top: 2.4mm; }
+  table.rubrica td { font-size: 8pt; padding: 1.4mm 1.6mm 1.4mm 0; line-height: 1.35; }
+  table.rubrica td:first-child { width: 24mm; }
+  .caixa { background: var(--suave); border: .6pt solid var(--linha); border-left: 2.4pt solid var(--azul); border-radius: 2pt; padding: 3mm 4mm 2mm; margin-top: 4mm; break-inside: avoid; }
+  .caixa h3 { font-size: 8.8pt; margin-bottom: 2mm; }
+  .caixa ul { margin: 0; padding-left: 4.2mm; font-size: 7.8pt; line-height: 1.4; }
+  .caixa ul.colunas { columns: 2; column-gap: 8mm; }
+  .caixa li { margin-bottom: 1.4mm; break-inside: avoid; }
+
+  /* fortes e fracos */
+  ol.fracos { list-style: none; counter-reset: f; padding: 0; margin: 0 0 6mm; }
+  ol.fracos li { position: relative; padding: 2.2mm 2mm 2.2mm 9mm; border-bottom: .6pt solid var(--linha); counter-increment: f; }
+  ol.fracos li::before { content: counter(f); position: absolute; left: 0; top: 2.1mm; width: 5.4mm; height: 5.4mm; border-radius: 50%; background: #B91C1C; color: #fff; font: 700 7.4pt/5.4mm var(--sans); text-align: center; }
+  table.fortes col.k1 { width: 10mm; }
+  table.fortes col.k3 { width: 60mm; }
+  table.fortes td { border-bottom-color: #D1FAE5; }
+  table.fortes .catn { background: #059669; }
+  .pf-tit { font-weight: 700; color: #065F46; margin-bottom: .8mm; }
+  .pf-txt { font-size: 8.3pt; color: var(--ink2); }
+
+  /* referências e trechos */
+  .ref { font-family: var(--mono); font-size: 7.2pt; line-height: 1.3; margin-bottom: 1.6mm; overflow-wrap: anywhere; }
+  .ref-dir { display: block; color: var(--ink3); font-size: 6.5pt; }
+  .ref-arq { color: var(--ink); font-weight: 600; }
+  .ref-arq b { color: var(--azul); font-weight: 800; }
+  .ref-livre { color: var(--ink2); }
+  .ref-nota { font-size: 6.9pt; line-height: 1.3; color: var(--ink3); margin: -1mm 0 2mm; }
+  .ref-nota code { font-size: .92em; }
+  table.achados { margin-bottom: 6mm; }
+  table.achados tr { break-inside: auto; }
+  table.achados td p { orphans: 2; widows: 2; }
+  table.achados col.k1 { width: 20mm; }
+  table.achados col.k2 { width: 50mm; }
+  table.achados td { font-size: 8.3pt; }
+  .f-tit { font-weight: 700; font-size: 9pt; color: var(--ink); margin-bottom: 1.4mm; line-height: 1.35; }
+  .fid { display: inline-block; font: 800 6.8pt/1 var(--mono); color: var(--azul); background: #E8EDF7; border-radius: 2pt; padding: 1.6pt 3pt; margin-right: 1.8mm; vertical-align: 1pt; }
+  .f-sub { font-size: 8pt; color: var(--ink2); }
+  .f-sub b { color: var(--ink); }
+  figure.snip { margin: 1.6mm 0 2mm; border: .6pt solid var(--linha); border-left: 2pt solid var(--c); border-radius: 2pt; background: #FBFCFE; break-inside: avoid; }
+  figure.snip figcaption { font: 600 6.4pt/1 var(--mono); color: var(--ink3); padding: 1.6mm 2.4mm 0; }
+  figure.snip pre { margin: 0; padding: 1.2mm 2.4mm 1.7mm; font: 7.1pt/1.4 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; color: #0B1F4A; }
+  .f-issue { font-size: 7pt; color: var(--ink3); margin: 0; }
+
+  /* categorias */
+  .cat { margin-bottom: 2mm; }
+  .cat-h { display: flex; align-items: center; flex-wrap: wrap; gap: 2.4mm; margin: 3mm 0 2.4mm; break-after: avoid; }
+  .cat-h h2 { font-size: 12.4pt; font-weight: 800; }
+  .cat-sub { font-size: 8.4pt; font-weight: 500; color: var(--ink3); }
+  .cat-cnt { margin-left: auto; display: inline-flex; align-items: center; gap: 1mm; }
+  .cat-cnt .cnt { font: 800 8pt var(--sans); color: var(--ink); margin: 0 1.6mm 0 .6mm; }
+  .cat-box { background: var(--suave); border: .6pt solid var(--linha); border-radius: 2pt; padding: 2.6mm 3.4mm; margin-bottom: 2.6mm; font-size: 8.4pt; break-inside: avoid; break-after: avoid; }
+  .cat-box p:last-child { margin-bottom: 0; }
+  .cobertura { color: var(--ink3); font-size: 7.8pt; }
+
+  /* índice por arquivo */
+  table.indice col.k1 { width: 26mm; }
+  table.indice col.k2 { width: 11mm; }
+  table.indice col.k3 { width: 23mm; }
+  table.indice td { font-size: 7.8pt; padding: 1.5mm 2.2mm; line-height: 1.35; }
+  table.indice tr.grupo td { background: #EEF2F7; font: 700 7.4pt var(--mono); color: var(--azul); padding: 1.5mm 2.2mm; border-bottom: 0; }
+  table.indice tr.grupo { break-after: avoid; }
+  table.indice td.lin { font-family: var(--mono); font-size: 7.2pt; overflow-wrap: anywhere; }
+  td.id { font: 800 7.2pt var(--mono); color: var(--azul); }
+  .ix-nota { color: var(--ink3); }
+
+  /* recomendações e evidências */
+  .rec { display: grid; grid-template-columns: 13mm 1fr; gap: 3.4mm; border: .6pt solid var(--linha); border-radius: 2pt; padding: 3mm 4mm 2.4mm 3mm; margin-bottom: 2.8mm; break-inside: avoid; }
+  .rec .p { display: flex; align-items: center; justify-content: center; height: 10mm; border-radius: 2pt; background: var(--azul); color: #fff; font: 800 12pt/1 var(--sans); }
+  .rec h3 { font-size: 9.6pt; margin-bottom: .8mm; }
+  .rec .meta { font-size: 7.3pt; color: var(--ink3); margin-bottom: 1.6mm; }
+  .rec ul { margin: 0; padding-left: 4.2mm; font-size: 8.2pt; }
+  .rec li { margin-bottom: .8mm; }
+  dl.evid { margin: 0; }
+  dl.evid > div { display: grid; grid-template-columns: 9mm 42mm 1fr; gap: 2.4mm; padding: 2mm 0; border-bottom: .6pt solid var(--linha); font-size: 8pt; break-inside: avoid; }
+  .e-id { font: 800 7.4pt var(--mono); color: var(--azul); }
+  .e-tit { font-weight: 700; }
+
+  /* issues */
+  table.indice-issues { margin-bottom: 6mm; }
+  table.indice-issues col.k1 { width: 8mm; }
+  table.indice-issues col.k2 { width: 24mm; }
+  table.indice-issues col.k4 { width: 44mm; }
+  table.indice-issues td { font-size: 8pt; padding: 1.7mm 2.2mm; }
+  .ix-ach { color: var(--ink3); font-size: 7.4pt !important; }
+  .issue { margin-bottom: 6mm; }
+  .issue-head { display: flex; align-items: center; gap: 2.6mm; padding: 2mm 3.2mm; background: var(--azul); color: #fff; border-radius: 2pt 2pt 0 0; font-size: 8.2pt; break-after: avoid; }
+  .issue-head .t { font-weight: 700; }
+  .issue-head .a { margin-left: auto; color: #C7D2FE; font-size: 7.4pt; }
+  pre.issue-md { margin: 0; border: .6pt solid #CBD5E1; border-top: 0; border-radius: 0 0 2pt 2pt; padding: 3mm 3.4mm; font: 7.6pt/1.42 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; background: #FBFCFE; color: #0F172A; }
+  </style>
+</head>
+<body>
+<section class="capa">
+    <div class="kicker">Auditoria de segurança · 5 categorias</div>
+    <h1>Relatório de Auditoria de Segurança — <span class="nw">Din-Din</span></h1>
+    <p class="sub">Controle financeiro pessoal · API REST (Express + PostgreSQL) e SPA (React)</p>
+    <div class="faixa" aria-hidden="true"><span style="flex:1;background:#B91C1C">1</span><span style="flex:3;background:#EA580C">3</span><span style="flex:8;background:#D97706">8</span><span style="flex:2;background:#2563EB">2</span><span style="flex:2;background:#64748B">2</span></div>
+    <div class="faixa-leg"><span><i style="background:#B91C1C"></i>1 crítica</span><span><i style="background:#EA580C"></i>3 altas</span><span><i style="background:#D97706"></i>8 médias</span><span><i style="background:#2563EB"></i>2 baixas</span><span><i style="background:#64748B"></i>2 informativas</span><span><i style="background:#059669"></i>14 pontos fortes</span></div>
+    <div class="meta-grid">
+      <div><div class="k">Data</div><div class="v">23/11/2026</div></div>
+      <div><div class="k">Branch e commit</div><div class="v">main @ ace7aec</div></div>
+      <div><div class="k">Arquivos versionados</div><div class="v">68, todos lidos</div></div>
+      <div><div class="k">Histórico git</div><div class="v">42 commits · 7 refs</div></div>
+    </div>
+    <div class="duas">
+      <div>
+        <h3 class="mini">Stack detectada</h3>
+        <table class="stack"><tr><th>Linguagem</th><td>JavaScript (ESM) em Node.js 24</td></tr><tr><th>Backend</th><td>Express 5.3 · <code>pg</code> 8 (SQL puro, sem ORM) · Zod 4</td></tr><tr><th>Banco</th><td>PostgreSQL 16 em Docker (<code>backend/docker-compose.yml</code>)</td></tr><tr><th>Autenticação</th><td>Nenhuma (<code>jsonwebtoken</code> instalado, não usado)</td></tr><tr><th>Frontend</th><td>React 19 + Vite 8 · oxlint · sem lib de sanitização</td></tr><tr><th>Deploy e CI</th><td>Só o compose do Postgres. Sem Dockerfile, CI, Helm ou Terraform</td></tr></table>
+      </div>
+      <div>
+        <h3 class="mini">Escopo auditado</h3>
+        <ul class="escopo"><li>Branch <code>main</code> @ <code>ace7aec</code>, árvore limpa: os 68 arquivos versionados.</li><li>Backend: <code>server.js</code>, <code>app.js</code>, rotas, controllers, validators, middleware, <code>db.js</code>, <code>init.sql</code> e os 6 testes.</li><li>Frontend: 16 arquivos de <code>frontend/src</code>, <code>public/tema.js</code>, <code>index.html</code>, <code>vite.config.js</code> e o bundle <code>dist/</code> (build de 10/11/2026).</li><li>Configuração e docs: <code>.env.example</code>, os <code>.gitignore</code>, <code>README.md</code>, <code>CLAUDE.md</code>, <code>.claude/</code> e o compose.</li><li>Histórico git: 42 commits em 7 refs (<code>main</code> e 6 branches remotas).</li><li>Runtime: sondas Supertest só de leitura, endereço de escuta e Firewall do Windows. Banco não consultado (Docker parado).</li><li>Fora do escopo: CVEs de dependências (<code>npm audit</code>) e hospedagem, que ainda não existe.</li></ul>
+      </div>
+    </div>
+    <h3 class="mini">Nota metodológica: como cada categoria foi mapeada para esta stack</h3>
+    <table class="metodo">
+      <tr><td class="m-cat"><span class="catn">1</span><b>Banco sem tranca</b><span class="m-sub">isolamento de dono ou inquilino</span></td><td>Sem Supabase. Em Express + <code>pg</code> puro, a tranca seria autenticação + filtro <code>usuario_id</code> em toda query, ou RLS do Postgres. Conferidos: <code>init.sql</code> (dono, RLS, policies), as 10 queries, os middlewares e a role do Pool.</td></tr><tr><td class="m-cat"><span class="catn">2</span><b>Permissão definida no navegador</b><span class="m-sub">gate de papel só no frontend</span></td><td>Busca de gates de papel no React (<code>isAdmin</code>, <code>role</code>, <code>canEdit</code>, <code>permission</code>) e cruzamento das ações da UI com as 11 rotas. Conferido se as regras do formulário são reimpostas pelo Zod.</td></tr><tr><td class="m-cat"><span class="catn">3</span><b>IDOR</b><span class="m-sub">objeto por ID sem checagem de posse</span></td><td>Os 6 handlers com <code>:id</code> (GET, PUT e DELETE em despesas e categorias), todos lidos: o WHERE inclui o dono? Os IDs são enumeráveis?</td></tr><tr><td class="m-cat"><span class="catn">4</span><b>Chaves expostas</b><span class="m-sub">segredos e credenciais no código</span></td><td>Árvore (68 arquivos) e histórico (42 commits, 7 refs) varridos com regex de segredos; <code>.env.example</code>, README, <code>CLAUDE.md</code>, compose, <code>.claude/</code> e bundle <code>dist/</code>. <code>.env</code> local comparado ao exemplo sem expor valores.</td></tr><tr><td class="m-cat"><span class="catn">5</span><b>Inputs sem tratamento (XSS)</b><span class="m-sub">injeção de HTML ou JS no navegador</span></td><td>React 19: busca de <code>dangerouslySetInnerHTML</code>, <code>innerHTML</code>, <code>eval</code>, <code>new Function</code> e <code>href</code>/<code>src</code>/<code>style</code> dinâmicos. Backend só JSON; página de erro do Express testada com payload HTML; CSP do build; lib de sanitização.</td></tr>
+    </table>
+    <p class="nota-final">Só entram achados verificados no código real ou em teste de runtime. Cada um traz arquivo, linha, trecho, motivo de ser explorável e condição de exploração.</p>
+  </section>
+<section class="pagina">
+    <h1 class="sec" data-num="1">Resumo executivo</h1>
+    <p class="lead">O Din-Din tem uma base cuidadosa nos pontos que costumam falhar cedo: SQL 100% parametrizado, validação Zod em todas as rotas de escrita, nenhum segredo no código nem no histórico, e um frontend sem nenhum ponto de injeção de HTML. <strong>O risco central é estrutural: a API não tem autenticação nem dono dos dados.</strong> Por isso as categorias 1 (banco sem tranca), 2 (permissão no navegador) e 3 (IDOR) compartilham a mesma causa raiz, já prevista no roteiro do projeto (item A5). Enquanto ela não for resolvida, a única barreira é a rede: API e Postgres escutam em todas as interfaces e, nesta máquina, quem bloqueia o acesso externo é o Firewall do Windows, não o projeto. Não há XSS explorável nem chave exposta.</p>
+    <div class="kpis"><div class="kpi" style="--k:#14285A"><div class="n">16</div><div class="t">achados nas cinco categorias</div></div><div class="kpi" style="--k:#B91C1C"><div class="n">4</div><div class="t">de severidade crítica ou alta</div></div><div class="kpi" style="--k:#059669"><div class="n">14</div><div class="t">pontos fortes verificados</div></div><div class="kpi" style="--k:#14285A"><div class="n">8</div><div class="t">issues prontas para o GitHub</div></div><div class="kpi" style="--k:#64748B"><div class="n">4</div><div class="t">observações fora das cinco categorias</div></div></div>
+    <div class="graficos"><div class="chart">
+    <h3 class="chart-t">Achados por severidade</h3>
+    <svg viewBox="0 0 160 160" class="rosca" role="img" aria-label="Crítica: 1, Alta: 3, Média: 8, Baixa: 2, Informativa: 2">
+      <circle cx="80" cy="80" r="54" fill="none" stroke="#EEF2F7" stroke-width="22"/>
+      <circle cx="80" cy="80" r="54" fill="none" stroke="#B91C1C" stroke-width="22" stroke-dasharray="19.61 339.29" stroke-dashoffset="0.00" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#EA580C" stroke-width="22" stroke-dasharray="62.02 339.29" stroke-dashoffset="-21.21" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#D97706" stroke-width="22" stroke-dasharray="168.05 339.29" stroke-dashoffset="-84.82" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#2563EB" stroke-width="22" stroke-dasharray="40.81 339.29" stroke-dashoffset="-254.47" transform="rotate(-90 80 80)"/><circle cx="80" cy="80" r="54" fill="none" stroke="#64748B" stroke-width="22" stroke-dasharray="40.81 339.29" stroke-dashoffset="-296.88" transform="rotate(-90 80 80)"/>
+      <text x="80" y="89" text-anchor="middle" class="r-num">16</text>
+      <text x="80" y="105" text-anchor="middle" class="r-lbl">achados</text>
+    </svg>
+    <ul class="legenda"><li><span class="sw" style="background:#B91C1C"></span><span>Crítica</span><span class="lg-n">1</span><span class="lg-p">6,3%</span></li><li><span class="sw" style="background:#EA580C"></span><span>Alta</span><span class="lg-n">3</span><span class="lg-p">18,8%</span></li><li><span class="sw" style="background:#D97706"></span><span>Média</span><span class="lg-n">8</span><span class="lg-p">50%</span></li><li><span class="sw" style="background:#2563EB"></span><span>Baixa</span><span class="lg-n">2</span><span class="lg-p">12,5%</span></li><li><span class="sw" style="background:#64748B"></span><span>Informativa</span><span class="lg-n">2</span><span class="lg-p">12,5%</span></li></ul>
+  </div><div class="chart">
+    <h3 class="chart-t">Achados e pontos fortes por categoria</h3>
+    <svg viewBox="0 0 352 228" class="barras" role="img" aria-label="Banco sem tranca: 5 achados, 2 pontos fortes; Permissão no navegador: 1 achados, 2 pontos fortes; IDOR: 6 achados, 1 pontos fortes; Chaves expostas: 2 achados, 4 pontos fortes; Inputs (XSS): 2 achados, 5 pontos fortes"><line x1="140" y1="4" x2="140" y2="210" class="grade"/><text x="140" y="222" text-anchor="middle" class="tick">0</text><line x1="171.66666666666666" y1="4" x2="171.66666666666666" y2="210" class="grade"/><text x="171.66666666666666" y="222" text-anchor="middle" class="tick">1</text><line x1="203.33333333333331" y1="4" x2="203.33333333333331" y2="210" class="grade"/><text x="203.33333333333331" y="222" text-anchor="middle" class="tick">2</text><line x1="235" y1="4" x2="235" y2="210" class="grade"/><text x="235" y="222" text-anchor="middle" class="tick">3</text><line x1="266.66666666666663" y1="4" x2="266.66666666666663" y2="210" class="grade"/><text x="266.66666666666663" y="222" text-anchor="middle" class="tick">4</text><line x1="298.33333333333337" y1="4" x2="298.33333333333337" y2="210" class="grade"/><text x="298.33333333333337" y="222" text-anchor="middle" class="tick">5</text><line x1="330" y1="4" x2="330" y2="210" class="grade"/><text x="330" y="222" text-anchor="middle" class="tick">6</text><text x="132" y="19" text-anchor="end" class="cat-r">1. Banco sem tranca</text><text x="132" y="35" text-anchor="end" class="cat-s">achados · fortes</text><rect x="140.00" y="9" width="30.77" height="13" rx="1.6" fill="#B91C1C"/><rect x="171.67" y="9" width="30.77" height="13" rx="1.6" fill="#EA580C"/><rect x="203.33" y="9" width="94.10" height="13" rx="1.6" fill="#D97706"/><text x="302.33" y="19.5" class="val">5</text><rect x="140" y="25" width="62.43" height="13" rx="1.6" fill="#059669"/><text x="207.33" y="35.5" class="val val-f">2</text><text x="132" y="61" text-anchor="end" class="cat-r">2. Permissão no navegador</text><text x="132" y="77" text-anchor="end" class="cat-s">achados · fortes</text><rect x="140.00" y="51" width="30.77" height="13" rx="1.6" fill="#D97706"/><text x="175.67" y="61.5" class="val">1</text><rect x="140" y="67" width="62.43" height="13" rx="1.6" fill="#059669"/><text x="207.33" y="77.5" class="val val-f">2</text><text x="132" y="103" text-anchor="end" class="cat-r">3. IDOR</text><text x="132" y="119" text-anchor="end" class="cat-s">achados · fortes</text><rect x="140.00" y="93" width="62.43" height="13" rx="1.6" fill="#EA580C"/><rect x="203.33" y="93" width="94.10" height="13" rx="1.6" fill="#D97706"/><rect x="298.33" y="93" width="30.77" height="13" rx="1.6" fill="#2563EB"/><text x="334.00" y="103.5" class="val">6</text><rect x="140" y="109" width="30.77" height="13" rx="1.6" fill="#059669"/><text x="175.67" y="119.5" class="val val-f">1</text><text x="132" y="145" text-anchor="end" class="cat-r">4. Chaves expostas</text><text x="132" y="161" text-anchor="end" class="cat-s">achados · fortes</text><rect x="140.00" y="135" width="30.77" height="13" rx="1.6" fill="#D97706"/><rect x="171.67" y="135" width="30.77" height="13" rx="1.6" fill="#2563EB"/><text x="207.33" y="145.5" class="val">2</text><rect x="140" y="151" width="125.77" height="13" rx="1.6" fill="#059669"/><text x="270.67" y="161.5" class="val val-f">4</text><text x="132" y="187" text-anchor="end" class="cat-r">5. Inputs (XSS)</text><text x="132" y="203" text-anchor="end" class="cat-s">achados · fortes</text><rect x="140.00" y="177" width="62.43" height="13" rx="1.6" fill="#64748B"/><text x="207.33" y="187.5" class="val">2</text><rect x="140" y="193" width="157.43" height="13" rx="1.6" fill="#059669"/><text x="302.33" y="203.5" class="val val-f">5</text></svg>
+    <div class="leg-barras"><span><i style="background:#B91C1C"></i>Crítica</span><span><i style="background:#EA580C"></i>Alta</span><span><i style="background:#D97706"></i>Média</span><span><i style="background:#2563EB"></i>Baixa</span><span><i style="background:#64748B"></i>Informativa</span><span><i style="background:#059669"></i>Ponto forte</span></div>
+  </div></div>
+    <h3 class="mini">Critério de severidade</h3>
+    <table class="rubrica"><tr><td><span class="chip" style="--c:#B91C1C">Crítica</span></td><td>Falha estrutural: qualquer pessoa que alcance a API lê e altera todos os dados.</td></tr><tr><td><span class="chip" style="--c:#EA580C">Alta</span></td><td>Exploração direta, sem pré-requisito, sobre dados financeiros (leitura ou escrita).</td></tr><tr><td><span class="chip" style="--c:#D97706">Média</span></td><td>Exige condição adicional (outra falha, credencial, configuração) ou atinge dados pouco sensíveis.</td></tr><tr><td><span class="chip" style="--c:#2563EB">Baixa</span></td><td>Endurecimento: impacto pequeno ou indireto.</td></tr><tr><td><span class="chip" style="--c:#64748B">Informativa</span></td><td>Não explorável hoje: registra um limite ou um risco latente.</td></tr></table>
+    <div class="caixa">
+      <h3>Condições de explorabilidade</h3>
+      <ul class="colunas"><li><strong>Alcance de rede:</strong> a API escuta em <code>::</code> na porta 3000 e o Postgres em <code>0.0.0.0:5434</code>. Nesta máquina, o Firewall do Windows bloqueia a entrada (nenhuma regra para node.exe, Docker ou essas portas): hoje, explorar exige estar na própria máquina. Um “Permitir” no aviso do Windows, outra máquina ou um deploy abrem o acesso.</li><li><strong>Credenciais do banco:</strong> a senha local é forte. Com os placeholders do <code>.env.example</code>, o banco fica aberto a quem alcançar a porta.</li><li><strong>Flags e modos:</strong> nenhuma rota depende de feature flag. O fallback com dados de exemplo do front só existe em <code>npm run dev</code>.</li><li><strong>A severidade mede o risco do código.</strong> As condições acima valem para esta máquina e mudam sem nenhuma alteração no repositório.</li></ul>
+    </div>
+  </section>
+<section class="pagina">
+    <h1 class="sec" data-num="2">Pontos fortes e pontos fracos</h1>
+    <h2 class="sub-sec">Pontos fracos: os riscos centrais</h2>
+    <ol class="fracos"><li><strong>Não há autenticação nem dono dos dados.</strong> É a causa raiz comum das categorias 1, 2 e 3: 10 dos 16 achados (F01–F03, F06–F12) se resolvem com ela.</li><li><strong>A única barreira hoje é a rede, e ela é externa ao projeto.</strong> API e Postgres escutam em todas as interfaces. Nesta máquina, quem bloqueia o acesso de fora é o Firewall do Windows.</li><li><strong>IDs sequenciais sem checagem de posse.</strong> Ler, alterar ou apagar tudo é um laço de 1 a N.</li><li><strong>Sem defesa em profundidade no banco.</strong> A API usa o superusuário, que ignoraria RLS mesmo que ela existisse.</li><li><strong>A configuração confia em quem instala.</strong> Placeholders públicos são aceitos e nada é validado no boot.</li></ol>
+    <h2 class="sub-sec">Pontos fortes: o que está protegido, com evidência</h2>
+    <p class="mini-nota">O número no círculo indica a categoria da auditoria a que o ponto forte se refere.</p>
+    <table class="fortes">
+      <colgroup><col class="k1"><col><col class="k3"></colgroup>
+      <thead><tr><th>Cat.</th><th>Ponto forte</th><th>Evidência</th></tr></thead>
+      <tbody><tr>
+      <td class="c-cat"><span class="catn">1</span></td>
+      <td><div class="pf-tit">SQL 100% parametrizado</div><div class="pf-txt">As 10 queries usam <code>$1…$n</code>. A única interpolação é a constante <code>COLUNAS</code>, sem dado do usuário. Não há caminho de SQL injection para contornar o banco.</div></td>
+      <td class="c-ev"><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:6</b></span></div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">categoriasController.js<b>:4</b></span></div></td>
+    </tr><tr>
+      <td class="c-cat"><span class="catn">1</span></td>
+      <td><div class="pf-tit">Dev server do Vite só em localhost</div><div class="pf-txt">Sem <code>server.host</code> no <code>vite.config.js</code>, o Vite escuta só em <code>localhost</code>, e o proxy para a API também é local.</div></td>
+      <td class="c-ev"><div class="ref"><span class="ref-dir">frontend/</span><span class="ref-arq">vite.config.js<b>:36-48</b></span></div></td>
+    </tr><tr>
+      <td class="c-cat"><span class="catn">2</span></td>
+      <td><div class="pf-tit">Regras do formulário reimpostas no servidor</div><div class="pf-txt">Os limites do front (<code>LIMITES</code>) espelham o Zod do backend: o servidor não confia no navegador. Valor, tamanho dos textos, método e parcelas são validados nas duas pontas.</div></td>
+      <td class="c-ev"><div class="ref"><span class="ref-dir">frontend/src/utils/</span><span class="ref-arq">despesas.js<b>:14</b></span></div><div class="ref"><span class="ref-dir">backend/src/validators/</span><span class="ref-arq">despesasValidator.js<b>:4-30</b></span></div></td>
+    </tr><tr>
+      <td class="c-cat"><span class="catn">2</span></td>
+      <td><div class="pf-tit">Sem mass assignment</div><div class="pf-txt">Os controllers leem só <code>req.validacao</code>, a saída do Zod, e <code>z.object</code> descarta chaves extras (<code>id</code>, <code>admin</code>, um futuro <code>usuario_id</code>). Nenhum controller usa <code>req.body</code>.</div></td>
+      <td class="c-ev"><div class="ref"><span class="ref-dir">backend/src/middleware/</span><span class="ref-arq">validate.js<b>:5-7</b></span></div></td>
+    </tr><tr>
+      <td class="c-cat"><span class="catn">3</span></td>
+      <td><div class="pf-tit"><code>:id</code> validado nas 6 rotas por ID</div><div class="pf-txt"><code>idParamsSchema</code> só aceita dígitos e um inteiro entre 1 e 2.147.483.647, antes de tocar no banco. Há testes para <code>abc</code>, <code>0</code>, <code>-1</code>, <code>1.5</code> e <code>99999999999</code>. Garante o formato, não a posse.</div></td>
+      <td class="c-ev"><div class="ref"><span class="ref-dir">backend/src/validators/</span><span class="ref-arq">idSchema.js<b>:3-12</b></span></div><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">despesasRoutes.js<b>:11-13</b></span></div><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">categoriasRoutes.js<b>:11,<wbr>13,<wbr>14</b></span></div></td>
+    </tr><tr>
+      <td class="c-cat"><span class="catn">4</span></td>
+      <td><div class="pf-tit">Nenhum segredo versionado</div><div class="pf-txt">Árvore e histórico (42 commits, 7 refs) limpos. O <code>.env</code> nunca foi commitado, e o <code>.env.example</code> só tem placeholders.</div></td>
+      <td class="c-ev"><div class="ref"><span class="ref-arq">.gitignore<b>:3</b></span></div></td>
+    </tr><tr>
+      <td class="c-cat"><span class="catn">4</span></td>
+      <td><div class="pf-tit">Credenciais só por variáveis de ambiente</div><div class="pf-txt">O Pool lê tudo de <code>process.env</code>, e o compose usa <code>env_file</code>. Não há senha inline em nenhuma versão desses arquivos no histórico.</div></td>
+      <td class="c-ev"><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">db.js<b>:5-11</b></span></div><div class="ref"><span class="ref-dir">backend/</span><span class="ref-arq">docker-compose.yml<b>:6-7</b></span></div></td>
+    </tr><tr>
+      <td class="c-cat"><span class="catn">4</span></td>
+      <td><div class="pf-tit">Bundle de produção sem segredos</div><div class="pf-txt">Sem variáveis <code>VITE_</code> nem credenciais. <code>import.meta.env.DEV</code> é eliminado no build, então o fallback de dados de exemplo não vai para produção. <code>sourcemap: false</code>, e o <code>frontend/.gitignore</code> cobre <code>.env.*</code>.</div></td>
+      <td class="c-ev"><div class="ref"><span class="ref-dir">frontend/src/services/</span><span class="ref-arq">api.js<b>:87</b></span></div><div class="ref"><span class="ref-dir">frontend/</span><span class="ref-arq">vite.config.js<b>:34</b></span></div><div class="ref"><span class="ref-dir">frontend/</span><span class="ref-arq">.gitignore<b>:15-18</b></span></div></td>
+    </tr><tr>
+      <td class="c-cat"><span class="catn">4</span></td>
+      <td><div class="pf-tit"><code>.env</code> local com senha forte</div><div class="pf-txt">Usuário e senha diferem do exemplo, e a senha é forte. Verificado sem exibir o valor.</div></td>
+      <td class="c-ev"><div class="ref ref-livre">.env (não versionado)</div></td>
+    </tr><tr>
+      <td class="c-cat"><span class="catn">5</span></td>
+      <td><div class="pf-tit">Zero sinks perigosos no frontend</div><div class="pf-txt">Nenhum <code>dangerouslySetInnerHTML</code>, <code>innerHTML</code>, <code>eval</code>, <code>new Function</code> ou <code>href</code>/<code>src</code> dinâmico. O oxlint com <code>react/no-danger</code>, <code>react/no-danger-with-children</code>, <code>react/jsx-no-script-url</code>, <code>no-eval</code> e <code>no-new-func</code> passa sem erro.</div></td>
+      <td class="c-ev"><div class="ref ref-livre">frontend/src (16 arquivos)</div><div class="ref ref-livre">frontend/public/tema.js</div></td>
+    </tr><tr>
+      <td class="c-cat"><span class="catn">5</span></td>
+      <td><div class="pf-tit">Cor validada antes do <code>style</code> inline</div><div class="pf-txt"><code>corSegura</code> só aceita hexadecimal, e o backend também valida com regex: um <code>url(...)</code> não chega ao CSS.</div></td>
+      <td class="c-ev"><div class="ref"><span class="ref-dir">frontend/src/utils/</span><span class="ref-arq">despesas.js<b>:49-53</b></span></div><div class="ref"><span class="ref-dir">backend/src/validators/</span><span class="ref-arq">categoriasValidator.js<b>:3,<wbr>11-13</b></span></div><div class="ref"><span class="ref-dir">frontend/src/components/</span><span class="ref-arq">ExpenseList.jsx<b>:22</b></span></div><div class="ref"><span class="ref-dir">frontend/src/components/</span><span class="ref-arq">ChipGroup.jsx<b>:74</b></span></div></td>
+    </tr><tr>
+      <td class="c-cat"><span class="catn">5</span></td>
+      <td><div class="pf-tit"><code>localStorage</code> tratado como não confiável</div><div class="pf-txt">O tema e o último método de pagamento passam por lista branca antes do uso.</div></td>
+      <td class="c-ev"><div class="ref"><span class="ref-dir">frontend/public/</span><span class="ref-arq">tema.js<b>:6-10</b></span></div><div class="ref"><span class="ref-dir">frontend/src/hooks/</span><span class="ref-arq">useTema.js<b>:8-15</b></span></div><div class="ref"><span class="ref-dir">frontend/src/components/</span><span class="ref-arq">ExpenseModal.jsx<b>:35-42</b></span></div></td>
+    </tr><tr>
+      <td class="c-cat"><span class="catn">5</span></td>
+      <td><div class="pf-tit">CSP restritiva no build</div><div class="pf-txt"><code>script-src &#39;self&#39;</code>, <code>object-src &#39;none&#39;</code>, <code>base-uri &#39;self&#39;</code> e <code>form-action &#39;self&#39;</code>, presentes no <code>dist/index.html</code>. O script de tema é externo para não exigir <code>&#39;unsafe-inline&#39;</code>.</div></td>
+      <td class="c-ev"><div class="ref"><span class="ref-dir">frontend/</span><span class="ref-arq">vite.config.js<b>:9-19</b></span></div><div class="ref"><span class="ref-dir">frontend/</span><span class="ref-arq">index.html<b>:9-10</b></span></div></td>
+    </tr><tr>
+      <td class="c-cat"><span class="catn">5</span></td>
+      <td><div class="pf-tit">Página de erro do Express escapa a entrada</div><div class="pf-txt">Teste com <code>&lt;img src=x onerror=alert(1)&gt;</code> em JSON malformado: a resposta trouxe <code>&amp;lt;img src=x</code>. Não há XSS refletido.</div></td>
+      <td class="c-ev"><div class="ref ref-livre">teste em runtime (seção 7)</div></td>
+    </tr></tbody>
+    </table>
+  </section>
+<section class="pagina">
+    <h1 class="sec" data-num="3">Achados detalhados por categoria</h1>
+    <div class="cat">
+      <div class="cat-h"><span class="catn grande">1</span><h2>Banco sem tranca</h2><span class="cat-sub">isolamento de dono ou inquilino</span><span class="cat-cnt"><span class="chip" style="--c:#B91C1C">Crítica</span><span class="cnt">1</span> <span class="chip" style="--c:#EA580C">Alta</span><span class="cnt">1</span> <span class="chip" style="--c:#D97706">Média</span><span class="cnt">3</span></span></div>
+      <div class="cat-box"><p><strong>Mecanismo de isolamento detectado: nenhum.</strong> Não há tabela de usuários, coluna de dono, middleware de autenticação nem <code>ENABLE ROW LEVEL SECURITY</code>/<code>CREATE POLICY</code>. O isolamento por dono está no roteiro do projeto (item A5 do <code>CLAUDE.md</code>) e ainda não foi implementado.</p><p class="cobertura"><b>Cobertura:</b> 11 rotas, 10 queries em 2 controllers, <code>app.js</code>, <code>routes/index.js</code>, <code>init.sql</code>, <code>db.js</code> e <code>docker-compose.yml</code>. Endereço de escuta e firewall verificados em runtime.</p></div>
+      <table class="achados">
+  <colgroup><col class="k1"><col class="k2"><col></colgroup>
+  <thead><tr><th>Severidade</th><th>Arquivo:linha</th><th>Descrição</th></tr></thead>
+  <tbody><tr><td class="c-sev"><span class="chip" style="--c:#B91C1C">Crítica</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/</span><span class="ref-arq">app.js<b>:5-7</b></span></div><div class="ref-nota">nenhum middleware de auth antes das rotas</div><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">index.js<b>:6-7</b></span></div><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">init.sql<b>:1-9</b></span></div><div class="ref-nota">tabela <code>despesas</code> sem coluna de dono</div><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">init.sql<b>:11-20</b></span></div><div class="ref-nota">tabela <code>categorias</code> sem coluna de dono</div><div class="ref"><span class="ref-dir">frontend/src/services/</span><span class="ref-arq">api.js<b>:38-41</b></span></div><div class="ref-nota"><code>fetch</code> sem <code>Authorization</code> nem credenciais</div><div class="ref"><span class="ref-arq">package.json<b>:21</b></span></div><div class="ref-nota">instalado, nunca importado</div></td><td class="c-desc"><div class="f-tit"><span class="fid">F01</span>API sem autenticação e dados sem dono: não existe mecanismo de isolamento</div><p>Entre <code>express.json()</code> e os routers não há middleware de autenticação. As tabelas não têm coluna de dono e não há RLS. Quem alcança a porta 3000 tem os poderes do dono: lista, cria, altera e apaga despesas e categorias. O <code>jsonwebtoken</code> está nas dependências, mas nenhum arquivo o importa.</p><p class="f-sub"><b>Por que é explorável:</b> Verificado com Supertest: <code>GET /despesas</code>, <code>GET /despesas/1</code> e <code>GET /categorias</code> sem nenhum cabeçalho chegaram até a camada de banco. A resposta foi 500 só porque o Postgres estava desligado; com o banco no ar, é 200 com os dados. Nenhum caminho do código responde 401.</p><p class="f-sub"><b>Condição:</b> Alcance de rede. <code>server.js:6</code> escuta em <code>::</code> (todas as interfaces). Nesta máquina o Firewall do Windows bloqueia a entrada (não há regra para node.exe nem para a porta 3000). É uma proteção externa ao projeto: some com um “Permitir” no aviso do Windows, em outra máquina ou num deploy.</p><figure class="snip" style="--c:#B91C1C"><figcaption>backend/src/app.js:5-7</figcaption><pre>app.use(express.json())
+
+routes(app)</pre></figure><figure class="snip" style="--c:#B91C1C"><figcaption>backend/src/routes/index.js:6-7</figcaption><pre>app.use(despesasRoutes);
+app.use(categoriasRoutes);</pre></figure><figure class="snip" style="--c:#B91C1C"><figcaption>package.json:21</figcaption><pre>&quot;jsonwebtoken&quot;: &quot;^9.0.3&quot;,</pre></figure><p class="f-issue">Issue 1 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#EA580C">Alta</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:12-14</b></span></div><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">despesasRoutes.js<b>:9</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F02</span><code>GET /despesas</code> devolve todas as despesas, sem filtro de dono e sem limite</div><p>A listagem não tem <code>WHERE</code> nem <code>LIMIT</code>. Uma requisição entrega o histórico financeiro completo: descrição, valor, categoria, forma de pagamento, parcelas e status. Com mais de um usuário, cada um veria as despesas de todos.</p><p class="f-sub"><b>Por que é explorável:</b> <code>curl http://&lt;host&gt;:3000/despesas</code>.</p><p class="f-sub"><b>Condição:</b> A mesma de F01.</p><figure class="snip" style="--c:#EA580C"><figcaption>backend/src/controllers/despesasController.js:12-14</figcaption><pre>const { rows } = await pool.query(
+    `SELECT ${COLUNAS} FROM despesas`
+);</pre></figure><figure class="snip" style="--c:#EA580C"><figcaption>backend/src/routes/despesasRoutes.js:9</figcaption><pre>routes.get(&#39;/despesas&#39;, DespesasController.listarDespesas);</pre></figure><p class="f-issue">Issue 1 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#D97706">Média</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">categoriasController.js<b>:10</b></span></div><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">categoriasRoutes.js<b>:10</b></span></div><div class="ref-nota">rota sem autenticação</div><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">init.sql<b>:13</b></span></div><div class="ref-nota">unicidade global, não por dono</div></td><td class="c-desc"><div class="f-tit"><span class="fid">F03</span><code>GET /categorias</code> devolve todas as categorias, sem filtro de dono</div><p>Mesmo padrão de F02, com dados menos sensíveis: nome, cor, ícone, limite mensal e tipo de custo. Ao introduzir o dono, o <code>UNIQUE</code> global em <code>nome</code> precisa virar <code>UNIQUE (usuario_id, nome)</code>. Do contrário, a categoria de um usuário bloqueia o nome para os outros, e o erro de duplicidade revela que ele existe.</p><p class="f-sub"><b>Por que é explorável:</b> <code>curl http://&lt;host&gt;:3000/categorias</code>.</p><p class="f-sub"><b>Condição:</b> A mesma de F01.</p><figure class="snip" style="--c:#D97706"><figcaption>backend/src/controllers/categoriasController.js:10</figcaption><pre>const { rows } = await pool.query(`SELECT ${COLUNAS} FROM categorias`);</pre></figure><figure class="snip" style="--c:#D97706"><figcaption>backend/src/db/init.sql:13</figcaption><pre>nome           VARCHAR(50) NOT NULL UNIQUE,</pre></figure><p class="f-issue">Issue 1 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#D97706">Média</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/</span><span class="ref-arq">docker-compose.yml<b>:6-7</b></span></div><div class="ref-nota">o mesmo usuário inicializa o contêiner</div><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">db.js<b>:8-9</b></span></div><div class="ref-nota">e conecta a API</div></td><td class="c-desc"><div class="f-tit"><span class="fid">F04</span>A API conecta ao Postgres com o superusuário criado pela imagem</div><p>O <code>POSTGRES_USER</code> do <code>.env</code> serve a dois fins: a imagem oficial <code>postgres:16</code> cria esse usuário como SUPERUSER na primeira subida, e o Pool da API conecta com ele. A aplicação roda com poder total sobre o servidor de banco.</p><p class="f-sub"><b>Por que é explorável:</b> Superusuário ignora RLS, que então não serve como tranca. Também pode <code>DROP</code> e <code>ALTER</code>, ler outros bancos do cluster e executar comandos no contêiner com <code>COPY … TO PROGRAM</code>. A exploração exige outra falha (injeção, hoje inexistente) ou a credencial.</p><p class="f-sub"><b>Condição:</b> Não verificado em runtime: o Docker estava parado. Para confirmar: <code>SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user;</code>.</p><figure class="snip" style="--c:#D97706"><figcaption>backend/docker-compose.yml:6-7</figcaption><pre>env_file:
+  - ../.env</pre></figure><figure class="snip" style="--c:#D97706"><figcaption>backend/src/db/db.js:8-9</figcaption><pre>user: process.env.POSTGRES_USER,
+password: process.env.POSTGRES_PASSWORD,</pre></figure><p class="f-issue">Issue 4 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#D97706">Média</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/</span><span class="ref-arq">server.js<b>:6</b></span></div><div class="ref-nota">sem host: escuta em <code>::</code></div><div class="ref"><span class="ref-dir">backend/</span><span class="ref-arq">docker-compose.yml<b>:8-9</b></span></div><div class="ref-nota">sem IP: publica em 0.0.0.0</div></td><td class="c-desc"><div class="f-tit"><span class="fid">F05</span>API e Postgres escutam em todas as interfaces de rede</div><p><code>app.listen(PORT)</code> sem host abre a API em <code>::</code> (IPv4 e IPv6), e o compose publica o Postgres em <code>0.0.0.0:5434</code>. Para a API, isso transforma F01 numa falha de rede local. Para o banco, expõe o login do superusuário (F04): a imagem aceita conexões remotas com senha (<code>host all all all scram-sha-256</code>).</p><p class="f-sub"><b>Por que é explorável:</b> Verificado: <code>app.listen</code> sem host devolve <code>{&quot;address&quot;:&quot;::&quot;,&quot;family&quot;:&quot;IPv6&quot;}</code>.</p><p class="f-sub"><b>Condição:</b> Firewall do host. Nesta máquina não há regra de entrada para node.exe, Docker ou as portas 3000 e 5434, e a senha local é forte. Com a senha placeholder (F13), o banco fica aberto a quem alcançar a porta.</p><figure class="snip" style="--c:#D97706"><figcaption>backend/server.js:6</figcaption><pre>app.listen(PORT, () =&gt; {</pre></figure><figure class="snip" style="--c:#D97706"><figcaption>backend/docker-compose.yml:8-9</figcaption><pre>ports:
+  - &quot;5434:5432&quot;</pre></figure><p class="f-issue">Issue 3 na seção 8</p></td></tr></tbody>
+</table>
+    </div><div class="cat">
+      <div class="cat-h"><span class="catn grande">2</span><h2>Permissão definida no navegador</h2><span class="cat-sub">gate de papel só no frontend</span><span class="cat-cnt"><span class="chip" style="--c:#D97706">Média</span><span class="cnt">1</span></span></div>
+      <div class="cat-box"><p><strong>Não se aplica no sentido estrito:</strong> o frontend não tem papéis nem gates. As únicas ocorrências de <code>role=</code> são atributos ARIA. Não existe, portanto, UI que esconda ações por papel. O cruzamento das ações com as rotas encontrou o caso análogo abaixo: uma operação de configuração sem UI e aberta no servidor.</p><p class="cobertura"><b>Cobertura:</b> Os 16 arquivos JS/JSX de <code>frontend/src</code>, todas as chamadas de <code>services/api.js</code> e as rotas de despesas e categorias.</p></div>
+      <table class="achados">
+  <colgroup><col class="k1"><col class="k2"><col></colgroup>
+  <thead><tr><th>Severidade</th><th>Arquivo:linha</th><th>Descrição</th></tr></thead>
+  <tbody><tr><td class="c-sev"><span class="chip" style="--c:#D97706">Média</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">categoriasRoutes.js<b>:12-14</b></span></div><div class="ref"><span class="ref-dir">frontend/src/services/</span><span class="ref-arq">api.js<b>:111-118</b></span></div><div class="ref-nota">a única chamada de categorias é o GET</div></td><td class="c-desc"><div class="f-tit"><span class="fid">F06</span>Escritas em <code>/categorias</code>: sem UI no frontend, abertas no servidor</div><p>A gestão de categorias não aparece na interface (o front só faz <code>GET /categorias</code>), mas <code>POST</code>, <code>PUT</code> e <code>DELETE /categorias</code> respondem a qualquer cliente. Omitir o botão não é controle de acesso.</p><p class="f-sub"><b>Por que é explorável:</b> <code>PUT /categorias/1</code> com <code>{&quot;nome&quot;:&quot;x&quot;,&quot;descricao&quot;:&quot;x&quot;,&quot;limiteMensal&quot;:0,&quot;ativo&quot;:false}</code> desativa a categoria, que some da tela, porque o front filtra as inativas (<code>api.js:114</code>).</p><p class="f-sub"><b>Condição:</b> A mesma de F01.</p><figure class="snip" style="--c:#D97706"><figcaption>backend/src/routes/categoriasRoutes.js:12-14</figcaption><pre>routes.post(&#39;/categorias&#39;, validate({ body: categoriaSchema }), …);
+routes.put(&#39;/categorias/:id&#39;, validate({ params: idParamsSchema, body: categoriaSchema }), …);
+routes.delete(&#39;/categorias/:id&#39;, validate({ params: idParamsSchema }), …);</pre></figure><p class="f-issue">Issue 1 na seção 8</p></td></tr></tbody>
+</table>
+    </div><div class="cat">
+      <div class="cat-h"><span class="catn grande">3</span><h2>IDOR</h2><span class="cat-sub">objeto por ID sem checagem de posse</span><span class="cat-cnt"><span class="chip" style="--c:#EA580C">Alta</span><span class="cnt">2</span> <span class="chip" style="--c:#D97706">Média</span><span class="cnt">3</span> <span class="chip" style="--c:#2563EB">Baixa</span><span class="cnt">1</span></span></div>
+      <div class="cat-box"><p><strong>Os 6 handlers por ID filtram só por <code>id</code>.</strong> Os IDs são <code>SERIAL</code> (<code>init.sql:2</code> e <code>init.sql:12</code>), sequenciais a partir de 1: enumerar é um laço. O <code>idParamsSchema</code> garante o formato do número, não a posse. Como não existe dono, hoje cada registro pertence a qualquer um. A correção entra junto com a autenticação, mas cada query precisa dela.</p><p class="cobertura"><b>Cobertura:</b> 100% dos handlers por ID: 3 em <code>despesasController.js</code> e 3 em <code>categoriasController.js</code>, com as rotas correspondentes.</p></div>
+      <table class="achados">
+  <colgroup><col class="k1"><col class="k2"><col></colgroup>
+  <thead><tr><th>Severidade</th><th>Arquivo:linha</th><th>Descrição</th></tr></thead>
+  <tbody><tr><td class="c-sev"><span class="chip" style="--c:#EA580C">Alta</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">despesasRoutes.js<b>:12</b></span></div><div class="ref-nota">rota</div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:62-73</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F07</span>IDOR: <code>PUT /despesas/:id</code> altera qualquer despesa</div><p>O <code>UPDATE</code> filtra só por <code>id</code>. Com IDs sequenciais, qualquer cliente reescreve valor, descrição, forma de pagamento e status de qualquer lançamento, por exemplo marcando contas pendentes como pagas.</p><p class="f-sub"><b>Por que é explorável:</b> <code>PUT /despesas/1</code>, <code>/2</code>, <code>/3</code>… com um corpo válido.</p><figure class="snip" style="--c:#EA580C"><figcaption>backend/src/controllers/despesasController.js:62-73</figcaption><pre>const { rows } = await pool.query(
+    `UPDATE despesas
+        SET descricao=$1,
+        …
+    WHERE id=$7
+    RETURNING ${COLUNAS}`,
+    [descricao, valor, categoria, metodoPagamento, parcelas, status, id]
+);</pre></figure><p class="f-issue">Issue 2 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#EA580C">Alta</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">despesasRoutes.js<b>:13</b></span></div><div class="ref-nota">rota</div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:89-92</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F08</span>IDOR: <code>DELETE /despesas/:id</code> apaga qualquer despesa</div><p>O <code>DELETE</code> filtra só por <code>id</code> e é físico (não há soft delete). Um laço de 1 a N apaga o histórico inteiro.</p><p class="f-sub"><b>Por que é explorável:</b> <code>DELETE /despesas/1</code>, <code>/2</code>, <code>/3</code>…</p><figure class="snip" style="--c:#EA580C"><figcaption>backend/src/controllers/despesasController.js:89-92</figcaption><pre>const { rowCount } = await pool.query(
+    `DELETE FROM despesas WHERE id=$1`,
+    [id]
+)</pre></figure><p class="f-issue">Issue 2 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#D97706">Média</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">despesasRoutes.js<b>:11</b></span></div><div class="ref-nota">rota</div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:42-45</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F09</span>IDOR: <code>GET /despesas/:id</code> lê qualquer despesa</div><p>O mesmo defeito, em leitura. O impacto incremental é pequeno hoje, porque F02 já entrega tudo. Mas a diferença entre 200 e 404 revela quais IDs existem, e a correção é a mesma.</p><figure class="snip" style="--c:#D97706"><figcaption>backend/src/controllers/despesasController.js:42-45</figcaption><pre>const { rows } = await pool.query(
+    `SELECT ${COLUNAS} FROM despesas WHERE id = $1`,
+    [req.validacao.params.id]
+);</pre></figure><p class="f-issue">Issue 2 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#D97706">Média</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">categoriasRoutes.js<b>:13</b></span></div><div class="ref-nota">rota</div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">categoriasController.js<b>:50-54</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F10</span>IDOR: <code>PUT /categorias/:id</code> altera qualquer categoria</div><p>O <code>UPDATE</code> filtra só por <code>id</code>: qualquer cliente renomeia, desativa ou muda o limite mensal de qualquer categoria.</p><figure class="snip" style="--c:#D97706"><figcaption>backend/src/controllers/categoriasController.js:50-54</figcaption><pre>`UPDATE categorias
+SET nome = $1, ativo = $2, descricao = $3, cor = $4, …
+WHERE id = $8
+RETURNING ${COLUNAS}`,[nome, ativo, descricao, cor, limiteMensal, tipoCusto, icone, id]</pre></figure><p class="f-issue">Issue 2 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#D97706">Média</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">categoriasRoutes.js<b>:14</b></span></div><div class="ref-nota">rota</div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">categoriasController.js<b>:70</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F11</span>IDOR: <code>DELETE /categorias/:id</code> apaga qualquer categoria</div><p>O <code>DELETE</code> filtra só por <code>id</code>. As despesas guardam a categoria como texto, sem FK, então não há cascata, mas a cor e o limite configurados se perdem.</p><figure class="snip" style="--c:#D97706"><figcaption>backend/src/controllers/categoriasController.js:70</figcaption><pre>const { rowCount } = await pool.query(`DELETE FROM categorias WHERE id = $1`, [id])</pre></figure><p class="f-issue">Issue 2 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#2563EB">Baixa</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/routes/</span><span class="ref-arq">categoriasRoutes.js<b>:11</b></span></div><div class="ref-nota">rota</div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">categoriasController.js<b>:20</b></span></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F12</span>IDOR: <code>GET /categorias/:id</code> lê qualquer categoria</div><p>Leitura de dados pouco sensíveis, já expostos por F03. Corrigir junto com as demais.</p><figure class="snip" style="--c:#2563EB"><figcaption>backend/src/controllers/categoriasController.js:20</figcaption><pre>const { rows } = await pool.query(`SELECT ${COLUNAS} FROM categorias WHERE id = $1`, [req.validacao.params.id]);</pre></figure><p class="f-issue">Issue 2 na seção 8</p></td></tr></tbody>
+</table>
+    </div><div class="cat">
+      <div class="cat-h"><span class="catn grande">4</span><h2>Chaves expostas</h2><span class="cat-sub">segredos e credenciais no código</span><span class="cat-cnt"><span class="chip" style="--c:#D97706">Média</span><span class="cnt">1</span> <span class="chip" style="--c:#2563EB">Baixa</span><span class="cnt">1</span></span></div>
+      <div class="cat-box"><p><strong>Nenhum segredo real versionado:</strong> nem na árvore, nem no histórico, nem no bundle. Os dois achados são de configuração: placeholders públicos aceitos sem validação e <code>.gitignore</code> da raiz incompleto.</p><p class="cobertura"><b>Cobertura:</b> Padrões buscados: senhas, <code>DATABASE_URL</code> e URLs <code>postgres://</code>, chaves AWS (<code>AKIA…</code>), GitHub (<code>ghp_</code>, <code>github_pat_</code>), <code>sk-…</code>, Slack (<code>xox…</code>), JWT (<code>eyJ…</code>), <code>PRIVATE KEY</code> e variáveis <code>VITE_</code>.</p></div>
+      <table class="achados">
+  <colgroup><col class="k1"><col class="k2"><col></colgroup>
+  <thead><tr><th>Severidade</th><th>Arquivo:linha</th><th>Descrição</th></tr></thead>
+  <tbody><tr><td class="c-sev"><span class="chip" style="--c:#D97706">Média</span></td><td class="c-ref"><div class="ref"><span class="ref-arq">.env.example<b>:7-8</b></span></div><div class="ref"><span class="ref-arq">.env.example<b>:14</b></span></div><div class="ref-nota">duplicada e não usada</div><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">db.js<b>:8-9</b></span></div><div class="ref-nota">lê <code>process.env</code> sem validar</div><div class="ref"><span class="ref-dir">backend/</span><span class="ref-arq">server.js<b>:1-8</b></span></div><div class="ref-nota">sobe sem checar a configuração</div><div class="ref"><span class="ref-arq">README.md<b>:156</b></span></div><div class="ref-nota"><code>cp .env.example .env</code></div></td><td class="c-desc"><div class="f-tit"><span class="fid">F13</span>Credenciais placeholder públicas aceitas sem validação no boot</div><p>O setup manda copiar o <code>.env.example</code> (<code>README.md:156</code>, <code>CLAUDE.md:28</code>). Sem edição, o banco nasce com <code>seu_usuario_aqui</code> / <code>sua_senha_aqui</code>, uma credencial publicada no repositório, e esse usuário é superusuário (F04) na porta 5434 (F05). Nada no boot rejeita os placeholders ou a falta das variáveis: sem <code>POSTGRES_PASSWORD</code>, a API sobe e só falha na primeira query. <code>DATABASE_URL</code> repete a credencial e não é lida por nenhum código.</p><p class="f-sub"><b>Por que é explorável:</b> <code>psql -h &lt;host&gt; -p 5434 -U seu_usuario_aqui</code> com a senha do exemplo, em qualquer clone que siga o README sem editar o <code>.env</code>.</p><p class="f-sub"><b>Condição:</b> Não ocorre nesta máquina: o <code>.env</code> local difere do exemplo em usuário e senha, e a senha é forte (verificado sem exibir o valor).</p><figure class="snip" style="--c:#D97706"><figcaption>.env.example:7-8</figcaption><pre>POSTGRES_USER=seu_usuario_aqui
+POSTGRES_PASSWORD=sua_senha_aqui</pre></figure><figure class="snip" style="--c:#D97706"><figcaption>.env.example:14</figcaption><pre>DATABASE_URL=postgresql://seu_usuario_aqui:sua_senha_aqui@localhost:5434/din_din_db</pre></figure><p class="f-issue">Issue 5 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#2563EB">Baixa</span></td><td class="c-ref"><div class="ref"><span class="ref-arq">.gitignore<b>:3</b></span></div><div class="ref"><span class="ref-dir">frontend/</span><span class="ref-arq">.gitignore<b>:16-18</b></span></div><div class="ref-nota">contraste: a regra correta</div></td><td class="c-desc"><div class="f-tit"><span class="fid">F14</span><code>.gitignore</code> da raiz não cobre variações de <code>.env</code></div><p>Só <code>.env</code> é ignorado. Um <code>.env.local</code>, <code>.env.production</code> ou <code>.env.test</code> criado na raiz entra no próximo <code>git add .</code>. O <code>frontend/.gitignore</code> já tem a regra certa.</p><figure class="snip" style="--c:#2563EB"><figcaption>.gitignore:3</figcaption><pre>.env</pre></figure><figure class="snip" style="--c:#2563EB"><figcaption>frontend/.gitignore:16-18</figcaption><pre>.env
+.env.*
+!.env.example</pre></figure><p class="f-issue">Issue 5 na seção 8</p></td></tr></tbody>
+</table>
+    </div><div class="cat">
+      <div class="cat-h"><span class="catn grande">5</span><h2>Inputs sem tratamento (XSS)</h2><span class="cat-sub">injeção de HTML ou JS no navegador</span><span class="cat-cnt"><span class="chip" style="--c:#64748B">Informativa</span><span class="cnt">2</span></span></div>
+      <div class="cat-box"><p><strong>Nenhuma XSS explorável.</strong> Todo dado do usuário sai como texto JSX, escapado pelo React. O backend só responde JSON e uma string fixa em <code>GET /</code>. Não há templates, e-mails nem markdown. Não há lib de sanitização (DOMPurify ausente), e hoje ela não faz falta, porque nenhum ponto renderiza HTML.</p><p class="cobertura"><b>Cobertura:</b> 16 arquivos de <code>frontend/src</code>, <code>public/tema.js</code>, <code>index.html</code>, <code>vite.config.js</code> e <code>dist/</code>. Teste em runtime da página de erro e oxlint com regras anti-XSS.</p></div>
+      <table class="achados">
+  <colgroup><col class="k1"><col class="k2"><col></colgroup>
+  <thead><tr><th>Severidade</th><th>Arquivo:linha</th><th>Descrição</th></tr></thead>
+  <tbody><tr><td class="c-sev"><span class="chip" style="--c:#64748B">Informativa</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/validators/</span><span class="ref-arq">despesasValidator.js<b>:4-11</b></span></div><div class="ref-nota">só trim e tamanho</div><div class="ref"><span class="ref-dir">backend/src/validators/</span><span class="ref-arq">categoriasValidator.js<b>:6-10</b></span></div><div class="ref-nota">sem restrição de conteúdo</div><div class="ref"><span class="ref-dir">frontend/src/components/</span><span class="ref-arq">ExpenseList.jsx<b>:143,<wbr>152,<wbr>162,<wbr>168,<wbr>176,<wbr>193,<wbr>198</b></span></div><div class="ref-nota">saídas em texto JSX</div><div class="ref"><span class="ref-dir">frontend/src/components/</span><span class="ref-arq">ExpenseDetailsModal.jsx<b>:27,<wbr>44,<wbr>48</b></span></div><div class="ref-nota">saídas em texto JSX</div><div class="ref"><span class="ref-dir">frontend/src/components/</span><span class="ref-arq">FaltaPagar.jsx<b>:74,<wbr>78,<wbr>85</b></span></div><div class="ref-nota">saídas em texto JSX</div><div class="ref"><span class="ref-dir">frontend/src/components/</span><span class="ref-arq">ExpenseFilters.jsx<b>:75,<wbr>101-102</b></span></div><div class="ref-nota">saídas em texto JSX</div><div class="ref"><span class="ref-dir">frontend/src/components/</span><span class="ref-arq">Toast.jsx<b>:47</b></span></div><div class="ref-nota">mensagens com a descrição</div><div class="ref"><span class="ref-dir">frontend/src/components/</span><span class="ref-arq">ExpenseModal.jsx<b>:287,<wbr>404</b></span></div><div class="ref-nota">método antigo vindo da API</div></td><td class="c-desc"><div class="f-tit"><span class="fid">F15</span>A API guarda HTML bruto; a proteção depende só do escape na saída</div><p><code>&lt;img src=x onerror=alert(1)&gt;</code> em <code>descricao</code>, <code>categoria</code> ou <code>nome</code> é aceito e salvo como está. Hoje é inofensivo: todas as saídas verificadas são texto JSX, escapado pelo React. Escapar na saída é o desenho correto, mas nada impede uma regressão: um <code>dangerouslySetInnerHTML</code>, um relatório HTML ou um e-mail com esses campos viraria XSS armazenado.</p><p class="f-sub"><b>Condição:</b> Só se um novo consumidor renderizar esses campos como HTML sem escape.</p><p class="f-issue">Issue 7 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#64748B">Informativa</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">frontend/</span><span class="ref-arq">vite.config.js<b>:7-8</b></span></div><div class="ref"><span class="ref-dir">backend/src/</span><span class="ref-arq">app.js<b>:4-7</b></span></div><div class="ref-nota">sem helmet nem <code>x-powered-by</code> desligado</div></td><td class="c-desc"><div class="f-tit"><span class="fid">F16</span>CSP só por <code>&lt;meta&gt;</code> e só no build; sem cabeçalhos de segurança</div><p>A CSP do build é restritiva, mas <code>&lt;meta&gt;</code> não aceita <code>frame-ancestors</code> (clickjacking), e não há <code>X-Content-Type-Options</code> nem HSTS, porque o repositório não define o servidor que vai publicar o front. A API não envia cabeçalhos de segurança e expõe <code>X-Powered-By: Express</code> (verificado).</p><p class="f-sub"><b>Condição:</b> Relevante quando o front for publicado.</p><figure class="snip" style="--c:#64748B"><figcaption>frontend/vite.config.js:7-8</figcaption><pre>// frame-ancestors, HSTS e X-Content-Type-Options não funcionam em &lt;meta&gt;:
+// precisam vir como cabeçalho HTTP do servidor que hospedar o site.</pre></figure><p class="f-issue">Issue 6 na seção 8</p></td></tr></tbody>
+</table>
+    </div>
+    <h1 class="sec sec-cont" data-num="4">Observações fora das cinco categorias</h1>
+    <p>Verificadas e acionáveis, mas fora da contagem dos gráficos. Entram nas issues 6 e 8.</p>
+    <table class="achados">
+  <colgroup><col class="k1"><col class="k2"><col></colgroup>
+  <thead><tr><th>Severidade</th><th>Arquivo:linha</th><th>Descrição</th></tr></thead>
+  <tbody><tr><td class="c-sev"><span class="chip" style="--c:#2563EB">Baixa</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:19,<wbr>36,<wbr>54,<wbr>82,<wbr>100</b></span></div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">categoriasController.js<b>:14,<wbr>28,<wbr>40,<wbr>62,<wbr>78</b></span></div><div class="ref-nota">mesmo padrão</div></td><td class="c-desc"><div class="f-tit"><span class="fid">O1</span>Respostas 500 devolvem <code>error.message</code> do banco</div><p>Os 10 <code>catch</code> dos controllers devolvem <code>erro: error.message</code>: o texto cru do Postgres (nome de constraint, <code>numeric field overflow</code>) e dos erros de conexão. Facilita o reconhecimento do sistema.</p><figure class="snip" style="--c:#2563EB"><figcaption>backend/src/controllers/despesasController.js:19,36,54,82,100</figcaption><pre>return res.status(500).json({ message: &quot;Erro ao buscar despesas&quot;, erro: error.message });</pre></figure><p class="f-issue">Issue 6 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#2563EB">Baixa</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/</span><span class="ref-arq">app.js<b>:5</b></span></div><div class="ref-nota">sem handler de erro depois das rotas</div><div class="ref"><span class="ref-arq">package.json<b>:6-12</b></span></div><div class="ref-nota">nenhum script define <code>NODE_ENV</code></div></td><td class="c-desc"><div class="f-tit"><span class="fid">O2</span>JSON malformado devolve página HTML com stack trace</div><p>Sem handler de erro, a falha do body-parser cai no handler padrão do Express. Como nenhum script define <code>NODE_ENV</code>, ele roda em modo development e devolve HTML com a stack e caminhos absolutos do disco. A entrada ecoada sai escapada (não há XSS).</p><figure class="snip" style="--c:#2563EB"><figcaption>backend/src/app.js:5</figcaption><pre>app.use(express.json())</pre></figure><p class="f-issue">Issue 6 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#2563EB">Baixa</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/validators/</span><span class="ref-arq">categoriasValidator.js<b>:6-7,<wbr>10,<wbr>14,<wbr>17-19</b></span></div><div class="ref"><span class="ref-dir">backend/src/db/</span><span class="ref-arq">init.sql<b>:17</b></span></div><div class="ref-nota"><code>limite_mensal NUMERIC(10, 2) NOT NULL</code></div></td><td class="c-desc"><div class="f-tit"><span class="fid">O3</span>Schema de categorias sem limites de conteúdo e de faixa</div><p><code>nome</code> aceita string vazia (sem <code>.trim().min(1)</code>), <code>descricao</code> não tem <code>.max()</code>, <code>limiteMensal</code> aceita negativo e, acima de 99.999.999,99, estoura <code>NUMERIC(10,2)</code> e vira 500. <code>icone</code> aceita qualquer texto.</p><figure class="snip" style="--c:#2563EB"><figcaption>backend/src/validators/categoriasValidator.js:6-7,10,14,17-19</figcaption><pre>nome: z.string()
+       .max(50),
+…
+descricao: z.string(),
+…
+limiteMensal: z.number(),</pre></figure><p class="f-issue">Issue 8 na seção 8</p></td></tr><tr><td class="c-sev"><span class="chip" style="--c:#2563EB">Baixa</span></td><td class="c-ref"><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">despesasController.js<b>:12-14</b></span></div><div class="ref-nota">sem <code>LIMIT</code></div><div class="ref"><span class="ref-dir">backend/src/controllers/</span><span class="ref-arq">categoriasController.js<b>:10</b></span></div><div class="ref-nota">sem <code>LIMIT</code></div><div class="ref"><span class="ref-arq">package.json<b>:18-25</b></span></div><div class="ref-nota">nenhuma lib de rate limit</div></td><td class="c-desc"><div class="f-tit"><span class="fid">O4</span>Listagens sem paginação e sem rate limit</div><p>As duas listagens fazem <code>SELECT</code> sem <code>LIMIT</code>, e não há lib de rate limit: o custo de cada resposta cresce com a tabela (OWASP API4, consumo irrestrito de recursos).</p><p class="f-issue">Issue 8 na seção 8</p></td></tr></tbody>
+</table>
+  </section>
+<section class="pagina">
+    <h1 class="sec" data-num="5">Achados por arquivo, linha a linha</h1>
+    <p>55 referências em 25 arquivos, ordenadas por arquivo e linha. Inclui as observações O1–O4.</p>
+    <table class="indice">
+      <colgroup><col class="k1"><col class="k2"><col class="k3"><col></colgroup>
+      <thead><tr><th>Linha(s)</th><th>ID</th><th>Severidade</th><th>O que há ali</th></tr></thead>
+      <tbody><tr class="grupo"><td colspan="4">backend/docker-compose.yml</td></tr><tr><td class="lin">6-7</td><td class="id">F04</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>A API conecta ao Postgres com o superusuário criado pela imagem<span class="ix-nota"> · o mesmo usuário inicializa o contêiner</span></td></tr><tr><td class="lin">8-9</td><td class="id">F05</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>API e Postgres escutam em todas as interfaces de rede<span class="ix-nota"> · sem IP: publica em 0.0.0.0</span></td></tr><tr class="grupo"><td colspan="4">backend/server.js</td></tr><tr><td class="lin">1-8</td><td class="id">F13</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>Credenciais placeholder públicas aceitas sem validação no boot<span class="ix-nota"> · sobe sem checar a configuração</span></td></tr><tr><td class="lin">6</td><td class="id">F05</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>API e Postgres escutam em todas as interfaces de rede<span class="ix-nota"> · sem host: escuta em <code>::</code></span></td></tr><tr class="grupo"><td colspan="4">backend/src/app.js</td></tr><tr><td class="lin">4-7</td><td class="id">F16</td><td class="sv"><span class="chip" style="--c:#64748B">Informativa</span></td><td>CSP só por <code>&lt;meta&gt;</code> e só no build; sem cabeçalhos de segurança<span class="ix-nota"> · sem helmet nem <code>x-powered-by</code> desligado</span></td></tr><tr><td class="lin">5-7</td><td class="id">F01</td><td class="sv"><span class="chip" style="--c:#B91C1C">Crítica</span></td><td>API sem autenticação e dados sem dono: não existe mecanismo de isolamento<span class="ix-nota"> · nenhum middleware de auth antes das rotas</span></td></tr><tr><td class="lin">5</td><td class="id">O2</td><td class="sv"><span class="chip" style="--c:#2563EB">Baixa</span></td><td>JSON malformado devolve página HTML com stack trace<span class="ix-nota"> · sem handler de erro depois das rotas</span></td></tr><tr class="grupo"><td colspan="4">backend/src/controllers/categoriasController.js</td></tr><tr><td class="lin">10</td><td class="id">F03</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td><code>GET /categorias</code> devolve todas as categorias, sem filtro de dono</td></tr><tr><td class="lin">10</td><td class="id">O4</td><td class="sv"><span class="chip" style="--c:#2563EB">Baixa</span></td><td>Listagens sem paginação e sem rate limit<span class="ix-nota"> · sem <code>LIMIT</code></span></td></tr><tr><td class="lin">14,<wbr>28,<wbr>40,<wbr>62,<wbr>78</td><td class="id">O1</td><td class="sv"><span class="chip" style="--c:#2563EB">Baixa</span></td><td>Respostas 500 devolvem <code>error.message</code> do banco<span class="ix-nota"> · mesmo padrão</span></td></tr><tr><td class="lin">20</td><td class="id">F12</td><td class="sv"><span class="chip" style="--c:#2563EB">Baixa</span></td><td>IDOR: <code>GET /categorias/:id</code> lê qualquer categoria</td></tr><tr><td class="lin">50-54</td><td class="id">F10</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>IDOR: <code>PUT /categorias/:id</code> altera qualquer categoria</td></tr><tr><td class="lin">70</td><td class="id">F11</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>IDOR: <code>DELETE /categorias/:id</code> apaga qualquer categoria</td></tr><tr class="grupo"><td colspan="4">backend/src/controllers/despesasController.js</td></tr><tr><td class="lin">12-14</td><td class="id">F02</td><td class="sv"><span class="chip" style="--c:#EA580C">Alta</span></td><td><code>GET /despesas</code> devolve todas as despesas, sem filtro de dono e sem limite</td></tr><tr><td class="lin">12-14</td><td class="id">O4</td><td class="sv"><span class="chip" style="--c:#2563EB">Baixa</span></td><td>Listagens sem paginação e sem rate limit<span class="ix-nota"> · sem <code>LIMIT</code></span></td></tr><tr><td class="lin">19,<wbr>36,<wbr>54,<wbr>82,<wbr>100</td><td class="id">O1</td><td class="sv"><span class="chip" style="--c:#2563EB">Baixa</span></td><td>Respostas 500 devolvem <code>error.message</code> do banco</td></tr><tr><td class="lin">42-45</td><td class="id">F09</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>IDOR: <code>GET /despesas/:id</code> lê qualquer despesa</td></tr><tr><td class="lin">62-73</td><td class="id">F07</td><td class="sv"><span class="chip" style="--c:#EA580C">Alta</span></td><td>IDOR: <code>PUT /despesas/:id</code> altera qualquer despesa</td></tr><tr><td class="lin">89-92</td><td class="id">F08</td><td class="sv"><span class="chip" style="--c:#EA580C">Alta</span></td><td>IDOR: <code>DELETE /despesas/:id</code> apaga qualquer despesa</td></tr><tr class="grupo"><td colspan="4">backend/src/db/db.js</td></tr><tr><td class="lin">8-9</td><td class="id">F04</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>A API conecta ao Postgres com o superusuário criado pela imagem<span class="ix-nota"> · e conecta a API</span></td></tr><tr><td class="lin">8-9</td><td class="id">F13</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>Credenciais placeholder públicas aceitas sem validação no boot<span class="ix-nota"> · lê <code>process.env</code> sem validar</span></td></tr><tr class="grupo"><td colspan="4">backend/src/db/init.sql</td></tr><tr><td class="lin">1-9</td><td class="id">F01</td><td class="sv"><span class="chip" style="--c:#B91C1C">Crítica</span></td><td>API sem autenticação e dados sem dono: não existe mecanismo de isolamento<span class="ix-nota"> · tabela <code>despesas</code> sem coluna de dono</span></td></tr><tr><td class="lin">11-20</td><td class="id">F01</td><td class="sv"><span class="chip" style="--c:#B91C1C">Crítica</span></td><td>API sem autenticação e dados sem dono: não existe mecanismo de isolamento<span class="ix-nota"> · tabela <code>categorias</code> sem coluna de dono</span></td></tr><tr><td class="lin">13</td><td class="id">F03</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td><code>GET /categorias</code> devolve todas as categorias, sem filtro de dono<span class="ix-nota"> · unicidade global, não por dono</span></td></tr><tr><td class="lin">17</td><td class="id">O3</td><td class="sv"><span class="chip" style="--c:#2563EB">Baixa</span></td><td>Schema de categorias sem limites de conteúdo e de faixa<span class="ix-nota"> · <code>limite_mensal NUMERIC(10, 2) NOT NULL</code></span></td></tr><tr class="grupo"><td colspan="4">backend/src/routes/categoriasRoutes.js</td></tr><tr><td class="lin">10</td><td class="id">F03</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td><code>GET /categorias</code> devolve todas as categorias, sem filtro de dono<span class="ix-nota"> · rota sem autenticação</span></td></tr><tr><td class="lin">11</td><td class="id">F12</td><td class="sv"><span class="chip" style="--c:#2563EB">Baixa</span></td><td>IDOR: <code>GET /categorias/:id</code> lê qualquer categoria<span class="ix-nota"> · rota</span></td></tr><tr><td class="lin">12-14</td><td class="id">F06</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>Escritas em <code>/categorias</code>: sem UI no frontend, abertas no servidor</td></tr><tr><td class="lin">13</td><td class="id">F10</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>IDOR: <code>PUT /categorias/:id</code> altera qualquer categoria<span class="ix-nota"> · rota</span></td></tr><tr><td class="lin">14</td><td class="id">F11</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>IDOR: <code>DELETE /categorias/:id</code> apaga qualquer categoria<span class="ix-nota"> · rota</span></td></tr><tr class="grupo"><td colspan="4">backend/src/routes/despesasRoutes.js</td></tr><tr><td class="lin">9</td><td class="id">F02</td><td class="sv"><span class="chip" style="--c:#EA580C">Alta</span></td><td><code>GET /despesas</code> devolve todas as despesas, sem filtro de dono e sem limite</td></tr><tr><td class="lin">11</td><td class="id">F09</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>IDOR: <code>GET /despesas/:id</code> lê qualquer despesa<span class="ix-nota"> · rota</span></td></tr><tr><td class="lin">12</td><td class="id">F07</td><td class="sv"><span class="chip" style="--c:#EA580C">Alta</span></td><td>IDOR: <code>PUT /despesas/:id</code> altera qualquer despesa<span class="ix-nota"> · rota</span></td></tr><tr><td class="lin">13</td><td class="id">F08</td><td class="sv"><span class="chip" style="--c:#EA580C">Alta</span></td><td>IDOR: <code>DELETE /despesas/:id</code> apaga qualquer despesa<span class="ix-nota"> · rota</span></td></tr><tr class="grupo"><td colspan="4">backend/src/routes/index.js</td></tr><tr><td class="lin">6-7</td><td class="id">F01</td><td class="sv"><span class="chip" style="--c:#B91C1C">Crítica</span></td><td>API sem autenticação e dados sem dono: não existe mecanismo de isolamento</td></tr><tr class="grupo"><td colspan="4">backend/src/validators/categoriasValidator.js</td></tr><tr><td class="lin">6-10</td><td class="id">F15</td><td class="sv"><span class="chip" style="--c:#64748B">Informativa</span></td><td>A API guarda HTML bruto; a proteção depende só do escape na saída<span class="ix-nota"> · sem restrição de conteúdo</span></td></tr><tr><td class="lin">6-7,<wbr>10,<wbr>14,<wbr>17-19</td><td class="id">O3</td><td class="sv"><span class="chip" style="--c:#2563EB">Baixa</span></td><td>Schema de categorias sem limites de conteúdo e de faixa</td></tr><tr class="grupo"><td colspan="4">backend/src/validators/despesasValidator.js</td></tr><tr><td class="lin">4-11</td><td class="id">F15</td><td class="sv"><span class="chip" style="--c:#64748B">Informativa</span></td><td>A API guarda HTML bruto; a proteção depende só do escape na saída<span class="ix-nota"> · só trim e tamanho</span></td></tr><tr class="grupo"><td colspan="4">frontend/.gitignore</td></tr><tr><td class="lin">16-18</td><td class="id">F14</td><td class="sv"><span class="chip" style="--c:#2563EB">Baixa</span></td><td><code>.gitignore</code> da raiz não cobre variações de <code>.env</code><span class="ix-nota"> · contraste: a regra correta</span></td></tr><tr class="grupo"><td colspan="4">frontend/src/components/ExpenseDetailsModal.jsx</td></tr><tr><td class="lin">27,<wbr>44,<wbr>48</td><td class="id">F15</td><td class="sv"><span class="chip" style="--c:#64748B">Informativa</span></td><td>A API guarda HTML bruto; a proteção depende só do escape na saída<span class="ix-nota"> · saídas em texto JSX</span></td></tr><tr class="grupo"><td colspan="4">frontend/src/components/ExpenseFilters.jsx</td></tr><tr><td class="lin">75,<wbr>101-102</td><td class="id">F15</td><td class="sv"><span class="chip" style="--c:#64748B">Informativa</span></td><td>A API guarda HTML bruto; a proteção depende só do escape na saída<span class="ix-nota"> · saídas em texto JSX</span></td></tr><tr class="grupo"><td colspan="4">frontend/src/components/ExpenseList.jsx</td></tr><tr><td class="lin">143,<wbr>152,<wbr>162,<wbr>168,<wbr>176,<wbr>193,<wbr>198</td><td class="id">F15</td><td class="sv"><span class="chip" style="--c:#64748B">Informativa</span></td><td>A API guarda HTML bruto; a proteção depende só do escape na saída<span class="ix-nota"> · saídas em texto JSX</span></td></tr><tr class="grupo"><td colspan="4">frontend/src/components/ExpenseModal.jsx</td></tr><tr><td class="lin">287,<wbr>404</td><td class="id">F15</td><td class="sv"><span class="chip" style="--c:#64748B">Informativa</span></td><td>A API guarda HTML bruto; a proteção depende só do escape na saída<span class="ix-nota"> · método antigo vindo da API</span></td></tr><tr class="grupo"><td colspan="4">frontend/src/components/FaltaPagar.jsx</td></tr><tr><td class="lin">74,<wbr>78,<wbr>85</td><td class="id">F15</td><td class="sv"><span class="chip" style="--c:#64748B">Informativa</span></td><td>A API guarda HTML bruto; a proteção depende só do escape na saída<span class="ix-nota"> · saídas em texto JSX</span></td></tr><tr class="grupo"><td colspan="4">frontend/src/components/Toast.jsx</td></tr><tr><td class="lin">47</td><td class="id">F15</td><td class="sv"><span class="chip" style="--c:#64748B">Informativa</span></td><td>A API guarda HTML bruto; a proteção depende só do escape na saída<span class="ix-nota"> · mensagens com a descrição</span></td></tr><tr class="grupo"><td colspan="4">frontend/src/services/api.js</td></tr><tr><td class="lin">38-41</td><td class="id">F01</td><td class="sv"><span class="chip" style="--c:#B91C1C">Crítica</span></td><td>API sem autenticação e dados sem dono: não existe mecanismo de isolamento<span class="ix-nota"> · <code>fetch</code> sem <code>Authorization</code> nem credenciais</span></td></tr><tr><td class="lin">111-118</td><td class="id">F06</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>Escritas em <code>/categorias</code>: sem UI no frontend, abertas no servidor<span class="ix-nota"> · a única chamada de categorias é o GET</span></td></tr><tr class="grupo"><td colspan="4">frontend/vite.config.js</td></tr><tr><td class="lin">7-8</td><td class="id">F16</td><td class="sv"><span class="chip" style="--c:#64748B">Informativa</span></td><td>CSP só por <code>&lt;meta&gt;</code> e só no build; sem cabeçalhos de segurança</td></tr><tr class="grupo"><td colspan="4">.env.example</td></tr><tr><td class="lin">7-8</td><td class="id">F13</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>Credenciais placeholder públicas aceitas sem validação no boot</td></tr><tr><td class="lin">14</td><td class="id">F13</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>Credenciais placeholder públicas aceitas sem validação no boot<span class="ix-nota"> · duplicada e não usada</span></td></tr><tr class="grupo"><td colspan="4">.gitignore</td></tr><tr><td class="lin">3</td><td class="id">F14</td><td class="sv"><span class="chip" style="--c:#2563EB">Baixa</span></td><td><code>.gitignore</code> da raiz não cobre variações de <code>.env</code></td></tr><tr class="grupo"><td colspan="4">package.json</td></tr><tr><td class="lin">6-12</td><td class="id">O2</td><td class="sv"><span class="chip" style="--c:#2563EB">Baixa</span></td><td>JSON malformado devolve página HTML com stack trace<span class="ix-nota"> · nenhum script define <code>NODE_ENV</code></span></td></tr><tr><td class="lin">18-25</td><td class="id">O4</td><td class="sv"><span class="chip" style="--c:#2563EB">Baixa</span></td><td>Listagens sem paginação e sem rate limit<span class="ix-nota"> · nenhuma lib de rate limit</span></td></tr><tr><td class="lin">21</td><td class="id">F01</td><td class="sv"><span class="chip" style="--c:#B91C1C">Crítica</span></td><td>API sem autenticação e dados sem dono: não existe mecanismo de isolamento<span class="ix-nota"> · instalado, nunca importado</span></td></tr><tr class="grupo"><td colspan="4">README.md</td></tr><tr><td class="lin">156</td><td class="id">F13</td><td class="sv"><span class="chip" style="--c:#D97706">Média</span></td><td>Credenciais placeholder públicas aceitas sem validação no boot<span class="ix-nota"> · <code>cp .env.example .env</code></span></td></tr></tbody>
+    </table>
+  </section>
+<section class="pagina">
+    <h1 class="sec" data-num="6">Recomendações priorizadas</h1>
+    <div class="rec">
+      <div class="p">P1</div>
+      <div>
+        <h3>Contenção imediata: tirar API e banco da rede</h3>
+        <div class="meta">Quando: agora, minutos · Resolve: F05, reduz F01–F12</div>
+        <ul><li><code>app.listen(PORT, &#39;127.0.0.1&#39;, …)</code> em <code>backend/server.js:6</code>.</li><li><code>&quot;127.0.0.1:5434:5432&quot;</code> em <code>backend/docker-compose.yml:9</code>.</li><li>Enquanto não houver autenticação, só a própria máquina alcança a API e o banco.</li></ul>
+      </div>
+    </div><div class="rec">
+      <div class="p">P2</div>
+      <div>
+        <h3>Autenticação e dono dos dados (roteiro A5)</h3>
+        <div class="meta">Quando: próxima etapa · Resolve: F01, F02, F03, F06</div>
+        <ul><li>Tabela <code>usuarios</code> (email único, hash argon2id ou bcrypt), criada por migration (A4).</li><li><code>POST /auth/registro</code> e <code>POST /auth/login</code> com JWT de vida curta; segredo de 32+ bytes no <code>.env</code>, validado no boot.</li><li>Middleware <code>autenticar</code> em <code>routes/index.js</code>, antes dos routers: sem token válido, 401.</li><li><code>usuario_id NOT NULL</code> com FK em <code>despesas</code> e <code>categorias</code>; <code>UNIQUE (usuario_id, nome)</code>.</li></ul>
+      </div>
+    </div><div class="rec">
+      <div class="p">P3</div>
+      <div>
+        <h3>Posse em toda query e testes de autorização</h3>
+        <div class="meta">Quando: junto com P2 · Resolve: F07, F08, F09, F10, F11, F12</div>
+        <ul><li><code>WHERE id = $1 AND usuario_id = $2</code> nos 6 handlers por ID; listagens com <code>WHERE usuario_id = $1</code>.</li><li><code>INSERT</code> com o <code>usuario_id</code> do token, nunca do body.</li><li>Registro de outro usuário responde 404, igual a inexistente.</li><li>Testes de integração com dois usuários (M1): B não lê, não altera e não apaga nada de A.</li></ul>
+      </div>
+    </div><div class="rec">
+      <div class="p">P4</div>
+      <div>
+        <h3>Menor privilégio no banco</h3>
+        <div class="meta">Quando: junto com as migrations (A4) · Resolve: F04</div>
+        <ul><li>Role <code>din_din_app</code> com <code>NOSUPERUSER NOBYPASSRLS</code> e só <code>SELECT, INSERT, UPDATE, DELETE</code> nas tabelas.</li><li>Migrations com outra role, dona das tabelas.</li><li>Opcional: RLS com <code>FORCE ROW LEVEL SECURITY</code> e policy por <code>usuario_id</code>, como segunda tranca.</li></ul>
+      </div>
+    </div><div class="rec">
+      <div class="p">P5</div>
+      <div>
+        <h3>Configuração validada no boot</h3>
+        <div class="meta">Quando: curto prazo · Resolve: F13, F14</div>
+        <ul><li>Schema Zod para <code>process.env</code>: falha se faltar variável, se for placeholder ou se a senha tiver menos de 12 caracteres.</li><li>Uma forma só de configurar o banco: remover <code>DATABASE_URL</code> do <code>.env.example</code> ou passar a usá-la.</li><li><code>.gitignore</code> da raiz com <code>.env.*</code> e <code>!.env.example</code>.</li></ul>
+      </div>
+    </div><div class="rec">
+      <div class="p">P6</div>
+      <div>
+        <h3>Respostas de erro e cabeçalhos (A1/M2)</h3>
+        <div class="meta">Quando: curto prazo · Resolve: F16, O1, O2</div>
+        <ul><li>Handler de erro central: 400 JSON para <code>entity.parse.failed</code>, 500 genérico sem <code>error.message</code>, log só no servidor.</li><li><code>NODE_ENV=production</code> no <code>npm start</code>; <code>helmet()</code> (remove <code>X-Powered-By</code>).</li><li>No servidor que publicar o build: CSP por cabeçalho com <code>frame-ancestors &#39;none&#39;</code>, <code>nosniff</code> e HSTS.</li></ul>
+      </div>
+    </div><div class="rec">
+      <div class="p">P7</div>
+      <div>
+        <h3>Travas de entrada e de regressão de XSS</h3>
+        <div class="meta">Quando: contínuo · Resolve: F15, O3, O4</div>
+        <ul><li>oxlint com <code>react/no-danger</code>, <code>react/no-danger-with-children</code>, <code>react/jsx-no-script-url</code>, <code>no-eval</code> e <code>no-new-func</code> como erro.</li><li>Completar o <code>categoriaSchema</code>: <code>trim</code>, <code>min</code>, <code>max</code> e faixa de <code>limiteMensal</code>.</li><li>Paginação nas listagens (M3) e <code>express-rate-limit</code> (CRI-10).</li></ul>
+      </div>
+    </div>
+    <h1 class="sec sec-cont" data-num="7">Evidências de verificação</h1>
+    <p>Testes executados durante a auditoria. Nenhum escreveu no banco: as sondas usaram só GET e um POST com JSON malformado, recusado antes do banco.</p>
+    <dl class="evid"><div><span class="e-id">E1</span><span class="e-tit">Rotas sem autenticação (Supertest, só GET)</span><span><code>GET /despesas</code>, <code>GET /despesas/1</code> e <code>GET /categorias</code> sem cabeçalhos: 500 vindo do controller (Postgres parado, <code>ECONNREFUSED</code>). Nenhum 401. Cabeçalho <code>X-Powered-By: Express</code> presente.</span></div><div><span class="e-id">E2</span><span class="e-tit">Endereço de escuta</span><span><code>app.listen(0)</code> sem host, como no <code>server.js</code>: <code>{&quot;address&quot;:&quot;::&quot;,&quot;family&quot;:&quot;IPv6&quot;}</code>, todas as interfaces.</span></div><div><span class="e-id">E3</span><span class="e-tit">Página de erro com payload HTML</span><span><code>POST /despesas</code> com corpo <code>&lt;img src=x onerror=alert(1)&gt;</code>: 400 <code>text/html</code>, conteúdo escapado (<code>&amp;lt;img src=x</code>), stack com caminhos absolutos de <code>node_modules</code>.</span></div><div><span class="e-id">E4</span><span class="e-tit">Firewall do Windows</span><span>Perfis Domain, Private e Public ativos; ação de entrada padrão não configurada (padrão do Windows: bloquear). Nenhuma regra para node.exe, Docker ou as portas 3000, 5434 e 5173.</span></div><div><span class="e-id">E5</span><span class="e-tit">Histórico git</span><span>42 commits em 7 refs. <code>git log --all -p</code> com regex de segredos: só os placeholders do <code>.env.example</code> e do README. O <code>.env</code> nunca foi adicionado. Versões antigas de <code>docker-compose.yml</code> e <code>src/db/db.js</code> sempre usaram variáveis.</span></div><div><span class="e-id">E6</span><span class="e-tit">Bundle de produção</span><span><code>dist/assets/index-NAci9g8m.js</code> (265 KB): sem <code>VITE_</code>, URLs de API externas ou credenciais. As ocorrências de <code>innerHTML</code> e <code>dangerouslySetInnerHTML</code> são internas do React DOM. CSP presente em <code>dist/index.html</code>.</span></div><div><span class="e-id">E7</span><span class="e-tit"><code>.env</code> local</span><span>Comparado ao <code>.env.example</code> campo a campo sem exibir valores: usuário e senha diferem; senha forte; nenhuma chave extra.</span></div><div><span class="e-id">E8</span><span class="e-tit">oxlint 1.89 com regras anti-XSS</span><span><code>react/no-danger</code>, <code>react/no-danger-with-children</code>, <code>react/jsx-no-script-url</code>, <code>no-eval</code> e <code>no-new-func</code>: <code>src</code> e <code>public</code> passam (exit 0). Um arquivo de teste com os quatro padrões é barrado.</span></div><div><span class="e-id">E9</span><span class="e-tit">Não executado</span><span>Consulta de privilégios da role no Postgres (<code>rolsuper</code>, <code>rolbypassrls</code>) e do <code>pg_hba.conf</code>: o Docker Desktop estava parado. F04 e F05 se apoiam na configuração do repositório e no comportamento documentado da imagem <code>postgres:16</code>.</span></div></dl>
+  </section>
+<section class="pagina">
+    <h1 class="sec" data-num="8">Issues para o GitHub</h1>
+    <p class="sem-quebra">Uma issue por tema acionável; achados triviais do mesmo tema foram agrupados. Cada bloco, de <code>--- ISSUE n ---</code> a <code>--- FIM ISSUE n ---</code>, é o texto completo em Markdown: a linha “Título” vai no título da issue, o resto no corpo. O mesmo texto está em <code>docs/security-audit/issues-github.md</code>, que preserva a indentação dos blocos de código ao copiar.</p>
+    <table class="indice-issues">
+      <colgroup><col class="k1"><col class="k2"><col><col class="k4"></colgroup>
+      <thead><tr><th>#</th><th>Severidade</th><th>Título</th><th>Achados</th></tr></thead>
+      <tbody><tr><td class="id">1</td><td><span class="chip" style="--c:#B91C1C">Crítica</span></td><td>[Segurança] API sem autenticação: qualquer cliente lê, altera e apaga tudo</td><td class="ix-ach">F01 (crítica), F02 (alta), F03 (média), F06 (média)</td></tr><tr><td class="id">2</td><td><span class="chip" style="--c:#EA580C">Alta</span></td><td>[Segurança] IDOR: rotas por ID não verificam o dono do registro</td><td class="ix-ach">F07 (alta), F08 (alta), F09 (média), F10 (média), F11 (média), F12 (baixa)</td></tr><tr><td class="id">3</td><td><span class="chip" style="--c:#D97706">Média</span></td><td>[Segurança] API e Postgres escutam em todas as interfaces de rede</td><td class="ix-ach">F05 (média); reduz a exposição de F01–F12</td></tr><tr><td class="id">4</td><td><span class="chip" style="--c:#D97706">Média</span></td><td>[Segurança] Aplicação conecta ao Postgres com o superusuário da imagem</td><td class="ix-ach">F04 (média)</td></tr><tr><td class="id">5</td><td><span class="chip" style="--c:#D97706">Média</span></td><td>[Segurança] Placeholders do .env.example aceitos sem validação no boot</td><td class="ix-ach">F13 (média), F14 (baixa)</td></tr><tr><td class="id">6</td><td><span class="chip" style="--c:#2563EB">Baixa</span></td><td>[Segurança] Erros vazam detalhes internos e faltam cabeçalhos de segurança</td><td class="ix-ach">O1 (baixa), O2 (baixa), F16 (informativa)</td></tr><tr><td class="id">7</td><td><span class="chip" style="--c:#64748B">Informativa</span></td><td>[Segurança] Travar regressão de XSS no lint do frontend</td><td class="ix-ach">F15 (informativa)</td></tr><tr><td class="id">8</td><td><span class="chip" style="--c:#2563EB">Baixa</span></td><td>[Segurança] Schema de categorias e listagens sem limites de entrada</td><td class="ix-ach">O3 (baixa), O4 (baixa)</td></tr></tbody>
+    </table>
+    <div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#B91C1C">Crítica</span><span class="t">Issue 1</span><span class="a">F01 (crítica), F02 (alta), F03 (média), F06 (média)</span></div>
+      <pre class="issue-md">--- ISSUE 1 ---
+Título: [Segurança] API sem autenticação: qualquer cliente lê, altera e apaga tudo
+Labels sugeridas: security, severidade:crítica
+Achados: F01 (crítica), F02 (alta), F03 (média), F06 (média)
+
+## Descrição
+A API não tem autenticação nem modelo de dono dos dados. Entre `express.json()` e os
+routers não existe middleware de auth, as tabelas `despesas` e `categorias` não têm
+coluna de dono e não há RLS no Postgres. Quem alcança a porta 3000 tem os mesmos
+poderes do dono: lista, cria, altera e apaga despesas e categorias.
+
+**Por que é explorável:** nenhuma rota devolve 401. Na auditoria, `GET /despesas`,
+`GET /despesas/1` e `GET /categorias` sem nenhum cabeçalho chegaram até a camada de
+banco. O `server.js` escuta em todas as interfaces (`::`), então a API fica acessível
+pela rede local sempre que o firewall do host deixar passar (ver issue 3).
+
+## Evidência
+- `backend/src/app.js:5-7`: nenhum middleware de auth antes das rotas
+  ```js
+  app.use(express.json())
+
+  routes(app)
+  ```
+- `backend/src/routes/index.js:6-7`
+  ```js
+  app.use(despesasRoutes);
+  app.use(categoriasRoutes);
+  ```
+- `backend/src/db/init.sql:1-9` e `:11-20`: `despesas` e `categorias` sem `usuario_id`
+- `backend/src/controllers/despesasController.js:12-14`: listagem sem filtro nem limite
+  ```js
+  const { rows } = await pool.query(
+      `SELECT ${COLUNAS} FROM despesas`
+  );
+  ```
+- `backend/src/controllers/categoriasController.js:10`: listagem sem filtro
+- `backend/src/routes/categoriasRoutes.js:12-14`: `POST`/`PUT`/`DELETE /categorias`
+  abertos no servidor, sem nenhuma tela no front (o front só usa o GET,
+  `frontend/src/services/api.js:111-118`)
+- `package.json:21`: `jsonwebtoken` instalado e não importado em nenhum arquivo
+
+## Impacto
+Confidencialidade e integridade de todo o histórico financeiro. Quem alcança a API lê
+todas as despesas numa requisição, altera valores e status e apaga registros, sem
+deixar rastro de quem fez.
+
+## Sugestão de correção
+1. Contenção imediata: issue 3 (API e Postgres só em `127.0.0.1`).
+2. Tabela `usuarios` (email único, hash argon2id ou bcrypt), criada por migration.
+3. `POST /auth/registro` e `POST /auth/login` emitindo JWT de vida curta. Segredo com
+   32+ bytes no `.env`, validado no boot (issue 5).
+4. Middleware `autenticar` em `routes/index.js`, antes dos routers: sem token válido,
+   401; com token, `req.usuarioId`.
+5. `usuario_id INTEGER NOT NULL REFERENCES usuarios(id)` em `despesas` e `categorias`;
+   trocar `UNIQUE (nome)` por `UNIQUE (usuario_id, nome)`.
+6. Listagens com `WHERE usuario_id = $1`; `INSERT` com o `usuario_id` do token, nunca
+   do body. As rotas por ID ficam na issue 2.
+
+## Critérios de aceite
+- [ ] Toda rota, exceto `/auth/*` e `GET /`, responde 401 sem token válido.
+- [ ] Token expirado ou com assinatura inválida responde 401.
+- [ ] `despesas.usuario_id` e `categorias.usuario_id` existem, `NOT NULL`, com FK.
+- [ ] `GET /despesas` e `GET /categorias` devolvem só os registros do usuário do token.
+- [ ] `POST` grava o `usuario_id` do token, mesmo que o body traga outro valor.
+- [ ] Teste de integração: o usuário B não vê nenhum registro de A nas listagens.
+- [ ] `npm test` passa.
+--- FIM ISSUE 1 ---</pre>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#EA580C">Alta</span><span class="t">Issue 2</span><span class="a">F07 (alta), F08 (alta), F09 (média), F10 (média), F11 (média), F12 (baixa)</span></div>
+      <pre class="issue-md">--- ISSUE 2 ---
+Título: [Segurança] IDOR: rotas por ID não verificam o dono do registro
+Labels sugeridas: security, severidade:alta
+Achados: F07 (alta), F08 (alta), F09 (média), F10 (média), F11 (média), F12 (baixa)
+
+## Descrição
+Os seis handlers que recebem `:id` filtram só por `id`. Os IDs são `SERIAL`
+(sequenciais a partir de 1), então um laço lê, altera ou apaga todos os registros.
+O `idParamsSchema` valida o formato do número, não a posse.
+
+**Por que é explorável:** sem o dono no WHERE, `DELETE /despesas/1`, `/2`, `/3`...
+apaga o histórico inteiro. A diferença entre 200 e 404 também revela quais IDs
+existem. O &quot;dono&quot; só passa a existir com a issue 1, mas cada query precisa da correção.
+
+## Evidência
+| Rota | Handler | Filtro |
+|---|---|---|
+| `GET /despesas/:id` | `despesasController.js:42-45` | `WHERE id = $1` |
+| `PUT /despesas/:id` | `despesasController.js:62-73` | `WHERE id=$7` |
+| `DELETE /despesas/:id` | `despesasController.js:89-92` | `WHERE id=$1` |
+| `GET /categorias/:id` | `categoriasController.js:20` | `WHERE id = $1` |
+| `PUT /categorias/:id` | `categoriasController.js:50-54` | `WHERE id = $8` |
+| `DELETE /categorias/:id` | `categoriasController.js:70` | `WHERE id = $1` |
+
+Rotas: `despesasRoutes.js:11-13` e `categoriasRoutes.js:11,13,14`.
+IDs sequenciais: `init.sql:2` e `init.sql:12` (`id SERIAL PRIMARY KEY`).
+
+```js
+// backend/src/controllers/despesasController.js:89-92
+const { rowCount } = await pool.query(
+    `DELETE FROM despesas WHERE id=$1`,
+    [id]
+)
+```
+
+## Impacto
+Alteração e exclusão de qualquer despesa ou categoria (integridade e disponibilidade)
+e leitura de qualquer registro por ID. O DELETE é físico, sem soft delete.
+
+## Sugestão de correção
+1. Incluir o dono em todo WHERE por ID:
+   `WHERE id = $1 AND usuario_id = $2`, com `[id, req.usuarioId]`.
+2. Registro de outro usuário responde 404, igual a inexistente (não revela existência).
+3. Concentrar o filtro na camada repository (roteiro M4), para nenhuma query nova
+   esquecer o dono.
+4. Opcional: expor UUID na API em vez do `SERIAL`.
+
+## Critérios de aceite
+- [ ] As 6 queries por ID incluem `usuario_id` no WHERE.
+- [ ] Teste: B recebe 404 em GET, PUT e DELETE de uma despesa de A.
+- [ ] Teste: B recebe 404 em GET, PUT e DELETE de uma categoria de A.
+- [ ] Depois do PUT e do DELETE de B, o registro de A continua intacto no banco.
+- [ ] `npm test` passa.
+--- FIM ISSUE 2 ---</pre>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#D97706">Média</span><span class="t">Issue 3</span><span class="a">F05 (média); reduz a exposição de F01–F12</span></div>
+      <pre class="issue-md">--- ISSUE 3 ---
+Título: [Segurança] API e Postgres escutam em todas as interfaces de rede
+Labels sugeridas: security, severidade:média
+Achados: F05 (média); reduz a exposição de F01–F12
+
+## Descrição
+`app.listen(PORT)` sem host abre a API em `::` (todas as interfaces, IPv4 e IPv6), e o
+compose publica o Postgres em `0.0.0.0:5434`. Enquanto a API não tem autenticação,
+qualquer máquina da mesma rede que passe pelo firewall controla os dados.
+
+**Por que é explorável:** na auditoria, `app.listen` sem host devolveu
+`{&quot;address&quot;:&quot;::&quot;}`. A imagem `postgres:16` aceita login remoto com senha
+(`host all all all scram-sha-256`). Hoje o Firewall do Windows desta máquina bloqueia
+a entrada (não há regra para node.exe, Docker ou as portas 3000/5434), mas essa
+proteção é externa ao projeto: some com um &quot;Permitir&quot; no aviso do Windows, em outra
+máquina ou num deploy.
+
+## Evidência
+- `backend/server.js:6`
+  ```js
+  app.listen(PORT, () =&gt; {
+  ```
+- `backend/docker-compose.yml:8-9`
+  ```yaml
+  ports:
+    - &quot;5434:5432&quot;
+  ```
+
+## Impacto
+Transforma a falta de autenticação numa falha de rede local (Wi-Fi do escritório, da
+faculdade). No banco, expõe à rede o login do superusuário (issue 4).
+
+## Sugestão de correção
+```js
+// backend/server.js
+const HOST = process.env.HOST || &#39;127.0.0.1&#39;
+app.listen(PORT, HOST, () =&gt; { /* ... */ })
+```
+```yaml
+# backend/docker-compose.yml
+ports:
+  - &quot;127.0.0.1:5434:5432&quot;
+```
+Abrir para a rede só depois da autenticação, e atrás de um proxy com TLS.
+
+## Critérios de aceite
+- [ ] `netstat -ano | findstr :3000` mostra `127.0.0.1:3000`, não `0.0.0.0` nem `[::]`.
+- [ ] `docker port postgres-dev` mostra `127.0.0.1:5434`.
+- [ ] De outra máquina da rede, `curl http://&lt;ip&gt;:3000/despesas` falha na conexão.
+- [ ] `npm run dev` e o proxy do Vite continuam funcionando.
+--- FIM ISSUE 3 ---</pre>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#D97706">Média</span><span class="t">Issue 4</span><span class="a">F04 (média)</span></div>
+      <pre class="issue-md">--- ISSUE 4 ---
+Título: [Segurança] Aplicação conecta ao Postgres com o superusuário da imagem
+Labels sugeridas: security, severidade:média
+Achados: F04 (média)
+
+## Descrição
+O `POSTGRES_USER` do `.env` serve a dois fins: a imagem `postgres:16` cria esse
+usuário como SUPERUSER na primeira subida, e o Pool da API conecta com ele. A API roda
+com poder total sobre o servidor de banco.
+
+**Por que importa:** superusuário ignora RLS, pode `DROP` e `ALTER`, ler outros bancos
+do cluster e executar comandos no contêiner com `COPY ... TO PROGRAM`. Hoje não há SQL
+injection (todas as queries são parametrizadas), então a exploração exige outra falha
+ou a credencial. Esta é a camada que limita o estrago quando algo der errado.
+
+## Evidência
+- `backend/docker-compose.yml:6-7`
+  ```yaml
+  env_file:
+    - ../.env
+  ```
+- `backend/src/db/db.js:8-9`
+  ```js
+  user: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  ```
+- Confirmação pendente (o Docker estava parado na auditoria):
+  `SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user;`
+
+## Impacto
+Uma injeção futura ou o vazamento da credencial vira controle total do banco e
+execução de comandos no contêiner. Também impede usar RLS como defesa em profundidade.
+
+## Sugestão de correção
+1. Criar uma role só para a API, em migration ou script de init:
+   ```sql
+   CREATE ROLE din_din_app LOGIN PASSWORD &#39;&lt;senha do .env&gt;&#39; NOSUPERUSER NOBYPASSRLS;
+   GRANT CONNECT ON DATABASE din_din_db TO din_din_app;
+   GRANT USAGE ON SCHEMA public TO din_din_app;
+   GRANT SELECT, INSERT, UPDATE, DELETE ON despesas, categorias TO din_din_app;
+   GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO din_din_app;
+   ```
+2. Separar no `.env`: `POSTGRES_USER` (admin: contêiner e migrations) e
+   `APP_DB_USER`/`APP_DB_PASSWORD` (Pool da API).
+3. Opcional, depois da issue 1: RLS com `FORCE ROW LEVEL SECURITY` e policy por
+   `usuario_id`, como segunda tranca.
+
+## Critérios de aceite
+- [ ] O Pool conecta com uma role com `rolsuper = false` e `rolbypassrls = false`.
+- [ ] A role da API não consegue `DROP TABLE despesas` nem `CREATE TABLE`.
+- [ ] As tabelas pertencem a outra role (o `\dt` mostra o dono).
+- [ ] `npm start` e os testes de integração passam com a nova role.
+--- FIM ISSUE 4 ---</pre>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#D97706">Média</span><span class="t">Issue 5</span><span class="a">F13 (média), F14 (baixa)</span></div>
+      <pre class="issue-md">--- ISSUE 5 ---
+Título: [Segurança] Placeholders do .env.example aceitos sem validação no boot
+Labels sugeridas: security, severidade:média
+Achados: F13 (média), F14 (baixa)
+
+## Descrição
+O setup manda copiar o `.env.example` (`README.md:156`, `CLAUDE.md:28`). Se ninguém
+editar, o banco nasce com `seu_usuario_aqui` / `sua_senha_aqui`, uma credencial
+pública no repositório, e esse usuário é superusuário na porta 5434. Nada no boot
+rejeita os placeholders nem a falta das variáveis: sem `POSTGRES_PASSWORD`, a API sobe
+e só falha na primeira query. O `DATABASE_URL` repete a credencial e não é lido por
+nenhum código. O `.gitignore` da raiz cobre `.env`, mas não `.env.local` ou
+`.env.production`.
+
+**Condição:** nesta máquina não ocorre, porque o `.env` local tem usuário e senha
+diferentes do exemplo e a senha é forte. Afeta qualquer clone novo que siga o README.
+
+## Evidência
+- `.env.example:7-8`
+  ```
+  POSTGRES_USER=seu_usuario_aqui
+  POSTGRES_PASSWORD=sua_senha_aqui
+  ```
+- `.env.example:14`: `DATABASE_URL=postgresql://seu_usuario_aqui:sua_senha_aqui@...`
+- `backend/src/db/db.js:8-9`: lê `process.env` sem validar
+- `backend/server.js:1-8`: sobe sem checar a configuração
+- `.gitignore:3`: só `.env` (o `frontend/.gitignore:16-18` já cobre `.env.*`)
+
+## Impacto
+Clone novo com credencial conhecida, exposta na rede (issues 3 e 4). Arquivos `.env.*`
+da raiz podem ser commitados por engano.
+
+## Sugestão de correção
+```js
+// backend/src/config/env.js (importado no topo do server.js, antes do app)
+import * as z from &#39;zod&#39;
+
+const PLACEHOLDERS = [&#39;seu_usuario_aqui&#39;, &#39;sua_senha_aqui&#39;]
+const real = (s) =&gt; s.refine((v) =&gt; !PLACEHOLDERS.includes(v), &#39;placeholder do .env.example&#39;)
+
+const Env = z.object({
+  POSTGRES_USER: real(z.string().min(1)),
+  POSTGRES_PASSWORD: real(z.string().min(12)),
+  POSTGRES_DB: z.string().min(1),
+  POSTGRES_HOST: z.string().default(&#39;127.0.0.1&#39;),
+  POSTGRES_PORT: z.coerce.number().int().default(5434),
+  PORT: z.coerce.number().int().default(3000)
+})
+
+export const env = Env.parse(process.env) // lança e derruba o boot com a lista de erros
+```
+- Remover `DATABASE_URL` do `.env.example`, ou passar a usá-la (uma forma só).
+- No `.gitignore` da raiz, acrescentar `.env.*` e `!.env.example`.
+
+## Critérios de aceite
+- [ ] Com o `.env` copiado sem editar, `npm start` falha na hora, com mensagem clara.
+- [ ] Sem `POSTGRES_PASSWORD`, `npm start` falha na hora.
+- [ ] Senha com menos de 12 caracteres é recusada no boot.
+- [ ] `git check-ignore .env.local .env.production` lista os dois arquivos.
+- [ ] O `.env.example` não tem mais `DATABASE_URL` duplicada (ou ela passa a ser usada).
+--- FIM ISSUE 5 ---</pre>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#2563EB">Baixa</span><span class="t">Issue 6</span><span class="a">O1 (baixa), O2 (baixa), F16 (informativa)</span></div>
+      <pre class="issue-md">--- ISSUE 6 ---
+Título: [Segurança] Erros vazam detalhes internos e faltam cabeçalhos de segurança
+Labels sugeridas: security, severidade:baixa
+Achados: O1 (baixa), O2 (baixa), F16 (informativa)
+
+## Descrição
+Três pontos ligados à forma como a API responde:
+1. Todo 500 devolve `erro: error.message`, o texto cru do Postgres (nome de
+   constraint, &quot;numeric field overflow&quot;, erro de conexão).
+2. JSON malformado cai no handler padrão do Express, que devolve uma página HTML com
+   stack trace e caminhos absolutos do disco, porque `NODE_ENV` não é definido.
+   O conteúdo ecoado sai escapado (não há XSS), mas a stack expõe a estrutura interna.
+3. Não há cabeçalhos de segurança: `X-Powered-By: Express` sai em toda resposta, e a
+   CSP do front só existe como `&lt;meta&gt;` no build, que não aceita `frame-ancestors`.
+
+## Evidência
+- `erro: error.message` em `despesasController.js:19,36,54,82,100` e
+  `categoriasController.js:14,28,40,62,78`
+  ```js
+  return res.status(500).json({ message: &quot;Erro ao buscar despesas&quot;, erro: error.message });
+  ```
+- `backend/src/app.js:4-7`: sem handler de erro de 4 argumentos e sem helmet
+- Teste da auditoria: `POST /despesas` com o corpo `&lt;img src=x onerror=alert(1)&gt;`
+  devolveu 400 `text/html` com `SyntaxError: Unexpected token ...` e a stack com os
+  caminhos de `node_modules`
+- `frontend/vite.config.js:7-8`: o próprio comentário registra o limite do `&lt;meta&gt;`
+
+## Impacto
+Reconhecimento facilitado: nomes de tabelas e constraints, framework e caminhos do
+servidor. Sem `frame-ancestors`, o front pode ser embutido num iframe (clickjacking)
+quando for publicado.
+
+## Sugestão de correção
+- Handler de erro central (roteiro A1/M2), registrado por último em `app.js`:
+  - `err.type === &#39;entity.parse.failed&#39;`: 400 JSON `{ message: &#39;JSON inválido&#39; }`;
+  - demais: 500 JSON genérico, com `console.error(err)` só no servidor.
+- Tirar `erro: error.message` dos controllers (passar o erro com `next(error)`).
+- `helmet()`, ou no mínimo `app.disable(&#39;x-powered-by&#39;)`.
+- `NODE_ENV=production` no `npm start`.
+- No servidor que publicar o build: CSP por cabeçalho com `frame-ancestors &#39;none&#39;`,
+  `X-Content-Type-Options: nosniff` e HSTS.
+
+## Critérios de aceite
+- [ ] Nenhuma resposta contém mensagem do banco nem stack trace.
+- [ ] JSON malformado responde 400 com `application/json`.
+- [ ] As respostas não têm `X-Powered-By`.
+- [ ] Testes automatizados cobrem o 400 de JSON malformado e o 500 genérico.
+--- FIM ISSUE 6 ---</pre>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#64748B">Informativa</span><span class="t">Issue 7</span><span class="a">F15 (informativa)</span></div>
+      <pre class="issue-md">--- ISSUE 7 ---
+Título: [Segurança] Travar regressão de XSS no lint do frontend
+Labels sugeridas: security, severidade:informativa
+Achados: F15 (informativa)
+
+## Descrição
+Hoje não há XSS: nenhum `dangerouslySetInnerHTML`, `innerHTML`, `eval`, `new Function`
+ou URL dinâmica no `frontend/src`, e todo dado do usuário sai como texto JSX
+(escapado). Mas a API aceita e guarda HTML bruto (`&lt;img src=x onerror=...&gt;` em
+`descricao`, `categoria` e `nome`), então a proteção depende só do escape na saída.
+Nada impede que um commit futuro renderize esses campos como HTML.
+
+## Evidência
+- Entrada sem restrição de conteúdo: `despesasValidator.js:4-11` e
+  `categoriasValidator.js:6-10`
+- Saídas verificadas, todas em texto JSX: `ExpenseList.jsx:143,152,162,168,176,193,198`,
+  `ExpenseDetailsModal.jsx:27,44,48`, `FaltaPagar.jsx:74,78,85`, `Toast.jsx:47`,
+  `ExpenseFilters.jsx:75,101-102`, `ExpenseModal.jsx:287,404`
+- `frontend/.oxlintrc.json`: só `rules-of-hooks` e `only-export-components`
+- Teste da auditoria: o `src` atual passa sem erro com as regras abaixo
+
+## Impacto
+Nenhum hoje. Evita que um XSS armazenado apareça por descuido (por exemplo, ao
+renderizar a descrição com markdown, num relatório HTML ou num e-mail).
+
+## Sugestão de correção
+```json
+{
+  &quot;$schema&quot;: &quot;./node_modules/oxlint/configuration_schema.json&quot;,
+  &quot;plugins&quot;: [&quot;react&quot;, &quot;oxc&quot;],
+  &quot;rules&quot;: {
+    &quot;react/rules-of-hooks&quot;: &quot;error&quot;,
+    &quot;react/only-export-components&quot;: [&quot;warn&quot;, { &quot;allowConstantExport&quot;: true }],
+    &quot;react/no-danger&quot;: &quot;error&quot;,
+    &quot;react/no-danger-with-children&quot;: &quot;error&quot;,
+    &quot;react/jsx-no-script-url&quot;: &quot;error&quot;,
+    &quot;no-eval&quot;: &quot;error&quot;,
+    &quot;no-new-func&quot;: &quot;error&quot;
+  }
+}
+```
+- Registrar a regra no `CLAUDE.md`: dado do usuário só sai como texto; se um dia
+  precisar de HTML, sanitizar com DOMPurify.
+
+## Critérios de aceite
+- [ ] `npm --prefix frontend run lint` falha num arquivo com `dangerouslySetInnerHTML`.
+- [ ] `npm --prefix frontend run lint` passa no código atual.
+- [ ] A regra de saída está registrada no `CLAUDE.md`.
+--- FIM ISSUE 7 ---</pre>
+    </div><div class="issue">
+      <div class="issue-head"><span class="chip" style="--c:#2563EB">Baixa</span><span class="t">Issue 8</span><span class="a">O3 (baixa), O4 (baixa)</span></div>
+      <pre class="issue-md">--- ISSUE 8 ---
+Título: [Segurança] Schema de categorias e listagens sem limites de entrada
+Labels sugeridas: security, severidade:baixa
+Achados: O3 (baixa), O4 (baixa)
+
+## Descrição
+O schema de categorias não limita o que entra, e as listagens não limitam o que sai:
+- `nome` aceita string vazia ou só espaços (sem `.trim().min(1)`);
+- `descricao` não tem `.max()`: aceita até o limite do body (100 kB) por requisição;
+- `limiteMensal` aceita negativo e, acima de 99.999.999,99, estoura `NUMERIC(10,2)`
+  e vira 500 com a mensagem do banco;
+- `icone` aceita qualquer texto de até 30 caracteres;
+- `GET /despesas` e `GET /categorias` não têm `LIMIT`, e não há rate limit.
+
+## Evidência
+- `backend/src/validators/categoriasValidator.js:6-19`
+  ```js
+  nome: z.string()
+         .max(50),
+  // ...
+  descricao: z.string(),
+  // ...
+  limiteMensal: z.number(),
+  ```
+- `backend/src/db/init.sql:17`: `limite_mensal NUMERIC(10, 2) NOT NULL`
+- `backend/src/controllers/despesasController.js:12-14` e `categoriasController.js:10`:
+  `SELECT` sem `LIMIT`
+- `package.json:18-25`: nenhuma lib de rate limit
+
+## Impacto
+Crescimento do banco com textos grandes, dados inválidos (limite negativo) e respostas
+cada vez maiores nas listagens (OWASP API4, consumo irrestrito de recursos).
+
+## Sugestão de correção
+```js
+nome: z.string().trim().min(1).max(50),
+descricao: z.string().trim().max(200),
+limiteMensal: z.number().nonnegative().max(99999999.99).multipleOf(0.01),
+icone: z.string().regex(/^[a-z0-9-]{1,30}$/).default(&#39;tag&#39;),
+```
+- Paginação nas listagens (roteiro M3): `LIMIT $n OFFSET $m`, com teto (ex.: 100).
+- `express-rate-limit` geral (roteiro CRI-10).
+
+## Critérios de aceite
+- [ ] `POST /categorias` com `nome: &quot;   &quot;`, `descricao` de 10 kB ou `limiteMensal: -1`
+      responde 400.
+- [ ] `limiteMensal: 1e12` responde 400, não 500.
+- [ ] `GET /despesas` devolve no máximo o teto configurado por página.
+- [ ] Os testes do validator cobrem os casos acima.
+--- FIM ISSUE 8 ---</pre>
+    </div>
+  </section>
+</body>
+</html>
