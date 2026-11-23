@@ -26,24 +26,24 @@ import {
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const SAIDA_HTML = join(AQUI, 'relatorio-auditoria-seguranca.html');
 const SAIDA_PDF = join(AQUI, 'relatorio-auditoria-seguranca.pdf');
-const ORDEM_SEV = ['critica', 'alta', 'media', 'baixa', 'info'];
+export const ORDEM_SEV = ['critica', 'alta', 'media', 'baixa', 'info'];
 const SEV_POR_TEXTO = { 'crítica': 'critica', alta: 'alta', 'média': 'media', baixa: 'baixa', informativa: 'info' };
-const NOME_CURTO = { 1: 'Banco sem tranca', 2: 'Permissão no navegador', 3: 'IDOR', 4: 'Chaves expostas', 5: 'Inputs (XSS)' };
+export const NOME_CURTO = { 1: 'Banco sem tranca', 2: 'Permissão no navegador', 3: 'IDOR', 4: 'Chaves expostas', 5: 'Inputs (XSS)' };
 const PERCENTUAL = new Intl.NumberFormat('pt-BR', { style: 'percent', maximumFractionDigits: 1 });
 
 // ---------------------------------------------------------------- texto
-const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 // Escapa e depois converte `código` e **negrito**.
-const inline = (s) => esc(s)
+export const inline = (s) => esc(s)
   .replace(/`([^`]+)`/g, '<code>$1</code>')
   .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
-const chip = (sev) => `<span class="chip" style="--c:${severidades[sev].cor}">${severidades[sev].rotulo}</span>`;
+export const chip = (sev) => `<span class="chip" style="--c:${severidades[sev].cor}">${severidades[sev].rotulo}</span>`;
 
-const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
+export const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
 
-function refArquivo(arq, lin) {
+export function refArquivo(arq, lin) {
   const i = arq.lastIndexOf('/');
   const dir = i >= 0 ? arq.slice(0, i + 1) : '';
   const nome = i >= 0 ? arq.slice(i + 1) : arq;
@@ -52,12 +52,12 @@ function refArquivo(arq, lin) {
 }
 
 // "arquivo:linhas" vira referência formatada; o resto (ex.: "teste em runtime") fica como texto.
-function refTexto(r) {
+export function refTexto(r) {
   const m = r.match(/^(.+?):([\d,-]+)$/);
   return m ? refArquivo(m[1], m[2]) : `<div class="ref ref-livre">${esc(r)}</div>`;
 }
 
-function trecho(ref, cor) {
+export function trecho(ref, cor) {
   if (!ref.trecho) return '';
   return `<figure class="snip" style="--c:${cor}"><figcaption>${esc(ref.arq)}:${esc(ref.lin)}</figcaption><pre>${esc(ref.trecho.join('\n'))}</pre></figure>`;
 }
@@ -303,7 +303,7 @@ function recomendacoesHtml() {
   </section>`;
 }
 
-function lerIssues() {
+export function lerIssues() {
   const md = readFileSync(join(AQUI, 'issues-github.md'), 'utf8').replace(/\r\n/g, '\n');
   const lista = [];
   for (const m of md.matchAll(/^--- ISSUE (\d+) ---\n([\s\S]*?)\n--- FIM ISSUE \1 ---$/gm)) {
@@ -339,16 +339,21 @@ function issuesHtml(issues) {
 }
 
 // ---------------------------------------------------------------- documento
-function css() {
+// O relatório de correções reusa este CSS trocando os textos do cabeçalho e do rodapé.
+export function css({
+  topoEsq = meta.titulo,
+  topoDir = `${meta.data} · ${meta.branch} @ ${meta.commit}`,
+  rodapeEsq = `${meta.projeto} · auditoria de segurança em 5 categorias`
+} = {}) {
   const cssStr = (s) => JSON.stringify(s);
   const fonte = '"Segoe UI", "Helvetica Neue", Arial, sans-serif';
   return `
   @page {
     size: A4;
     margin: 20mm;
-    @top-left { content: ${cssStr(meta.titulo)}; font: 600 7.4pt ${fonte}; color: #14285A; vertical-align: bottom; padding-bottom: 3mm; border-bottom: .6pt solid #CBD5E1; }
-    @top-right { content: ${cssStr(`${meta.data} · ${meta.branch} @ ${meta.commit}`)}; font: 7.4pt ${fonte}; color: #64748B; vertical-align: bottom; padding-bottom: 3mm; border-bottom: .6pt solid #CBD5E1; }
-    @bottom-left { content: ${cssStr(`${meta.projeto} · auditoria de segurança em 5 categorias`)}; font: 7.4pt ${fonte}; color: #64748B; vertical-align: top; padding-top: 3mm; border-top: .6pt solid #CBD5E1; }
+    @top-left { content: ${cssStr(topoEsq)}; font: 600 7.4pt ${fonte}; color: #14285A; vertical-align: bottom; padding-bottom: 3mm; border-bottom: .6pt solid #CBD5E1; }
+    @top-right { content: ${cssStr(topoDir)}; font: 7.4pt ${fonte}; color: #64748B; vertical-align: bottom; padding-bottom: 3mm; border-bottom: .6pt solid #CBD5E1; }
+    @bottom-left { content: ${cssStr(rodapeEsq)}; font: 7.4pt ${fonte}; color: #64748B; vertical-align: top; padding-top: 3mm; border-top: .6pt solid #CBD5E1; }
     @bottom-right { content: "Página " counter(page) " de " counter(pages); font: 600 7.4pt ${fonte}; color: #14285A; vertical-align: top; padding-top: 3mm; border-top: .6pt solid #CBD5E1; }
   }
   :root {
@@ -611,7 +616,7 @@ function conectar(url) {
   });
 }
 
-async function imprimirPdf(htmlPath, pdfPath) {
+export async function imprimirPdf(htmlPath, pdfPath) {
   const navegador = acharNavegador();
   const perfil = mkdtempSync(join(tmpdir(), 'dindin-relatorio-'));
   const proc = spawn(navegador, [
@@ -645,14 +650,17 @@ async function imprimirPdf(htmlPath, pdfPath) {
   }
 }
 
-function contarPaginas(pdf) {
+export function contarPaginas(pdf) {
   return (pdf.toString('latin1').match(/\/Type\s*\/Page(?![a-zA-Z])/g) || []).length;
 }
 
 // ---------------------------------------------------------------- execução
-const issues = lerIssues();
-writeFileSync(SAIDA_HTML, montarHtml(issues), 'utf8');
-await imprimirPdf(SAIDA_HTML, SAIDA_PDF);
-const paginas = contarPaginas(readFileSync(SAIDA_PDF));
-console.log(`HTML: ${SAIDA_HTML}`);
-console.log(`PDF:  ${SAIDA_PDF} (${paginas} páginas, ${total} achados, ${pontosFortes.length} pontos fortes, ${issues.length} issues)`);
+// Só gera quando roda direto; importado (pelo gerar-relatorio-correcoes.mjs), só empresta as funções.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const issues = lerIssues();
+  writeFileSync(SAIDA_HTML, montarHtml(issues), 'utf8');
+  await imprimirPdf(SAIDA_HTML, SAIDA_PDF);
+  const paginas = contarPaginas(readFileSync(SAIDA_PDF));
+  console.log(`HTML: ${SAIDA_HTML}`);
+  console.log(`PDF:  ${SAIDA_PDF} (${paginas} páginas, ${total} achados, ${pontosFortes.length} pontos fortes, ${issues.length} issues)`);
+}

@@ -6,9 +6,13 @@ import ExpenseFilters from './components/ExpenseFilters';
 import ExpenseList, { LoadError } from './components/ExpenseList';
 import ExpenseModal from './components/ExpenseModal';
 import ExpenseDetailsModal from './components/ExpenseDetailsModal';
+import Login from './components/Login';
 import Toast from './components/Toast';
 import useDelayedFlag from './hooks/useDelayedFlag';
-import { getDespesas, getCategorias, createDespesa, updateDespesa, deleteDespesa } from './services/api';
+import {
+  getDespesas, getCategorias, createDespesa, updateDespesa, deleteDespesa,
+  temSessao, sair, quandoPerderSessao
+} from './services/api';
 import { isPago } from './utils/format';
 import './App.css';
 
@@ -20,6 +24,7 @@ function mensagemDeErro(err) {
   if (err?.kind === 'network') return 'Sem conexão com o servidor.';
   if (err?.kind === 'not_found') return 'Essa despesa não existe mais.';
   if (err?.kind === 'validation') return 'Ela tem dados que o servidor não aceita mais.';
+  if (err?.kind === 'rate_limit') return 'Muitas requisições seguidas. Espere um pouco.';
   return 'O servidor encontrou um erro.';
 }
 
@@ -35,7 +40,32 @@ function rolarAteLista() {
   titulo.scrollIntoView({ behavior: reduzirMovimento ? 'auto' : 'smooth', block: 'start' });
 }
 
+// Sem sessão, mostra o login. Ao sair (ou quando o token vence), o Painel desmonta:
+// nada da conta anterior fica na memória da página.
 export default function App() {
+  const [logado, setLogado] = useState(temSessao);
+  const [aviso, setAviso] = useState(null);
+
+  useEffect(() => quandoPerderSessao(() => {
+    setAviso('Sua sessão expirou. Entre de novo.');
+    setLogado(false);
+  }), []);
+
+  function handleSair() {
+    sair();
+    setAviso(null);
+    setLogado(false);
+  }
+
+  function handleEntrar() {
+    setAviso(null);
+    setLogado(true);
+  }
+
+  return logado ? <Painel onSair={handleSair} /> : <Login aviso={aviso} onEntrar={handleEntrar} />;
+}
+
+function Painel({ onSair }) {
   const [despesas, setDespesas] = useState([]);
   const [categorias, setCategorias] = useState([]);
   // 'loading' só antes do primeiro carregamento; depois 'ready', 'demo' ou 'error'.
@@ -366,7 +396,7 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      <Header status={status} onOpenModal={openNew} onRefresh={loadData} refreshing={loading} />
+      <Header status={status} onOpenModal={openNew} onRefresh={loadData} refreshing={loading} onSair={onSair} />
 
       {status === 'demo' && (
         <div className="banner" role="status">

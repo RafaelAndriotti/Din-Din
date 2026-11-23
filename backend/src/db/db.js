@@ -1,13 +1,15 @@
 import PG from "pg";
+import { config } from "../config.js";
 
 const { Pool } = PG
 
+// A API conecta com a role da aplicação (APP_DB_USER), sem superusuário, e não com o admin do contêiner (F04).
 const pool = new Pool({
-    host: process.env.POSTGRES_HOST || "localhost",
-    port: process.env.POSTGRES_PORT || 5434,
-    user: process.env.POSTGRES_USER,
-    password: process.env.POSTGRES_PASSWORD,
-    database: process.env.POSTGRES_DB
+    host: config.POSTGRES_HOST,
+    port: config.POSTGRES_PORT,
+    user: config.APP_DB_USER,
+    password: config.APP_DB_PASSWORD,
+    database: config.POSTGRES_DB
 });
 
 export default pool;

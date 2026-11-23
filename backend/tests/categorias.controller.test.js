@@ -11,6 +11,9 @@ vi.mock('../src/db/db.js', () => {
     };
 });
 
+// Dono das requisições destes testes: o id que o middleware autenticar tiraria do token.
+const DONO = 7;
+
 describe('CategoriasController - Testes Unitários', () => {
     let req;
     let res;
@@ -20,45 +23,42 @@ describe('CategoriasController - Testes Unitários', () => {
         vi.clearAllMocks();
 
         // Mocks dos objetos de requisição e resposta do Express
-        req = { validacao: { params: {}, body: {} } };
+        req = { usuarioId: DONO, validacao: { params: {}, body: {}, query: { pagina: 1, limite: 50 } } };
 
         res = {
             status: vi.fn().mockReturnThis(),
             json: vi.fn().mockReturnThis(),
-            send: vi.fn().mockReturnThis()
+            send: vi.fn().mockReturnThis(),
+            end: vi.fn().mockReturnThis()
         };
 
         next = vi.fn();
     });
 
     describe('listarCategorias', () => {
-        it('deve listar todas as categorias com status 200', async () => {
+        it('deve listar só as categorias do dono, paginadas, com status 200', async () => {
             const categoriasMock = [
-                { id: 1, nome: 'Alimentação', cor: '#FF0000', tipoCusto: 'variavel', ativo: true },
-                { id: 2, nome: 'Salário', cor: '#00FF00', tipoCusto: 'fixo', ativo: true }
+                { id: 1, nome: 'Alimentação', cor: '#FF0000', tipoCusto: 'VARIAVEL', ativo: true },
+                { id: 2, nome: 'Salário', cor: '#00FF00', tipoCusto: 'FIXO', ativo: true }
             ];
 
             pool.query.mockResolvedValueOnce({ rows: categoriasMock });
 
             await CategoriasController.listarCategorias(req, res, next);
 
-            expect(pool.query).toHaveBeenCalledWith(expect.stringContaining('FROM categorias'));
+            const [sql, params] = pool.query.mock.calls[0];
+            expect(sql).toMatch(/FROM categorias\s+WHERE usuario_id = \$1/);
+            expect(sql).toMatch(/LIMIT \$2 OFFSET \$3/);
+            expect(params).toEqual([DONO, 50, 0]);
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith(categoriasMock);
         });
 
-        it('deve retornar status 500 quando ocorrer erro no banco', async () => {
+        it('deve repassar o erro do banco para o handler central, sem responder', async () => {
             pool.query.mockRejectedValueOnce(new Error('Falha de conexão'));
 
-            await CategoriasController.listarCategorias(req, res, next);
-
-            expect(res.status).toHaveBeenCalledWith(500);
-            expect(res.json).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    message: 'Erro interno do servidor',
-                    erro: 'Falha de conexão'
-                })
-            );
+            await expect(CategoriasController.listarCategorias(req, res, next)).rejects.toThrow('Falha de conexão');
+            expect(res.status).not.toHaveBeenCalled();
         });
     });
 
@@ -72,38 +72,41 @@ describe('CategoriasController - Testes Unitários', () => {
             await CategoriasController.buscarCategoriaPorId(req, res, next);
 
             expect(pool.query).toHaveBeenCalledWith(
-                expect.stringContaining('FROM categorias WHERE id = $1'),
-                [1]
+                expect.stringContaining('FROM categorias WHERE id = $1 AND usuario_id = $2'),
+                [1, DONO]
             );
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith(categoriaMock);
         });
 
-        it('deve retornar status 500 se o banco falhar ao buscar por id', async () => {
+        it('deve retornar 404 quando a categoria não é do dono (ou não existe)', async () => {
             req.validacao.params = { id: 1 };
-            pool.query.mockRejectedValueOnce(new Error('Erro no DB'));
+            pool.query.mockResolvedValueOnce({ rows: [] });
 
             await CategoriasController.buscarCategoriaPorId(req, res, next);
 
-            expect(res.status).toHaveBeenCalledWith(500);
-            expect(res.json).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    message: 'Erro interno do servidor'
-                })
-            );
+            expect(res.status).toHaveBeenCalledWith(404);
+        });
+
+        it('deve repassar o erro do banco ao buscar por id', async () => {
+            req.validacao.params = { id: 1 };
+            pool.query.mockRejectedValueOnce(new Error('Erro no DB'));
+
+            await expect(CategoriasController.buscarCategoriaPorId(req, res, next)).rejects.toThrow();
+            expect(res.status).not.toHaveBeenCalled();
         });
     });
 
     describe('criarCategoria', () => {
-        it('deve criar uma categoria e retornar status 201', async () => {
+        it('deve criar uma categoria do dono e retornar status 201', async () => {
             const novaCategoria = {
                 nome: 'Investimentos',
-                tipo: 'receita',
                 descricao: 'Rendimentos e dividendos',
                 cor: '#10B981',
                 limiteMensal: 500,
-                tipoCusto: 'variavel',
-                ativo: true
+                tipoCusto: 'VARIAVEL',
+                ativo: true,
+                icone: 'tag'
             };
             req.validacao.body = novaCategoria;
 
@@ -112,36 +115,31 @@ describe('CategoriasController - Testes Unitários', () => {
 
             await CategoriasController.criarCategoria(req, res, next);
 
+            expect(pool.query.mock.calls[0][1].at(-1)).toBe(DONO);
             expect(res.status).toHaveBeenCalledWith(201);
             expect(res.json).toHaveBeenCalledWith(categoriaCriadaMock);
         });
 
-        it('deve retornar status 500 se o banco falhar na criação', async () => {
+        it('deve repassar o erro do banco na criação', async () => {
             req.validacao.body = { nome: 'Lazer' };
             pool.query.mockRejectedValueOnce(new Error('Erro de chave duplicada'));
 
-            await CategoriasController.criarCategoria(req, res, next);
-
-            expect(res.status).toHaveBeenCalledWith(500);
-            expect(res.json).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    message: 'Erro interno do servidor'
-                })
-            );
+            await expect(CategoriasController.criarCategoria(req, res, next)).rejects.toThrow();
+            expect(res.status).not.toHaveBeenCalled();
         });
     });
 
     describe('atualizarCategoria', () => {
-        it('deve atualizar uma categoria e retornar status 200', async () => {
+        it('deve atualizar uma categoria do dono e retornar status 200', async () => {
             req.validacao.params = { id: 1 };
             req.validacao.body = {
                 nome: 'Alimentação Atualizada',
-                tipo: 'despesa',
                 descricao: 'Restaurantes e compras',
                 cor: '#F59E0B',
                 limiteMensal: 1000,
-                tipoCusto: 'variavel',
-                ativo: true
+                tipoCusto: 'VARIAVEL',
+                ativo: true,
+                icone: 'tag'
             };
 
             const categoriaAtualizadaMock = { id: 1, ...req.validacao.body };
@@ -149,42 +147,41 @@ describe('CategoriasController - Testes Unitários', () => {
 
             await CategoriasController.atualizarCategoria(req, res, next);
 
+            const [sql, params] = pool.query.mock.calls[0];
+            expect(sql).toContain('WHERE id = $8 AND usuario_id = $9');
+            expect(params.slice(-2)).toEqual([1, DONO]);
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith(categoriaAtualizadaMock);
         });
 
-        it('deve retornar status 500 se houver erro ao atualizar', async () => {
+        it('deve repassar o erro do banco ao atualizar', async () => {
             req.validacao.params = { id: 1 };
             req.validacao.body = { nome: 'Erro' };
             pool.query.mockRejectedValueOnce(new Error('Erro no DB'));
 
-            await CategoriasController.atualizarCategoria(req, res, next);
-
-            expect(res.status).toHaveBeenCalledWith(500);
+            await expect(CategoriasController.atualizarCategoria(req, res, next)).rejects.toThrow();
         });
     });
 
     describe('deletarCategoria', () => {
-        it('deve deletar a categoria e retornar status 204', async () => {
+        it('deve deletar a categoria do dono e retornar status 204', async () => {
             req.validacao.params = { id: 1 };
-            pool.query.mockResolvedValueOnce({ rows: [{ id: 1 }] });
+            pool.query.mockResolvedValueOnce({ rows: [], rowCount: 1 });
 
             await CategoriasController.deletarCategoria(req, res, next);
 
             expect(pool.query).toHaveBeenCalledWith(
-                'DELETE FROM categorias WHERE id = $1',
-                [1]
+                'DELETE FROM categorias WHERE id = $1 AND usuario_id = $2',
+                [1, DONO]
             );
             expect(res.status).toHaveBeenCalledWith(204);
         });
 
-        it('deve retornar status 500 se houver falha ao deletar', async () => {
+        it('deve repassar o erro do banco ao deletar', async () => {
             req.validacao.params = { id: 1 };
             pool.query.mockRejectedValueOnce(new Error('Erro no DB'));
 
-            await CategoriasController.deletarCategoria(req, res, next);
-
-            expect(res.status).toHaveBeenCalledWith(500);
+            await expect(CategoriasController.deletarCategoria(req, res, next)).rejects.toThrow();
         });
     });
 });
