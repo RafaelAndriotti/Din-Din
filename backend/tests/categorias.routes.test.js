@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
-import express from 'express';
-import routes from '../src/routes/index.js';
+import { criarApp } from '../src/app.js';
+import { emitirToken } from '../src/auth/token.js';
 import pool from '../src/db/db.js';
 
 // Mock do banco de dados (Pool do pg)
@@ -13,50 +13,50 @@ vi.mock('../src/db/db.js', () => {
     };
 });
 
+// Dono das requisições destes testes.
+const DONO = 7;
+const auth = { Authorization: `Bearer ${emitirToken(DONO)}` };
+
 /**
  * Testes de Integração de Rotas com Supertest
  * Substitui o teste manual no Insomnia / Postman!
- * 
- * Cria uma instância do Express configurada com os middlewares e endpoints de categorias.
+ *
+ * Usa o app real (criarApp): rate limit, autenticação, validate e handler de erro.
  */
 describe('Rotas de Categorias (HTTP com Supertest)', () => {
     let app;
 
     beforeEach(() => {
         vi.resetAllMocks();
-
-        // Cria uma aplicação Express para teste isolado das rotas
-        app = express();
-        app.use(express.json());
-
-        // Rotas reais (com validate), nao so os controllers
-        routes(app);
+        app = criarApp();
     });
 
     describe('GET /categorias', () => {
-        it('deve retornar status 200 e a lista de categorias', async () => {
+        it('deve retornar status 200 e a lista de categorias do dono', async () => {
             const mockCategorias = [
-                { id: 1, nome: 'Alimentação', cor: '#FF5733', tipoCusto: 'variavel', ativo: true },
-                { id: 2, nome: 'Moradia', cor: '#33FF57', tipoCusto: 'fixo', ativo: true }
+                { id: 1, nome: 'Alimentação', cor: '#FF5733', tipoCusto: 'VARIAVEL', ativo: true },
+                { id: 2, nome: 'Moradia', cor: '#33FF57', tipoCusto: 'FIXO', ativo: true }
             ];
 
             pool.query.mockResolvedValueOnce({ rows: mockCategorias });
 
             // Simula uma requisição GET como no Postman/Insomnia
-            const response = await request(app).get('/categorias');
+            const response = await request(app).get('/categorias').set(auth);
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual(mockCategorias);
             expect(response.headers['content-type']).toMatch(/json/);
+            expect(pool.query.mock.calls[0][1]).toEqual([DONO, 50, 0]);
         });
 
-        it('deve retornar status 500 se o banco falhar', async () => {
+        it('deve retornar status 500 genérico se o banco falhar, sem a mensagem do banco', async () => {
+            vi.spyOn(console, 'error').mockImplementation(() => {});
             pool.query.mockRejectedValueOnce(new Error('Erro de conexão ao banco'));
 
-            const response = await request(app).get('/categorias');
+            const response = await request(app).get('/categorias').set(auth);
 
             expect(response.status).toBe(500);
-            expect(response.body).toHaveProperty('message', 'Erro interno do servidor');
+            expect(response.body).toEqual({ message: 'Erro interno do servidor' });
         });
     });
 
@@ -65,7 +65,7 @@ describe('Rotas de Categorias (HTTP com Supertest)', () => {
             const mockCategoria = { id: 1, nome: 'Lazer', cor: '#8A2BE2' };
             pool.query.mockResolvedValueOnce({ rows: [mockCategoria] });
 
-            const response = await request(app).get('/categorias/1');
+            const response = await request(app).get('/categorias/1').set(auth);
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual(mockCategoria);
@@ -76,11 +76,10 @@ describe('Rotas de Categorias (HTTP com Supertest)', () => {
         it('deve criar uma nova categoria e retornar 201 com o objeto criado', async () => {
             const novaCategoria = {
                 nome: 'Assinaturas',
-                tipo: 'despesa',
                 descricao: 'Netflix, Spotify, etc',
                 cor: '#E50914',
                 limiteMensal: 150.00,
-                tipoCusto: 'fixo',
+                tipoCusto: 'FIXO',
                 ativo: true
             };
 
@@ -90,11 +89,23 @@ describe('Rotas de Categorias (HTTP com Supertest)', () => {
             // Simula um POST com JSON no body como no Postman/Insomnia
             const response = await request(app)
                 .post('/categorias')
+                .set(auth)
                 .send(novaCategoria)
                 .set('Content-Type', 'application/json');
 
             expect(response.status).toBe(201);
             expect(response.body).toEqual(categoriaRetornada);
+        });
+
+        it('nome repetido para o mesmo dono responde 409', async () => {
+            const duplicada = Object.assign(new Error('duplicate key value violates unique constraint "categorias_usuario_nome_key"'), { code: '23505' });
+            pool.query.mockRejectedValueOnce(duplicada);
+
+            const response = await request(app).post('/categorias').set(auth)
+                .send({ nome: 'Lazer', descricao: 'Cinema', limiteMensal: 100 });
+
+            expect(response.status).toBe(409);
+            expect(JSON.stringify(response.body)).not.toContain('categorias_usuario_nome_key');
         });
     });
 
@@ -102,11 +113,10 @@ describe('Rotas de Categorias (HTTP com Supertest)', () => {
         it('deve atualizar a categoria e retornar 200', async () => {
             const dadosAtualizados = {
                 nome: 'Alimentação e Mercado',
-                tipo: 'despesa',
                 descricao: 'Mercado mensal e feira',
                 cor: '#2ECC71',
                 limiteMensal: 1200.00,
-                tipoCusto: 'variavel',
+                tipoCusto: 'VARIAVEL',
                 ativo: true
             };
 
@@ -115,6 +125,7 @@ describe('Rotas de Categorias (HTTP com Supertest)', () => {
 
             const response = await request(app)
                 .put('/categorias/1')
+                .set(auth)
                 .send(dadosAtualizados);
 
             expect(response.status).toBe(200);
@@ -124,9 +135,9 @@ describe('Rotas de Categorias (HTTP com Supertest)', () => {
 
     describe('DELETE /categorias/:id', () => {
         it('deve deletar a categoria e retornar status 204', async () => {
-            pool.query.mockResolvedValueOnce({ rows: [{ id: 1 }] });
+            pool.query.mockResolvedValueOnce({ rows: [], rowCount: 1 });
 
-            const response = await request(app).delete('/categorias/1');
+            const response = await request(app).delete('/categorias/1').set(auth);
 
             expect(response.status).toBe(204);
         });
@@ -141,36 +152,55 @@ describe('Rotas de Categorias (HTTP com Supertest)', () => {
         const corpoValido = { nome: 'Lazer', descricao: 'Cinema', limiteMensal: 100 };
 
         it.each(['abc', '0', '-1', '1.5', '99999999999'])('id %s retorna 400 sem consultar o banco', async (id) => {
-            const response = await request(app)[metodo]('/categorias/' + id).send(corpoValido);
+            const response = await request(app)[metodo]('/categorias/' + id).set(auth).send(corpoValido);
 
             expect(response.status).toBe(400);
             expect(Array.isArray(response.body.erros)).toBe(true);
             expect(pool.query).not.toHaveBeenCalled();
         });
 
-        it('id valido passa o id como numero para o banco', async () => {
+        it('id valido passa o id como numero e o dono para o banco', async () => {
             pool.query.mockResolvedValueOnce({ rows: [{ id: 1 }], rowCount: 1 });
 
-            const response = await request(app)[metodo]('/categorias/1').send(corpoValido);
+            const response = await request(app)[metodo]('/categorias/1').set(auth).send(corpoValido);
 
             expect(response.status).toBe(metodo === 'delete' ? 204 : 200);
-            expect(pool.query.mock.calls[0][1]).toContain(1);
+            expect(pool.query.mock.calls[0][0]).toMatch(/WHERE id = \$\d+ AND usuario_id = \$\d+/);
+            expect(pool.query.mock.calls[0][1].slice(-2)).toEqual([1, DONO]);
+        });
+
+        // IDOR (F10-F12): registro de outro dono volta 404, igual a um id inexistente.
+        it('id de outro dono retorna 404', async () => {
+            pool.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
+
+            const response = await request(app)[metodo]('/categorias/1').set(auth).send(corpoValido);
+
+            expect(response.status).toBe(404);
         });
     });
 
     describe('POST /categorias - body invalido', () => {
         it('retorna 400 sem consultar o banco', async () => {
-            const response = await request(app).post('/categorias').send({ descricao: 'sem nome' });
+            const response = await request(app).post('/categorias').set(auth).send({ descricao: 'sem nome' });
 
             expect(response.status).toBe(400);
             expect(Array.isArray(response.body.erros)).toBe(true);
             expect(pool.query).not.toHaveBeenCalled();
         });
+
+        it('usuario_id no body é descartado: o dono vem do token', async () => {
+            pool.query.mockResolvedValueOnce({ rows: [{ id: 1 }] });
+
+            await request(app).post('/categorias').set(auth)
+                .send({ nome: 'Lazer', descricao: 'Cinema', limiteMensal: 100, usuario_id: 99, usuarioId: 99 });
+
+            expect(pool.query.mock.calls[0][1].at(-1)).toBe(DONO);
+        });
     });
 
     describe('PUT /categorias/:id - body invalido', () => {
         it('id valido com body invalido retorna 400 sem consultar o banco', async () => {
-            const response = await request(app).put('/categorias/1').send({ descricao: 'sem nome' });
+            const response = await request(app).put('/categorias/1').set(auth).send({ descricao: 'sem nome' });
 
             expect(response.status).toBe(400);
             expect(Array.isArray(response.body.erros)).toBe(true);

@@ -1,12 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
-import express from 'express';
-import routes from '../src/routes/index.js';
+import { criarApp } from '../src/app.js';
+import { emitirToken } from '../src/auth/token.js';
 import pool from '../src/db/db.js';
 
 vi.mock('../src/db/db.js', () => ({
     default: { query: vi.fn() }
 }));
+
+// Dono das requisições destes testes.
+const DONO = 7;
+const auth = { Authorization: `Bearer ${emitirToken(DONO)}` };
 
 describe('Rotas de Despesas - validacao do :id (COR-3)', () => {
     let app;
@@ -14,9 +18,7 @@ describe('Rotas de Despesas - validacao do :id (COR-3)', () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
-        app = express();
-        app.use(express.json());
-        routes(app);
+        app = criarApp();
     });
 
     describe.each([
@@ -25,25 +27,35 @@ describe('Rotas de Despesas - validacao do :id (COR-3)', () => {
         ['DELETE', 'delete']
     ])('%s /despesas/:id', (_, metodo) => {
         it.each(['abc', '0', '-1', '1.5', '99999999999'])('id %s retorna 400 sem consultar o banco', async (id) => {
-            const response = await request(app)[metodo]('/despesas/' + id).send(corpoValido);
+            const response = await request(app)[metodo]('/despesas/' + id).set(auth).send(corpoValido);
 
             expect(response.status).toBe(400);
             expect(Array.isArray(response.body.erros)).toBe(true);
             expect(pool.query).not.toHaveBeenCalled();
         });
 
-        it('id valido passa o id como numero para o banco', async () => {
+        it('id valido passa o id como numero e o dono para o banco', async () => {
             pool.query.mockResolvedValueOnce({ rows: [{ id: 1 }], rowCount: 1 });
 
-            const response = await request(app)[metodo]('/despesas/1').send(corpoValido);
+            const response = await request(app)[metodo]('/despesas/1').set(auth).send(corpoValido);
 
             expect(response.status).toBe(metodo === 'delete' ? 204 : 200);
-            expect(pool.query.mock.calls[0][1]).toContain(1);
+            expect(pool.query.mock.calls[0][0]).toMatch(/WHERE id = \$\d+ AND usuario_id = \$\d+/);
+            expect(pool.query.mock.calls[0][1].slice(-2)).toEqual([1, DONO]);
+        });
+
+        // IDOR (F07-F09): despesa de outro dono volta 404, igual a um id inexistente.
+        it('id de outro dono retorna 404', async () => {
+            pool.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
+
+            const response = await request(app)[metodo]('/despesas/1').set(auth).send(corpoValido);
+
+            expect(response.status).toBe(404);
         });
     });
 
     it('PUT com id valido e body invalido retorna 400 sem consultar o banco', async () => {
-        const response = await request(app).put('/despesas/1').send({ descricao: '' });
+        const response = await request(app).put('/despesas/1').set(auth).send({ descricao: '' });
 
         expect(response.status).toBe(400);
         expect(Array.isArray(response.body.erros)).toBe(true);
@@ -51,19 +63,63 @@ describe('Rotas de Despesas - validacao do :id (COR-3)', () => {
     });
 
     it('POST com body invalido retorna 400 sem consultar o banco', async () => {
-        const response = await request(app).post('/despesas').send({ descricao: '' });
+        const response = await request(app).post('/despesas').set(auth).send({ descricao: '' });
 
         expect(response.status).toBe(400);
         expect(Array.isArray(response.body.erros)).toBe(true);
         expect(pool.query).not.toHaveBeenCalled();
     });
 
-    it('POST valido de despesa PIX grava parcelas 1', async () => {
+    it('POST valido de despesa PIX grava parcelas 1 e o dono do token', async () => {
         pool.query.mockResolvedValueOnce({ rows: [{ id: 1 }] });
 
-        const response = await request(app).post('/despesas').send({ ...corpoValido, parcelas: 5 });
+        const response = await request(app).post('/despesas').set(auth).send({ ...corpoValido, parcelas: 5 });
 
         expect(response.status).toBe(201);
-        expect(pool.query.mock.calls[0][1]).toEqual(['Mercado', 150.9, 'Alimentacao', 'PIX', 1, 'PAGO']);
+        expect(pool.query.mock.calls[0][1]).toEqual(['Mercado', 150.9, 'Alimentacao', 'PIX', 1, 'PAGO', DONO]);
+    });
+
+    it('POST ignora usuario_id vindo do body', async () => {
+        pool.query.mockResolvedValueOnce({ rows: [{ id: 1 }] });
+
+        await request(app).post('/despesas').set(auth).send({ ...corpoValido, usuario_id: 99, usuarioId: 99 });
+
+        expect(pool.query.mock.calls[0][1].at(-1)).toBe(DONO);
+    });
+});
+
+describe('GET /despesas - dono e paginação (F02, O4)', () => {
+    let app;
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+        app = criarApp();
+    });
+
+    it('lista só as despesas do dono, 50 por página por padrão', async () => {
+        pool.query.mockResolvedValueOnce({ rows: [] });
+
+        const response = await request(app).get('/despesas').set(auth);
+
+        expect(response.status).toBe(200);
+        const [sql, params] = pool.query.mock.calls[0];
+        expect(sql).toMatch(/FROM despesas\s+WHERE usuario_id = \$1/);
+        expect(sql).toMatch(/LIMIT \$2 OFFSET \$3/);
+        expect(params).toEqual([DONO, 50, 0]);
+    });
+
+    it('?pagina=3&limite=20 pula as 40 primeiras', async () => {
+        pool.query.mockResolvedValueOnce({ rows: [] });
+
+        await request(app).get('/despesas?pagina=3&limite=20').set(auth);
+
+        expect(pool.query.mock.calls[0][1]).toEqual([DONO, 20, 40]);
+    });
+
+    it.each(['limite=101', 'limite=0', 'pagina=0', 'pagina=abc'])('?%s retorna 400 sem consultar o banco', async (query) => {
+        const response = await request(app).get(`/despesas?${query}`).set(auth);
+
+        expect(response.status).toBe(400);
+        expect(pool.query).not.toHaveBeenCalled();
     });
 });
