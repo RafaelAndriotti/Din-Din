@@ -1,64 +1,87 @@
 ---
 name: Din-Din
-description: Personal expense ledger where nothing disappears, it cancels.
+description: Personal expense ledger on frosted glass, where nothing disappears, it changes colour.
 colors:
-  carbon: "#6B3FA0"
-  stamp: "#D8262F"
-  pago: "#177A43"
-  ink: "#14285A"
-  ink-hover: "#0E1D45"
-  ink-2: "#4A5A82"
-  ink-3: "#56638A"
-  control: "#7C89AB"
-  rule: "#C9CFDD"
-  wash: "#ECEEF4"
-  paper: "#FBFBF8"
-  paper-field: "#FFFFFF"
-  on-ink: "#FFFFFF"
-  on-bar-ok: "#7BE0A3"
-  on-bar-warn: "#FFD166"
-  on-bar-error: "#FF9AA0"
+  scene: "#AB8E76"
+  scene-glow-1: "#F1DCC6"
+  scene-glow-2: "#C89C78"
+  glass-frame: "rgb(247 234 219 / 30%)"
+  glass-rail: "rgb(241 222 206 / 55%)"
+  glass-card: "rgb(250 242 232 / 62%)"
+  glass-card-light: "rgb(255 251 245 / 40%)"
+  glass-rim: "rgb(255 253 246 / 55%)"
+  edge-light: "rgb(255 254 247 / 84%)"
+  edge-shade: "rgb(57 40 28 / 19%)"
+  gloss: "rgb(255 251 242 / 45%)"
+  paper: "#F6ECE2"
+  paper-field: "rgb(255 250 245 / 62%)"
+  wash: "rgb(255 249 243 / 82%)"
+  ink: "#25201E"
+  ink-hover: "#3A302B"
+  ink-2: "#423731"
+  ink-3: "#5E5049"
+  rule: "rgb(74 49 33 / 15%)"
+  control: "rgb(74 49 33 / 32%)"
+  carbon: "#A43C27"
+  stamp: "#A43C27"
+  pago: "#09644F"
+  focus: "#194B48"
+  on-ink: "#FFFAF5"
+  pick: "#FFF9F3"
+  highlight-from: "#1E7461"
+  highlight-to: "#08443A"
+  scrim: "rgb(30 21 17 / 43%)"
 typography:
   display:
-    fontFamily: "'Archivo Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-    fontSize: "clamp(2.75rem, 1.6rem + 3.4vw, 3.75rem)"
-    fontWeight: 800
-    lineHeight: 1.05
-    fontVariation: "'wdth' 75"
+    fontFamily: "'Manrope Variable', Manrope, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+    fontSize: "clamp(2.5rem, 1.5rem + 3.4vw, 3.6rem)"
+    fontWeight: 820
+    lineHeight: 1.02
+    letterSpacing: "-0.07em"
     fontFeature: "'tnum' 1"
+  view-title:
+    fontFamily: "'Manrope Variable', Manrope, system-ui, sans-serif"
+    fontSize: "clamp(1.8rem, 1.2rem + 2vw, 3rem)"
+    fontWeight: 760
+    lineHeight: 1.03
+    letterSpacing: "-0.062em"
   headline:
-    fontFamily: "'Archivo Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-    fontSize: "1.25rem"
-    fontWeight: 800
-    lineHeight: 1.45
-    fontVariation: "'wdth' 85"
+    fontFamily: "'Manrope Variable', Manrope, system-ui, sans-serif"
+    fontSize: "1.5rem"
+    fontWeight: 830
+    letterSpacing: "-0.045em"
   title:
-    fontFamily: "'Archivo Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-    fontSize: "1rem"
-    fontWeight: 700
-    lineHeight: 1.45
-    letterSpacing: "0.05em"
-    fontVariation: "'wdth' 80"
+    fontFamily: "'Manrope Variable', Manrope, system-ui, sans-serif"
+    fontSize: "0.9375rem"
+    fontWeight: 800
+    letterSpacing: "-0.02em"
   body:
-    fontFamily: "'Archivo Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-    fontSize: "1rem"
-    fontWeight: 400
+    fontFamily: "'Manrope Variable', Manrope, system-ui, sans-serif"
+    fontSize: "0.9375rem"
+    fontWeight: 550
     lineHeight: 1.45
   body-sm:
-    fontFamily: "'Archivo Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 400
+    fontFamily: "'Manrope Variable', Manrope, system-ui, sans-serif"
+    fontSize: "0.8125rem"
+    fontWeight: 550
     lineHeight: 1.45
   label:
-    fontFamily: "'Archivo Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-    fontSize: "0.8125rem"
-    fontWeight: 700
-    lineHeight: 1.45
-    letterSpacing: "0.05em"
-    fontVariation: "'wdth' 80"
+    fontFamily: "'Manrope Variable', Manrope, system-ui, sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 790
+  wordmark:
+    fontFamily: "'Manrope Variable', Manrope, system-ui, sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 850
+    letterSpacing: "0.17em"
 rounded:
-  mark: "2px"
-  radius: "3px"
+  control: "12px"
+  coupon: "15px"
+  toast: "18px"
+  panel: "20px"
+  dialog: "23px"
+  stage: "34px"
+  pill: "999px"
 spacing:
   sp-1: "4px"
   sp-2: "8px"
@@ -72,114 +95,101 @@ components:
   button-primary:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.on-ink}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.radius}"
+    typography: "{typography.label}"
+    rounded: "{rounded.pill}"
     padding: "0 16px"
     height: "44px"
   button-primary-hover:
-    backgroundColor: "{colors.ink-hover}"
-    textColor: "{colors.on-ink}"
+    filter: "brightness(1.2)"
   button-secondary:
-    backgroundColor: "{colors.paper-field}"
+    backgroundColor: "{colors.wash}"
+    borderColor: "{colors.glass-rim}"
     textColor: "{colors.ink}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.radius}"
+    rounded: "{rounded.pill}"
     padding: "0 16px"
     height: "44px"
   button-secondary-hover:
-    backgroundColor: "{colors.wash}"
-    textColor: "{colors.ink}"
+    backgroundColor: "{colors.paper}"
   button-ghost:
     textColor: "{colors.ink-2}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.radius}"
-    padding: "0 16px"
+    rounded: "{rounded.pill}"
     height: "44px"
-  button-ghost-hover:
-    backgroundColor: "{colors.wash}"
-    textColor: "{colors.ink}"
   button-ghost-danger:
     textColor: "{colors.stamp}"
-    rounded: "{rounded.radius}"
-    padding: "0 16px"
-    height: "44px"
+    rounded: "{rounded.pill}"
   button-ghost-danger-hover:
     backgroundColor: "{colors.stamp}"
     textColor: "{colors.on-ink}"
-  button-on-bar:
-    backgroundColor: "{colors.on-ink}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.radius}"
-    padding: "0 16px"
-    height: "44px"
-  button-on-bar-hover:
-    backgroundColor: "{colors.wash}"
-    textColor: "{colors.ink}"
   icon-button:
-    textColor: "{colors.ink-2}"
-    rounded: "{rounded.radius}"
-    size: "44px"
-  icon-button-hover:
-    backgroundColor: "{colors.wash}"
+    backgroundColor: "{colors.paper-field}"
+    borderColor: "{colors.rule}"
     textColor: "{colors.ink}"
+    rounded: "{rounded.pill}"
+    size: "44px"
+  text-action:
+    backgroundColor: "{colors.wash}"
+    borderColor: "{colors.glass-rim}"
+    textColor: "{colors.ink}"
+    typography: "{typography.label}"
+    rounded: "{rounded.pill}"
+    height: "32px"
+  text-action-hover:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.on-ink}"
   input:
     backgroundColor: "{colors.paper-field}"
+    borderColor: "{colors.control}"
     textColor: "{colors.ink}"
     typography: "{typography.body-sm}"
-    rounded: "{rounded.radius}"
-    padding: "0 12px"
+    rounded: "{rounded.control}"
     height: "44px"
+  search:
+    rounded: "{rounded.pill}"
   chip:
     backgroundColor: "{colors.paper-field}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.radius}"
-    padding: "0 12px"
-    height: "40px"
+    borderColor: "{colors.control}"
+    rounded: "{rounded.pill}"
+    height: "38px"
   chip-selected:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.on-ink}"
-  segmented-option:
+  segmented:
     backgroundColor: "{colors.paper-field}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body-sm}"
-    padding: "0 12px"
-    height: "41px"
+    borderColor: "{colors.glass-rim}"
+    rounded: "{rounded.pill}"
+    padding: "3px"
   segmented-option-selected:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.on-ink}"
-  tag:
-    backgroundColor: "{colors.wash}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.radius}"
-    padding: "2px 2px 2px 10px"
-  stamp:
+    height: "36px"
+  status-pill:
     textColor: "{colors.pago}"
-    rounded: "{rounded.mark}"
-    padding: "1px 8px"
-  stamp-pendente:
+    backgroundColor: "color-mix(in srgb, {colors.pago} 13%, {colors.paper-field})"
+    rounded: "{rounded.pill}"
+    padding: "4px 9px 4px 7px"
+  status-pill-pendente:
     textColor: "{colors.stamp}"
-    rounded: "{rounded.mark}"
-    padding: "1px 8px"
   top-bar:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-ink}"
+    backgroundColor: "{colors.glass-rail}"
+    rounded: "{rounded.pill}"
     height: "60px"
+  stage:
+    backgroundColor: "{colors.glass-frame}"
+    rounded: "{rounded.stage}"
+  panel:
+    backgroundColor: "{colors.glass-card}"
+    rounded: "{rounded.panel}"
   toast:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.on-ink}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.radius}"
-    padding: "8px 8px 8px 16px"
+    rounded: "{rounded.toast}"
   toast-error:
-    backgroundColor: "{colors.paper-field}"
-    textColor: "{colors.ink}"
+    backgroundColor: "{colors.paper}"
+    borderColor: "{colors.stamp}"
   dialog:
     backgroundColor: "{colors.paper}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.radius}"
-    padding: "24px"
+    borderColor: "{colors.glass-rim}"
+    rounded: "{rounded.dialog}"
     width: "560px"
 ---
 
@@ -187,179 +197,141 @@ components:
 
 ## Overview
 
-**Creative North Star: "Carbon Copy"**
+**Creative North Star: "Vidro"** (adopted 2026-11-24, replacing "Carbon Copy")
 
-Din-Din looks like the owner's own ticket wallet: coupon-white paper, navy ink, and the purple of a carbon duplicate for every amount that is still owed. The rule the whole system serves is that nothing disappears, it cancels. A paid bill stays in the ledger, struck through, drained of purple, and stamped PAGO in green; a bill still owed carries a red PENDENTE stamp. What remains purple on the screen is, literally, what is left to pay.
+Din-Din is a calm workspace seen through frosted glass. Behind everything sits a warm scene, the light of a beige room drawn only with gradients. On top of it float three layers of glass: a pill-shaped top bar, a large "stage" that holds the whole screen, and panels inside the stage. Dark brown ink writes on the glass; coral marks what is still owed; a deep teal marks what is paid.
 
-The system is dense and flat. There are no boxed areas on the page: the owed band, the ledger, table rows and definition lists are separated by ruled lines in two weights, a heavy navy rule (2px) that opens a block and a hairline (1px) between entries. Corners are near-square, like cut paper. One typeface does everything; hierarchy comes from weight and from the width axis, which condenses headings and large figures.
-
-This world replaces a look the owner rejected as generic: navy page ground, indigo accent, a row of KPI cards, rounded cards everywhere. Navy survives only as ink and as the top bar, never as the ground.
+The rule from the old system still holds: nothing disappears, it changes colour. A paid bill stays in the ledger, struck through, its value drained to `ink-3`, with a teal PAGO pill. A bill still owed keeps its coral value and a coral PENDENTE pill. What is coral on the screen is, literally, what is left to pay.
 
 **Key Characteristics:**
-- White coupon ground, navy ink, navy top bar.
-- Purple marks money still owed; paid and summed figures stay in ink.
-- Status is stamped: PAGO in green, PENDENTE in red. Red also marks errors and delete.
-- Ruled lines instead of cards; shadow only on dialog and toast.
-- One family (Archivo Variable), condensed uppercase for heads, tabular figures for money.
-- One authored motion: the stamp landing on a freshly paid row.
+- Warm gradient scene, frosted glass on three levels (bar, stage, panels).
+- Coral marks money still owed; paid amounts and sums stay in ink.
+- Status is a pill with a dot: PAGO in teal, PENDENTE in coral. Coral also marks errors and delete.
+- Everything interactive is a pill; panels are rounded rectangles (20px), the stage 34px.
+- One family (Manrope Variable), tight negative tracking on big type, tabular figures for money.
+- One authored motion: the status pill popping in on the row that just changed.
 
 ## Colors
 
-A two-ink ledger on white paper: navy for everything written, carbon purple for what is owed, and two stamp inks: green for PAGO, red for PENDENTE, errors and delete.
+### Scene
+- **Scene** (`scene`, `scene-glow-1`, `scene-glow-2`, `scene-shade`): the background. Painted by `body::before` with two radial glows, two diagonal tints and a floor shadow. No photo: the production CSP (`img-src 'self' data:`) blocks external images, and a gradient keeps the build self-contained. A local photo in `public/` could replace it later.
 
-### Primary
-- **Carbon Purple** (`carbon`): the amount still owed. The display total under "Falta pagar", each pending value in the owed column, the ledger table and the compact list, and the value in the details dialog while the bill is pending. It also draws the keyboard focus ring (3px solid, 2px offset), the text caret and the text selection, and the hover of underlined text actions.
+### Glass
+- **Frame** (`glass-frame`): the stage. **Rail** (`glass-rail`): top bar, banner, mobile dock. **Card** (`glass-card` over a `glass-card-light` gradient): panels and coupon cards.
+- **Rim** (`glass-rim`): the 1px light border of every glass surface. **Edge light / edge shade**: the inset 1px highlights top-left and shade bottom-right that give the glass thickness. **Gloss**: the diagonal sheen.
+- Panels are more opaque (62%) than a typical glass UI so money stays AA-readable over the scene.
 
-### Secondary
-- **Stamp Red** (`stamp`): the PENDENTE stamp (2.5px border and text), field and form errors (border of an invalid field, error text, the error toast and form alert border, the error empty-state icon) and delete (ghost danger text, filled on hover with white text).
+### Ink and surfaces
+- **Ink** (`ink`): text, primary buttons, selected chips and segments, the toast. **ink-2**: supporting text, meta, hints. **ink-3**: everything on a paid row.
+- **Paper** (`paper`): solid surfaces that float above the glass: dialogs, the error toast, select menus.
+- **Paper field** (`paper-field`): inputs, the inner tray of coupons, table head strip, row hover.
+- **Wash** (`wash`): text actions, secondary buttons, skeletons, tags.
+- **Rule** (`rule`): hairlines between rows. **Control** (`control`): borders of editable fields.
+- **Pick** (`pick`): the light disc of the logo.
 
-- **Stamp Green** (`pago`, #177A43, 5.2:1 on paper; `pago-hover` #126337 on wash): the PAGO stamp, and nothing else. Night mode: #4CC98A / #6BD6A0.
+### Accents
+- **Coral** (`carbon`, light #A43C27 / dark #FF9177): money still owed. The display total, coupon values, ledger values of pending rows, the details value while pending.
+- **Coral as stamp** (`stamp`, same value): PENDENTE pill, field errors, error toast border, form alert, delete.
+- **Teal** (`pago`, light #09644F / dark #75DAC0): the PAGO pill and the "connected" dot.
+- **Highlight teal** (`#1E7461` to `#08443A`): fill of the first (largest) pending coupon. On it, ink, value and status turn white.
+- **Focus** (`focus`, light #194B48 / dark #F9BF9B): the 2px focus ring.
+- **Amber** (#C98A00 / #996300; #F1BE58 in dark): example-data banner icon and the "dados de exemplo" connection dot only.
 
-### Tertiary
-- **Bar Green / Bar Amber / Bar Pink** (`on-bar-ok`, `on-bar-warn`, `on-bar-error`): the 8px connection dot in the top bar, and nothing else. They exist only on navy.
-
-### Neutral
-- **Navy Ink** (`ink`): body text, the top bar, the primary button, selected chips and segmented options, heavy rules (1.5px and 2px), the dialog border. `ink-hover` is its pressed/hover shade on the primary button.
-- **Secondary Ink** (`ink-2`): supporting text, meta lines, hints, ghost buttons and resting icon buttons.
-- **Cancelled Ink** (`ink-3`): everything on a paid row (description, value, meta), and input placeholders.
-- **Control Grey** (`control`): the 1.5px border of inputs, selects and unselected chips; the bottom-sheet grip.
-- **Rule Grey** (`rule`): hairlines (1px) between entries and under the banner.
-- **Wash** (`wash`): hover ground for rows and quiet buttons, the example-data banner, filter tags, skeletons.
-- **Coupon Paper** (`paper`): page and dialog ground.
-- **Field White** (`paper-field`): inputs, selects, chips, segmented control, secondary button, error toast.
-- **On Ink** (`on-ink`): text and icons on navy and on filled red. Written as a literal `#fff` in the stylesheets, not as a custom property.
-
-### Night mode ("the back of the carbon")
-A second set of values for the same roles, switched by `data-theme="dark"` on `<html>`. With no saved choice it follows the system (`prefers-color-scheme`); the moon/sun icon button in the top bar (`aria-pressed`, label "Modo noturno") saves the choice in `localStorage` under `din-din-tema`. An inline script in `index.html` sets the attribute before first paint so the page never flashes light; `src/hooks/useTema.js` keeps it in sync and updates `theme-color`.
-
-- Ground is neutral graphite, never navy (`paper` #141519, `paper-field` #1B1D22, `wash` #262930). A navy ground is the rejected look.
-- Ink turns coupon white (`ink` #ECEAE2, `ink-2` #AEB2BF, `ink-3` #8F95A5); `rule` #33363F, `control` #737A8C.
-- Carbon lightens to #BB9AF0 (7.8:1) and stamp to #FF5C62 (6.1:1); the roles and named rules do not change.
-- Ink fills invert: primary button, selected chips and segments, and the toast become light with graphite text. Text on a fill uses `on-ink` / `on-stamp` (white in light mode, graphite in night mode), never a literal `#fff`.
-- The top bar stays navy (`bar` #14285A) in both modes, with a 1px #2B3D6B bottom edge in night mode; its contents keep their white and the "Nova despesa" button keeps navy text.
-- Overlays use a black scrim (`rgba(0,0,0,0.66)`) and a deeper overlay shadow.
+### Night mode
+`data-theme="dark"` on `<html>`, set before first paint by `public/tema.js` and kept by `src/hooks/useTema.js` (choice saved in `localStorage` under `din-din-tema`; without a choice it follows `prefers-color-scheme`). The same scene with the light off: `scene` #40322B, darker glass (`glass-card` 68%), ink turns cream (#FFF6E9), coral and teal lighten. `theme-color` is #AB8E76 in light mode and #40322B in dark mode.
 
 ### Named Rules
-**The Owed-Only Rule.** A money figure is purple only while it is still owed. The moment a bill is paid its value turns `ink-3` and loses weight (800 to 600); sums ("Já pago", "Total registrado", "Total exibido") are always ink.
+**The Owed-Only Rule.** A money figure is coral only while it is owed. Once paid it turns `ink-3` and loses weight; sums ("Já pago", "Total registrado", "Total exibido") are always ink. The highlighted coupon is the only place an owed value is white, because it sits on teal.
 
-**The Stamp Rule.** Stamp inks mark status, failure and destruction only: green for PAGO; red for PENDENTE, errors and delete (owner's choice, 2026-11-10). They colour the stamp, never the amount: a pending value stays carbon purple, a paid one `ink-3`. They never decorate.
+**The Status Rule.** Teal is PAGO; coral is PENDENTE, error and delete. Neither decorates.
 
-**The Data-Is-Not-Palette Rule.** Category swatch colours come from the API (`cor`) or from defaults in `frontend/src/utils/despesas.js`. They are user data shown in a 10px or 8px square and are never used for interface elements.
+**The Data-Is-Not-Palette Rule.** Category colours come from the API (`cor`) or from defaults in `frontend/src/utils/despesas.js`. They appear only in the 9px / 7px category dot.
 
 ## Typography
 
-**Display Font:** Archivo Variable, width axis condensed (with system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif)
-**Body Font:** Archivo Variable at normal width (same fallback)
-**Label/Mono Font:** none; money uses tabular figures of the same family
-
-**Character:** One grotesque doing the work of three. Normal width for reading, condensed and heavy for heads and big figures, which gives the printed-ticket feel without a second family. The font is self-hosted with the width axis (`@fontsource-variable/archivo/wdth.css`).
+**Font:** Manrope Variable, self-hosted (`@fontsource-variable/manrope`), imported in `src/main.jsx`. Body weight 550.
 
 ### Hierarchy
-- **Display** (800, width 75%, `clamp(2.75rem, 1.6rem + 3.4vw, 3.75rem)`, 1.05): the owed total. One per screen. The details dialog uses the same voice at 2.5rem / 1.1.
-- **Headline** (800, width 85%, 1.25rem): dialog titles, empty-state titles, pending values in the owed column. The wordmark uses the same size at width 80%, uppercase, 0.06em.
-- **Title** (700, width 80%, 1rem, 0.05em, uppercase): section heads "Falta pagar" and "Lançamentos".
-- **Body** (400, 1rem, 1.45): running text; 700 for entry names and definition values, 800 for values in the ledger.
-- **Body small** (400, 0.875rem): table cells, meta lines, controls (600 on chips, segmented options and tags; 700 on buttons and field labels).
-- **Label** (700, width 80%, 0.8125rem, 0.05em, uppercase): table column heads. The same size at normal width and weight 400 carries sub-lines and hints; 700 in red for field errors.
+- **Display** (820, -0.07em, `clamp(2.5rem, 1.5rem + 3.4vw, 3.6rem)`): the owed total. One per screen. The details dialog uses 2.6rem.
+- **View title** (760, -0.062em): "Despesas" at the top of the stage, "Entrar" / "Criar conta".
+- **Headline** (830, 1.5rem, -0.045em): dialog titles. Empty states use 1.25rem / 800.
+- **Title** (800, -0.02em, 15px): section heads "Falta pagar", "Lançamentos" (class `.caps`, no longer uppercase).
+- **Body** (550, 15px) and **body small** (13px): text, table cells, meta.
+- **Label** (750 to 790, 12px): buttons, pills, table heads, tags.
+- **Wordmark** (850, 12px, 0.17em, uppercase): "DIN-DIN" in the top bar, the only uppercase text.
 
 ### Named Rules
-**The One Family Rule.** Hierarchy comes from weight (400 / 600 / 700 / 800) and width (75 / 80 / 85 / 100%). No second typeface.
+**The Tabular Rule.** Every money figure and count uses tabular figures and never wraps.
 
-**The Tabular Rule.** Every money figure and count uses tabular figures (`font-variant-numeric: tabular-nums`) and never wraps. Values are not set in a monospace face.
-
-**The Condensed-Caps Rule.** Uppercase with tracking is only for section heads, column heads, the wordmark and the stamp, always condensed (80%). Body text and buttons stay sentence case.
+**The Tight-Big Rule.** The larger the type, the tighter the tracking: -0.02em on titles, up to -0.07em on the display total.
 
 ## Layout
 
-A single screen, stacked, inside a 1360px container with 32px side padding ("Faixa de canhotos", chosen 2026-11-10 over a single-column receipt and a pay/paid split). On top, the owed band: the total block on the left (260 to 320px, closed by a 2px navy vertical rule) and the pending bills to its right as a row of stubs that scrolls sideways. A 2px navy rule closes the band and opens the ledger, which takes the full width below. When there are no expenses the band is absent; when nothing is pending the total block spans the band. The top bar is full-bleed navy, 60px minimum height.
+The page is a centred column `min(100% - 64px, 1380px)` (40px margin below 1060px, 24px below 720px):
 
-Spacing follows a 4px grid (4, 8, 12, 16, 20, 24, 32, 48). Rows are compact: 12px vertical padding per entry, 8px for column heads. Interactive targets are 44px high by default, 36px in dense rows, 32px for the smallest text button.
+1. **Top bar** (pill, 60px): logo disc + wordmark + "Controle financeiro" on the left; connection pill, refresh, theme, "Nova despesa" and logout on the right.
+2. **Banner** (pill, only in demo mode): example-data notice with "Reconectar".
+3. **Stage** (34px radius): view head (title + one line), then the content grid with 12px gaps:
+   - **Owed row:** the total panel (260 to 340px) beside a tray of coupon cards that scrolls sideways (scroll-snap). Without pending bills the total panel spans the row.
+   - **Ledger panel:** list head, filters, table or compact list.
 
-Responsive behaviour:
-- **960px and below:** the band stacks: total block on top ("Já pago" and "Total registrado" side by side), stubs below in a thumb-swipe row that bleeds to the screen edge so the next stub shows cut off; side padding drops to 16px.
-- **720px and below:** stub actions get 44px touch targets; the bar's "Nova despesa" button and connection label hide; a fixed bottom bar (paper ground, 2px navy top rule) carries a full-width 52px primary button; filters stack with the two selects side by side; toasts centre above the bottom bar.
-- **640px and below:** dialogs become bottom sheets (full width, 92dvh max, top rule only, square corners, a 40x4px grip); form rows collapse to one column.
-- **Ledger container at 760px and below:** the table is replaced by a ruled compact list (container query on the ledger, not the viewport), each row a single 64px button.
+Spacing follows a 4px grid. Targets are 44px by default, 36px in dense rows, 32px for text actions.
+
+Responsive:
+- **960px and below:** owed row stacks; coupons are `min(72%, 260px)` wide.
+- **720px and below:** the bar's "Nova despesa" and connection pill hide; a glass dock fixed at the bottom carries a full-width 50px primary button; the stage padding drops to 12px; filters stack.
+- **640px and below:** dialogs become bottom sheets (top corners 23px, grip).
+- **Ledger container 760px and below:** table becomes a compact list (container query).
+- **420px and below:** "Já pago" and "Total registrado" stack.
 
 ## Elevation & Depth
 
-Flat. Depth on the page is drawn with rules, not shadows or tonal layers. Only things that float above the page cast a shadow, and they also carry a hard edge (2px navy border on the dialog, navy fill on the toast). The dialog sits on a navy scrim (`rgba(14, 29, 69, 0.6)`).
+Depth comes from glass, not from rules. Each glass surface combines `backdrop-filter: blur() saturate()`, a 1px rim, inset edge light/shade and a soft brown drop shadow (`rgb(35 21 14 / 9% to 22%)`). The stage casts the deepest shadow (`0 22px 72px`). Dialogs and toasts are solid (`paper` or `ink`) with the overlay shadow `0 20px 80px rgb(35 21 14 / 38%)`; the dialog scrim also blurs the page (5px).
 
-### Shadow Vocabulary
-- **Overlay** (`box-shadow: 0 18px 40px -12px rgba(20, 40, 90, 0.45)`): dialog and toast only.
-
-### Named Rules
-**The Overlay-Only Rule.** Nothing resting on the page has a shadow. The one non-overlay `box-shadow` in the build is a 1.5px white ring that keeps a category swatch visible on a selected (navy) chip; it is an outline, not depth.
+`prefers-reduced-transparency: reduce` and `prefers-contrast: more` swap every glass surface for solid `paper` without blur. `forced-colors` adds `CanvasText` borders.
 
 ## Shapes
 
-Near-square, like cut paper. Controls, buttons, tags, dialogs and toasts use a 3px radius. Small marks (the stamp, category swatches, skeleton bars, the sheet grip) use 2px. The segmented control clips its square options inside one 3px frame; bottom sheets and full-width list rows are fully square. The only circle is the 8px connection dot.
-
-Lines carry the structure, in a fixed set of weights: 2px navy opens a block (table head, dialog head, owed footer, column divider), 1.5px navy frames a committed control or separates owed entries, 1.5px control grey frames an editable field, 1px rule grey separates rows. The stamp is the one tilted element (rotated -4deg, 2.5px red border).
+- **Pill (999px):** buttons, icon buttons, text actions, search, selects in the filter row, segmented control, chips, tags, status pills, top bar, banner, mobile dock, stepper.
+- **12px:** inputs and selects in forms, form alert. **16px:** amount field.
+- **15px:** coupon cards. **18px:** toast. **20px:** panels and the coupon tray. **23px:** dialogs. **34px:** the stage.
+- Circles: logo disc, category dot, status dot, connection dot.
 
 ## Components
 
 ### Buttons
-Plain and flat; weight 700, 14px, sentence case, no shadow, colour-only transitions (0.15s).
-- **Shape:** near-square (3px), 44px high, 16px side padding; 36px and 32px dense sizes.
-- **Primary:** navy fill, white text; hover darkens to `ink-hover`. One per context.
-- **Secondary:** white field, 1.5px navy border, navy text; hover fills with wash.
-- **Ghost:** `ink-2` text, no border; hover turns navy on wash. The danger variant is red text that fills red with white text on hover.
-- **On bar:** white fill, navy text, used only on the navy top bar.
-- **Icon button:** 44px square (36px in rows), `ink-2` icon, wash on hover; white icon with a 16% white hover on navy surfaces. Icons are lucide line icons, 2px stroke, 14 to 20px.
-- **Text action:** underlined bold navy text (1.5px underline, 3px offset) for in-row actions such as "Marcar como pago"; hover turns it carbon.
-- **Disabled:** 50% opacity.
-- **Focus:** 3px carbon outline, 2px offset; white outline on navy surfaces.
+Weight 790, 13px, pill. **Primary:** ink fill, hover `brightness(1.2)`. **Secondary:** wash with rim. **Ghost:** ink-2 text; danger variant fills coral on hover. **Icon button:** 44px circle on `paper-field` with a rule border; the 36px row variant is borderless and transparent. **Text action** ("Marcar como pago", "Ver pagas", "Criar conta"): 32px wash pill that turns ink on hover. Disabled: 50% opacity. Focus: 2px `focus` ring, 3px offset.
 
-### Chips
-- **Style:** white field, 1.5px control-grey border, 40px high, 14px / 600. Used as radio options in the form (category, payment method), optionally with a category swatch or icon.
-- **State:** hover darkens the border to navy; selected fills navy with white text. The "add" chip has a dashed border. An invalid group turns every chip border red.
-- **Tag:** active-filter tag on wash with a 28px remove button that inverts to navy on hover.
+### Inputs
+`paper-field` with a 1px `control` border and inner gloss; hover darkens the border; focus draws the 2px focus ring. Error: 2px coral border plus coral message. The amount field is 62px high, 28px / 815 with a fixed "R$". Inside dialogs, fields use a slightly whiter tone so they stand out on the solid paper.
 
-### Segmented control
-One 1.5px navy frame, options divided by 1.5px navy rules, 41px high, 14px / 600. Selected option fills navy with white text; counts sit beside labels at weight 400 with tabular figures.
+### Segmented control and chips
+A pill tray (`paper-field`, rim, 3px padding) holding pill options; the selected one fills ink. Chips are 38px pills; selected fills ink; the "add" chip is dashed.
 
-### Containers
-There are no cards. Areas are separated by rules and whitespace on the paper ground. The only bounded surfaces are overlays (dialog, toast), the inline form alert (white, 2px red border) and the full-bleed wash banner for example data.
+### Owed row
+**Total panel:** "Falta pagar", the coral display total, the pending count, then an inner strip (`paper-field`, 12px radius) with "Já pago" and "Total registrado" split by a hairline. **Coupon tray:** a glass tray holding up to five cards (220px) plus "Ver todas as N pendentes" in a dashed card. Each card: name, coral value, category and method, text action pinned to the foot. The first (largest) card is filled teal with white text, echoing the highlighted metric of the glassy reference. A freshly paid card shows its PAGO pill, then fades out.
 
-### Inputs / Fields
-- **Style:** white field, 1.5px control-grey border, 3px radius, 44px high, 14px text. Labels sit above at 14px / 700, 6px gap. Selects use a navy lucide-style chevron. The amount field is the large one: 60px high, 28px / 800 at width 85%, with a fixed "R$" prefix.
-- **Hover / Focus:** border turns navy on hover; focus draws the 3px carbon outline flush to the field and turns the border carbon.
-- **Error:** 2px red border, with a 13px / 700 red message and icon below.
-- **Stepper:** 1.5px navy frame, two 44x41px icon buttons around a bold tabular output.
+### Ledger
+Table head on a rounded `paper-field` strip, 12px / 800 in ink-2. Rows separated by hairlines; hover fills the row with `paper-field` and rounds its ends. Pending: bold name, coral value, coral pill. Paid: struck-through name in ink-3, value in ink-3, teal pill.
 
-### Navigation
-A single navy top bar: condensed uppercase wordmark on the left; connection status (dot plus 14px label), refresh icon button and "Nova despesa" on the right. On phones the creation action moves to the fixed bottom bar.
-
-### Ledger rows
-Table rows on desktop, ruled list rows when the ledger is narrow. Pending: bold navy name, carbon value at weight 800, the red PENDENTE stamp in the status position. Paid: name struck through (1px) at weight 500 in `ink-3`, value in `ink-3` at 600, and the PAGO stamp in the status position. Hover washes the row. Column heads are condensed caps over a 2px navy rule.
-
-### Owed band and stubs
-The "Falta pagar" band holds the total block (section head, display total, count, then a definition list under a hairline with "Já pago" and "Total registrado" in ink) and up to five stubs. Each stub is 236px wide (min(72%, 280px) on phones), separated by 1px rule-grey vertical lines, scroll-snapped: bold name, carbon value (24px / 800, width 80%), meta, and "Marcar como pago" pinned to the stub's foot. More than five pending adds a last stub with "Ver todas as N pendentes". The strip scrolls horizontally with a thin control-grey scrollbar; on phones it bleeds to the screen edge.
-
-### Status stamp (signature)
-Condensed caps (16px / 800, width 80%, 0.08em) inside a 2.5px border with a 2px radius, rotated -4deg: PAGO in green, PENDENTE in red (`.stamp-pago` / `.stamp-pend`, both driven by `--stamp-cor`). On row hover it switches to the darker hover tone of its own ink. When a bill's status has just changed, in either direction, its new stamp enters once: from rotate(-14deg) scale(1.9) and transparent to rest, in 0.36s on `cubic-bezier(0.16, 1, 0.3, 1)`. The freshly paid stub stays in the band for a moment, stamped, before leaving. This is the only authored motion; the toast rise (0.24s, 8px), skeleton pulse and refresh spin are functional feedback. All motion collapses under `prefers-reduced-motion`.
+### Status pill (signature)
+Pill with a 6px dot in `currentColor`, 12px / 790, background `color-mix(status 13%, paper-field)`. When a status just changed, the pill enters once from `scale(1.5)` and transparent, 0.36s on `cubic-bezier(0.16, 1, 0.3, 1)`. Functional motion: toast rise, skeleton pulse, refresh spin, coupon fade. Everything collapses under `prefers-reduced-motion`.
 
 ### Toast and dialog
-- **Toast:** navy fill, white text, 14px, overlay shadow, bottom right (centred above the bottom bar on phones), with an underlined text action and a close icon button. The error toast inverts to a white field with a 2px red border and a red icon.
-- **Dialog:** paper ground, 2px navy border, 3px radius, overlay shadow, 560px max (440px for details). Head with a 2px navy rule below, body with 24px padding and 20px gaps, footer above a 1px hairline.
+**Toast:** ink fill, 18px radius, action as a tinted pill. **Error toast:** paper with a 1.5px coral border and coral icon. **Dialog:** solid paper, rim border, 23px radius, 560px (460px for details), title without a rule below, details as a bordered fact list (14px radius).
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** colour a money figure carbon only while it is owed; switch it to `ink-3` at weight 600 the moment it is paid, and keep sums in ink.
-- **Do** keep paid entries visible: struck through, drained of purple, stamped PAGO in green.
-- **Do** separate areas with rules: 2px navy to open a block, 1px rule grey between entries.
-- **Do** keep corners at 3px (2px for small marks) and targets at 44px, 36px in dense rows.
-- **Do** build hierarchy from Archivo's weight and width axis, with tabular figures on every amount.
-- **Do** keep the 3px focus outline: carbon on paper, white on navy.
-- **Do** treat category colours as data inside the small square swatch.
+- **Do** keep content inside the stage and group it in glass panels.
+- **Do** colour money coral only while it is owed; paid in ink-3, sums in ink.
+- **Do** make every interactive control a pill and keep targets at 44px (36px in rows).
+- **Do** keep glass opaque enough for AA text, and keep the solid fallback for reduced transparency.
+- **Do** use tabular figures and tight tracking on large numbers.
 
 ### Don't:
-- **Don't** use carbon purple on paid amounts, totals, buttons or decoration.
-- **Don't** use red for anything other than the PENDENTE stamp, errors and delete, or green for anything other than the PAGO stamp.
-- **Don't** put page content in cards or boxed panels; only dialogs, toasts and the form alert are bounded.
-- **Don't** add shadows to anything resting on the page; the overlay shadow is for dialog and toast.
-- **Don't** return to the rejected look: navy page ground, indigo accent, KPI card row, rounded cards.
-- **Don't** add a second typeface or set money in monospace.
-- **Don't** add a second authored animation; the stamp entrance is the one.
+- **Don't** load background images from other hosts; the CSP blocks them in production.
+- **Don't** use coral or teal for decoration, buttons or totals.
+- **Don't** add a second typeface or put money in monospace.
+- **Don't** put glass on glass on glass beyond the three levels (bar, stage, panel); coupons sit in a tray, not deeper.
+- **Don't** add a second authored animation; the status pop is the one.

@@ -413,7 +413,12 @@ function Painel({ onSair }) {
       )}
 
       <main className="page">
-        <h1 className="sr-only">Din-Din: controle de despesas</h1>
+        <header className="view-head">
+          <div>
+            <h1>Despesas</h1>
+            <p>O que falta pagar e tudo o que você já registrou.</p>
+          </div>
+        </header>
         {conteudo}
       </main>
 

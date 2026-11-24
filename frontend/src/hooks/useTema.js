@@ -40,7 +40,7 @@ export default function useTema() {
     document.documentElement.dataset.theme = tema;
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', tema === 'dark' ? '#141519' : '#14285A');
+      ?.setAttribute('content', tema === 'dark' ? '#40322B' : '#AB8E76');
   }, [tema]);
 
   const alternar = useCallback(() => {

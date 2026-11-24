@@ -17,7 +17,7 @@ Projeto de estudo: o dono escreve o código para aprender backend. Explicar o po
 - `backend/docker-compose.yml` — Postgres 16, porta host `5434`, lê `../.env`.
 - `frontend/` — Vite na porta 5173, proxy de `/auth`, `/despesas` e `/categorias` para `127.0.0.1:3000`. Lint com oxlint. `src/services/api.js` fala com a API e guarda o token; `components/Login.jsx` é a tela de entrada.
 - `docs/security-audit/` — auditoria de segurança (23/11/2026) e o relatório de correções, gerados em HTML e PDF pelos scripts da pasta.
-- `PRODUCT.md` e `DESIGN.md` (raiz) — contexto de produto e design system do frontend ("Carbon Copy": papel branco, azul-marinho, roxo só para o que falta pagar, vermelho só para carimbo PAGO/erro/exclusão). `.impeccable/` guarda o brief e as capturas da revisão.
+- `PRODUCT.md` e `DESIGN.md` (raiz) — contexto de produto e design system do frontend. Desde 24/11/2026 o visual é "Vidro" (glassy): cena quente ao fundo, palco e painéis de vidro fosco, botões em pílula, fonte Manrope; coral para o que falta pagar, PENDENTE e erro; verde-azulado para PAGO. Tokens em `frontend/src/index.css`, regras em `DESIGN.md`. `.impeccable/` guarda o brief e as capturas da revisão.
 - `.claude/agents/` — agentes do projeto (orquestrador, designer, mentor-backend, frontend-especialista, cacador-de-bugs).
 - `.claude/reports/` — revisões e guias do mentor. Fonte de verdade: `a-corrigir-2026-11-03.md` (correções) e `a-criar-2026-11-03.md` (o que falta criar).
 

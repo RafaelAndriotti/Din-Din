@@ -1,9 +1,9 @@
 import React from 'react';
-import { LogOut, Moon, Plus, RefreshCw, Sun } from 'lucide-react';
+import { LogOut, Moon, Plus, RefreshCw, Sun, Wallet } from 'lucide-react';
 import useTema from '../hooks/useTema';
 
+// Com a API no ar não aparece nada: a barra só avisa quando algo foge do normal.
 const CONEXAO = {
-  ready: { texto: 'API conectada', classe: 'on' },
   demo: { texto: 'Dados de exemplo', classe: 'off' },
   error: { texto: 'API indisponível', classe: 'error' }
 };
@@ -18,7 +18,15 @@ export default function Header({ status, onOpenModal, onRefresh, refreshing, onS
   return (
     <header className="app-header">
       <div className="header-inner">
-        <span className="brand-name">Din-Din</span>
+        <div className="brand">
+          <span className="brand-logo" aria-hidden="true">
+            <Wallet size={19} strokeWidth={2} />
+          </span>
+          <div>
+            <span className="brand-name">Din-Din</span>
+            <span className="brand-sub">Controle financeiro</span>
+          </div>
+        </div>
 
         <div className="header-actions">
           {logado && conexao && (
