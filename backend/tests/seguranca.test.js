@@ -99,6 +99,14 @@ describe('Respostas de erro (O1, O2)', () => {
 
         expect(response.headers['x-powered-by']).toBeUndefined();
     });
+
+    it('as respostas trazem os cabeçalhos de segurança (F16)', async () => {
+        const response = await request(app).get('/');
+
+        expect(response.headers['content-security-policy']).toContain("frame-ancestors 'self'");
+        expect(response.headers['strict-transport-security']).toBeDefined();
+        expect(response.headers['x-content-type-options']).toBe('nosniff');
+    });
 });
 
 describe('Rate limit (O4)', () => {
