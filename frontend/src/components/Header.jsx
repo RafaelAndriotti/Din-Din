@@ -2,8 +2,8 @@ import React from 'react';
 import { LogOut, Moon, Plus, RefreshCw, Sun, Wallet } from 'lucide-react';
 import useTema from '../hooks/useTema';
 
+// Com a API no ar não aparece nada: a barra só avisa quando algo foge do normal.
 const CONEXAO = {
-  ready: { texto: 'API conectada', classe: 'on' },
   demo: { texto: 'Dados de exemplo', classe: 'off' },
   error: { texto: 'API indisponível', classe: 'error' }
 };
