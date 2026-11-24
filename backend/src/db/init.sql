@@ -68,7 +68,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS categorias_usuario_nome_key ON categorias (usu
 -- Role da API: sem superusuário, sem BYPASSRLS, sem criar banco nem role.
 SELECT format('CREATE ROLE %I', :'usuario_app')
  WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = :'usuario_app') \gexec
-ALTER ROLE :"usuario_app" LOGIN PASSWORD :'senha_app' NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE;
+-- Sem NOSUPERUSER etc. aqui: em banco gerenciado (Neon) o dono não é superusuário e o Postgres
+-- recusa mexer nesses atributos. A role nasce sem eles; a conferência abaixo garante que segue assim.
+ALTER ROLE :"usuario_app" LOGIN PASSWORD :'senha_app';
+SELECT rolsuper OR rolbypassrls OR rolcreatedb OR rolcreaterole AS role_com_privilegio_demais
+  FROM pg_roles WHERE rolname = :'usuario_app' \gset
+\if :role_com_privilegio_demais
+  \warn 'APP_DB_USER tem SUPERUSER, BYPASSRLS, CREATEDB ou CREATEROLE. Remova esses atributos (como admin) e rode de novo.'
+  \quit
+\endif
 
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 GRANT CONNECT ON DATABASE :"DBNAME" TO :"usuario_app";

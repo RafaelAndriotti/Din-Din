@@ -9,7 +9,9 @@ const pool = new Pool({
     port: config.POSTGRES_PORT,
     user: config.APP_DB_USER,
     password: config.APP_DB_PASSWORD,
-    database: config.POSTGRES_DB
+    database: config.POSTGRES_DB,
+    // Com TLS, confere o certificado do servidor (não aceita qualquer um).
+    ssl: config.POSTGRES_SSL ? { rejectUnauthorized: true } : false
 });
 
 export default pool;

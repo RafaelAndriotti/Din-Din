@@ -18,12 +18,25 @@ describe('Configuração validada no boot (F13)', () => {
         expect(config.POSTGRES_HOST).toBe('127.0.0.1');
         expect(config.POSTGRES_PORT).toBe(5434);
         expect(config.PORT).toBe(3000);
+        expect(config.HOST).toBe('127.0.0.1');
+        expect(config.POSTGRES_SSL).toBe(false);
+        expect(config.TRUST_PROXY).toBe(0);
+    });
+
+    it('aceita o ambiente de produção: sem a senha do admin, com TLS e atrás de proxy', () => {
+        const { POSTGRES_USER, POSTGRES_PASSWORD, ...semAdmin } = valido;
+        const config = lerConfig({ ...semAdmin, POSTGRES_SSL: 'true', HOST: '0.0.0.0', TRUST_PROXY: '1' });
+
+        expect(config.POSTGRES_PASSWORD).toBeUndefined();
+        expect(config.POSTGRES_SSL).toBe(true);
+        expect(config.HOST).toBe('0.0.0.0');
+        expect(config.TRUST_PROXY).toBe(1);
     });
 
     it.each([
         ['o .env.example copiado sem editar', { POSTGRES_USER: 'seu_usuario_aqui', POSTGRES_PASSWORD: 'sua_senha_aqui', APP_DB_PASSWORD: 'senha_da_api_aqui', JWT_SECRET: 'segredo_do_jwt_aqui' }, 'POSTGRES_USER'],
         ['senha do admin ainda de exemplo', { POSTGRES_PASSWORD: 'sua_senha_aqui' }, 'POSTGRES_PASSWORD'],
-        ['senha do admin ausente', { POSTGRES_PASSWORD: undefined }, 'POSTGRES_PASSWORD'],
+        ['POSTGRES_SSL fora de true/false', { POSTGRES_SSL: 'sim' }, 'POSTGRES_SSL'],
         ['senha do admin curta', { POSTGRES_PASSWORD: 'curta' }, 'POSTGRES_PASSWORD'],
         ['senha da API ausente', { APP_DB_PASSWORD: undefined }, 'APP_DB_PASSWORD'],
         ['senha da API com 11 caracteres', { APP_DB_PASSWORD: 'a'.repeat(11) }, 'APP_DB_PASSWORD'],
