@@ -8,12 +8,19 @@ import * as z from 'zod';
 const semExemplo = (schema) => schema.refine((v) => !v.endsWith('_aqui'), 'ainda é o valor de exemplo do .env.example');
 
 const EnvSchema = z.object({
-    // Admin do banco: o contêiner cria este usuário como superusuário. Só aplica o init.sql.
-    POSTGRES_USER: semExemplo(z.string().min(1)),
-    POSTGRES_PASSWORD: semExemplo(z.string().min(12)),
+    // Admin do banco: o contêiner cria este usuário como superusuário. Só aplica o init.sql,
+    // por isso é opcional: em produção a API não deve nem conhecer essa senha. Se vier, é validada.
+    POSTGRES_USER: semExemplo(z.string().min(1)).optional(),
+    POSTGRES_PASSWORD: semExemplo(z.string().min(12)).optional(),
     POSTGRES_DB: z.string().min(1),
     POSTGRES_HOST: z.string().min(1).default('127.0.0.1'),
     POSTGRES_PORT: z.coerce.number().int().positive().default(5434),
+    // Banco gerenciado (Neon) exige TLS; o Postgres do Docker local não tem.
+    POSTGRES_SSL: z.enum(['true', 'false']).default('false').transform((v) => v === 'true'),
+    // 127.0.0.1 na sua máquina (F05). Em hospedagem (Render), 0.0.0.0: o proxy com TLS da plataforma fica na frente.
+    HOST: z.string().min(1).default('127.0.0.1'),
+    // Quantos proxies há na frente da API. 0 local; 1 no Render. Sem isso o rate limit vê o IP do proxy, não o do usuário.
+    TRUST_PROXY: z.coerce.number().int().min(0).default(0),
     // Role com que a API conecta: sem superusuário, criada pelo init.sql (F04).
     APP_DB_USER: semExemplo(z.string().min(1)),
     APP_DB_PASSWORD: semExemplo(z.string().min(12)),
