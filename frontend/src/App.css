@@ -273,11 +273,6 @@
   box-shadow: 0 0 0 3px rgb(201 138 0 / 18%);
 }
 
-.conn.error .conn-dot {
-  background: var(--stamp);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--stamp) 18%, transparent);
-}
-
 /* ---------- Aviso de dados de exemplo ---------- */
 .banner {
   margin-top: var(--sp-3);
