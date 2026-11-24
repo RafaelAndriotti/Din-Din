@@ -1,0 +1,44 @@
+# Blueprint do Render: o deploy descrito no código.
+# Cada push na branch main dispara build e deploy (autoDeployTrigger: commit).
+# O site e a API saem do mesmo serviço: a API serve o build do React (frontend/dist).
+#
+# Banco: Neon, fora do Render. O init.sql NÃO roda aqui; quando o schema mudar,
+# aplique à mão no Neon com o usuário dono do banco (ver README).
+#
+# Segredos ficam com "sync: false": o valor é digitado no painel do Render e nunca vai
+# para o repositório. Num serviço que já existe, o valor atual é mantido.
+services:
+  - type: web
+    name: din-din # precisa ser igual ao nome do serviço no painel para o Blueprint assumi-lo
+    runtime: node
+    plan: free
+    branch: main
+    autoDeployTrigger: commit
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      # Render coloca um proxy com TLS na frente: a API escuta em todas as interfaces
+      # e confia em 1 proxy para o rate limit ver o IP real (O4).
+      - key: HOST
+        value: 0.0.0.0
+      - key: TRUST_PROXY
+        value: "1"
+      # Neon exige TLS. Porta padrão do Postgres.
+      - key: POSTGRES_SSL
+        value: "true"
+      - key: POSTGRES_PORT
+        value: "5432"
+      # Do painel do Neon (Connection details).
+      - key: POSTGRES_HOST
+        sync: false
+      - key: POSTGRES_DB
+        sync: false
+      # Role da API criada pelo init.sql, sem superusuário (F04).
+      - key: APP_DB_USER
+        sync: false
+      - key: APP_DB_PASSWORD
+        sync: false
+      # 32+ caracteres aleatórios. Trocar desloga todo mundo.
+      - key: JWT_SECRET
+        sync: false
