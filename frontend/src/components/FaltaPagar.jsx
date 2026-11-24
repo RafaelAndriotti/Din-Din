@@ -1,6 +1,6 @@
 import React from 'react';
 import { formatCurrency, isPago, pluralize } from '../utils/format';
-import { rotuloMetodo } from '../utils/despesas';
+import { isEntrada, rotuloMetodo, rotuloPagamento } from '../utils/despesas';
 import { StatusBadge } from './ExpenseList';
 
 // Quantos canhotos aparecem na faixa antes do atalho "Ver todas".
@@ -22,11 +22,15 @@ export function FaltaPagarSkeleton() {
   );
 }
 
-// Responde à primeira pergunta da tela: quanto falta pagar e quais contas somam esse valor.
-// Sempre considera todas as despesas, sem os filtros da lista ao lado.
+// Responde à primeira pergunta da tela: quanto falta pagar no mês e quais contas somam esse valor.
+// Sempre considera todos os lançamentos do mês, sem os filtros da lista ao lado.
+// "Falta pagar" só olha as saídas; as entradas entram no saldo do rodapé.
 // A conta recém-paga (carimbadaId) fica na lista por um instante, já carimbada, e só então sai:
 // quem pagou pelo celular vê o carimbo aqui, sem rolar até a lista.
-export default function FaltaPagar({ despesas, carimbadaId, onFilterStatus, onTogglePaid, onOpenDetails }) {
+export default function FaltaPagar({ lancamentos, carimbadaId, onFilterStatus, onTogglePaid, onOpenDetails }) {
+  const entradas = lancamentos.filter(isEntrada);
+  const despesas = lancamentos.filter((d) => !isEntrada(d));
+  const saldo = soma(entradas) - soma(despesas);
   const pagas = despesas.filter(isPago);
   const pendentes = despesas
     .filter((d) => !isPago(d))
@@ -58,8 +62,11 @@ export default function FaltaPagar({ despesas, carimbadaId, onFilterStatus, onTo
             )}
           </div>
           <div>
-            <dt>Total registrado</dt>
-            <dd className="money">{formatCurrency(soma(despesas))}</dd>
+            <dt>Saldo do mês</dt>
+            <dd className={`money ${saldo < 0 ? 'is-negativo' : ''}`}>{formatCurrency(saldo)}</dd>
+            <span className="owed-conta money">
+              {formatCurrency(soma(entradas))} de entradas − {formatCurrency(soma(despesas))} de saídas
+            </span>
           </div>
         </dl>
       </div>
@@ -75,7 +82,7 @@ export default function FaltaPagar({ despesas, carimbadaId, onFilterStatus, onTo
               </button>
               <span className="coupon-val money">{formatCurrency(item.valor)}</span>
               <span className="coupon-meta">
-                {item.categoria || 'Sem categoria'} · {rotuloMetodo(item.metodoPagamento)}
+                {item.categoria || 'Sem categoria'} · {rotuloPagamento(item) ?? rotuloMetodo(item.metodoPagamento)}
               </span>
               {isPago(item) ? (
                 <span className="coupon-stamp"><StatusBadge despesa={item} fresh /></span>

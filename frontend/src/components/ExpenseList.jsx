@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pencil, Trash2, Plus, CloudOff, RefreshCw } from 'lucide-react';
 import { formatCurrency, formatParcelas, isPago } from '../utils/format';
-import { corDaCategoria, rotuloMetodo, ROTULOS_STATUS } from '../utils/despesas';
+import { corDaCategoria, isEntrada, rotuloMarcar, rotuloMetodo, rotuloPagamento, rotuloStatus } from '../utils/despesas';
 
 // Pago leva o carimbo; pendente é o estado normal da linha e fica em texto simples.
 // Carimbo do status: PAGO em verde, PENDENTE em vermelho.
@@ -10,7 +10,18 @@ export function StatusBadge({ despesa, fresh = false }) {
   const pago = isPago(despesa);
   return (
     <span className={`stamp ${pago ? 'stamp-pago' : 'stamp-pend'} ${fresh ? 'fresh' : ''}`}>
-      {pago ? ROTULOS_STATUS.PAGO : ROTULOS_STATUS.PENDENTE}
+      {rotuloStatus(despesa)}
+    </span>
+  );
+}
+
+// Entrada aparece com "+" e na cor de PAGO; saída fica no tom normal do texto.
+export function Valor({ item, className }) {
+  const entrada = isEntrada(item);
+  return (
+    <span className={`${className} money ${entrada ? 'is-entrada' : ''}`}>
+      {entrada && <span aria-hidden="true">+ </span>}
+      {formatCurrency(item.valor)}
     </span>
   );
 }
@@ -71,8 +82,8 @@ export function LoadError({ onRetry }) {
 function descreverFiltros({ searchTerm, statusFilter, categoryFilter }) {
   const partes = [];
   if (statusFilter === 'pending') partes.push('pendente');
-  if (statusFilter === 'paid') partes.push('paga');
-  let frase = `Nenhuma despesa${partes.length ? ` ${partes.join(' ')}` : ''}`;
+  if (statusFilter === 'paid') partes.push('paga ou recebida');
+  let frase = `Nenhum lançamento${partes.length ? ` ${partes.join(' ')}` : ''}`;
   if (categoryFilter !== 'all') frase += ` em ${categoryFilter}`;
   frase += searchTerm ? ' bate com essa busca.' : ' encontrada com esses filtros.';
   return frase;
@@ -93,7 +104,9 @@ export default function ExpenseList({
   onTogglePaid,
   carimbadaId
 }) {
-  const totalExibido = despesas.reduce((acc, d) => acc + (Number(d.valor) || 0), 0);
+  // Entrada e saída não se somam: com as duas na lista, o total vira o saldo (entradas − saídas).
+  const temEntrada = despesas.some(isEntrada);
+  const totalExibido = despesas.reduce((acc, d) => acc + (isEntrada(d) ? 1 : -1) * (Number(d.valor) || 0), 0);
 
   let conteudo;
   if (loading) {
@@ -101,12 +114,12 @@ export default function ExpenseList({
   } else if (totalCount === 0) {
     conteudo = (
       <EmptyState
-        title="Comece registrando um gasto"
-        text="Cadastre o aluguel, o mercado ou uma conta do mês. O resumo aparece aqui assim que houver a primeira despesa."
+        title="Nada registrado neste mês"
+        text="Cadastre o salário, o aluguel, o mercado ou uma conta do mês. O resumo aparece aqui assim que houver o primeiro lançamento."
       >
         <button type="button" className="btn btn-primary" onClick={onOpenNew}>
           <Plus size={18} aria-hidden="true" />
-          Cadastrar primeira despesa
+          Novo lançamento
         </button>
       </EmptyState>
     );
@@ -125,7 +138,7 @@ export default function ExpenseList({
     conteudo = (
       <>
         <table className="expenses-table">
-          <caption className="sr-only">Lista de despesas</caption>
+          <caption className="sr-only">Lançamentos do mês</caption>
           <thead>
             <tr>
               <th scope="col" className="caps">Descrição</th>
@@ -143,7 +156,7 @@ export default function ExpenseList({
                     {item.descricao}
                   </button>
                   <span className="sub money">
-                    {rotuloMetodo(item.metodoPagamento)} · {formatParcelas(item.parcelas, item.valor)}
+                    {rotuloPagamento(item) ?? `${rotuloMetodo(item.metodoPagamento)} · ${formatParcelas(item.parcelas, item.valor)}`}
                   </span>
                 </td>
                 <td>
@@ -153,12 +166,12 @@ export default function ExpenseList({
                   </span>
                 </td>
                 <td><StatusBadge despesa={item} fresh={item.id === carimbadaId} /></td>
-                <td className="num"><span className="val money">{formatCurrency(item.valor)}</span></td>
+                <td className="num"><Valor item={item} className="val" /></td>
                 <td>
                   <div className="row-actions">
                     {!isPago(item) && (
                       <button type="button" className="link-btn" onClick={() => onTogglePaid(item)}>
-                        Marcar como pago
+                        {rotuloMarcar(item)}
                         <span className="sr-only">: {item.descricao}</span>
                       </button>
                     )}
@@ -191,13 +204,13 @@ export default function ExpenseList({
             <li key={item.id} className={isPago(item) ? 'is-paid' : undefined}>
               <button type="button" className="item" onClick={() => onOpenDetails(item)}>
                 <span className="item-title">{item.descricao}</span>
-                <span className="item-val money">{formatCurrency(item.valor)}</span>
+                <Valor item={item} className="item-val" />
                 <span className="item-meta">
                   <CategoryDot nome={item.categoria} categorias={categorias} small />
                   <span className="item-meta-text">
-                    {item.categoria || 'Sem categoria'} · {Number(item.parcelas) > 1
+                    {item.categoria || 'Sem categoria'} · {rotuloPagamento(item) ?? (Number(item.parcelas) > 1
                       ? formatParcelas(item.parcelas, item.valor)
-                      : rotuloMetodo(item.metodoPagamento)}
+                      : rotuloMetodo(item.metodoPagamento))}
                   </span>
                 </span>
                 <span className="item-status"><StatusBadge despesa={item} fresh={item.id === carimbadaId} /></span>
@@ -217,7 +230,8 @@ export default function ExpenseList({
         </h2>
         {!loading && despesas.length > 0 && (
           <span className="total">
-            Total exibido: <b className="money">{formatCurrency(totalExibido)}</b>
+            {temEntrada ? 'Saldo exibido' : 'Total exibido'}:{' '}
+            <b className="money">{formatCurrency(temEntrada ? totalExibido : -totalExibido)}</b>
           </span>
         )}
       </div>

@@ -341,6 +341,18 @@
   letter-spacing: -0.062em;
 }
 
+/* Navegação entre meses: setas em volta do nome do mês. */
+.mes-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-left: calc(-1 * var(--sp-2));
+}
+
+.mes-nav h1 {
+  min-width: 0;
+}
+
 .view-head p {
   margin-top: var(--sp-2);
   color: var(--ink-2);
@@ -468,6 +480,26 @@
 .owed-foot dd {
   font-size: var(--fs-md);
   font-weight: 810;
+}
+
+.owed-foot dd.is-negativo {
+  color: var(--carbon);
+}
+
+.owed-conta {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: var(--fs-xs);
+  color: var(--ink-2);
+}
+
+/* Entrada na lista: "+ R$" na cor de PAGO. */
+.is-entrada {
+  color: var(--pago);
+}
+
+.modal-mes {
+  margin-bottom: var(--sp-1);
 }
 
 .owed-foot .link-btn {
@@ -1596,8 +1628,15 @@
     border-radius: 23px;
   }
 
+  /* No celular, "Voltar para o mês atual" desce para baixo do mês. */
   .view-head {
+    flex-wrap: wrap;
+    align-items: flex-start;
     margin-bottom: var(--sp-4);
+  }
+
+  .mes-nav h1 {
+    font-size: clamp(1.6rem, 1rem + 4vw, 2rem);
   }
 
   .ledger {

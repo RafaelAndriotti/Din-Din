@@ -42,7 +42,7 @@ export default function Header({ status, onOpenModal, onRefresh, refreshing, onS
               className="icon-btn"
               onClick={onRefresh}
               disabled={refreshing}
-              aria-label="Recarregar despesas"
+              aria-label="Recarregar lançamentos"
             >
               <RefreshCw size={18} className={refreshing ? 'spinning' : ''} aria-hidden="true" />
             </button>
@@ -67,7 +67,7 @@ export default function Header({ status, onOpenModal, onRefresh, refreshing, onS
             <>
               <button type="button" className="btn btn-on-bar hide-sm" onClick={onOpenModal}>
                 <Plus size={18} aria-hidden="true" />
-                Nova despesa
+                Novo lançamento
               </button>
 
               <button type="button" className="icon-btn" onClick={onSair} aria-label="Sair" title="Sair da conta">
