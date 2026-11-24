@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, TriangleAlert } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, TriangleAlert } from 'lucide-react';
 import Header from './components/Header';
 import FaltaPagar, { FaltaPagarSkeleton } from './components/FaltaPagar';
 import ExpenseFilters from './components/ExpenseFilters';
@@ -14,6 +14,7 @@ import {
   temSessao, sair, quandoPerderSessao
 } from './services/api';
 import { isPago } from './utils/format';
+import { mesAtual, rotuloMes, somarMeses } from './utils/meses';
 import './App.css';
 
 const TOAST_DURACAO = 5000;
@@ -28,8 +29,8 @@ function mensagemDeErro(err) {
   return 'O servidor encontrou um erro.';
 }
 
-function buscarTudo() {
-  return Promise.all([getDespesas(), getCategorias()]);
+function buscarTudo(mes) {
+  return Promise.all([getDespesas(mes), getCategorias()]);
 }
 
 function rolarAteLista() {
@@ -66,6 +67,9 @@ export default function App() {
 }
 
 function Painel({ onSair }) {
+  // Mês aberto na tela ('AAAA-MM'). A lista, o resumo e os lançamentos novos são deste mês.
+  const [mes, setMes] = useState(mesAtual);
+  const mesRef = useRef(mes);
   const [despesas, setDespesas] = useState([]);
   const [categorias, setCategorias] = useState([]);
   // 'loading' só antes do primeiro carregamento; depois 'ready', 'demo' ou 'error'.
@@ -119,9 +123,12 @@ function Painel({ onSair }) {
     setCategorias(cats);
 
     if (resultado.data) {
-      // Uma exclusão ainda no prazo do "Desfazer" não deve reaparecer na lista.
-      const pendente = toastRef.current?.pendingDeleteId;
-      setDespesas(resultado.data.filter((d) => d.id !== pendente));
+      // Uma exclusão ainda no prazo do "Desfazer" não deve reaparecer na lista
+      // (nem as outras parcelas da mesma compra, se a pessoa trocar de mês nesse meio-tempo).
+      const pendente = toastRef.current?.pendingDelete;
+      setDespesas(resultado.data.filter((d) =>
+        !pendente || (d.id !== pendente.id && !(pendente.compraId && d.compraId === pendente.compraId))
+      ));
       setStatus(resultado.isFallback ? 'demo' : 'ready');
       setHasLoaded(true);
     } else if (hasLoadedRef.current) {
@@ -139,9 +146,13 @@ function Painel({ onSair }) {
   }, [showToast]);
 
   // Recarregar (botão do header, "Tentar de novo", "Reconectar").
+  // Resposta que chega depois de a pessoa trocar de mês é descartada.
   const loadData = useCallback(() => {
+    const pedido = mesRef.current;
     setLoading(true);
-    return buscarTudo().then(aplicarResultado);
+    return buscarTudo(pedido).then((r) => {
+      if (pedido === mesRef.current) aplicarResultado(r);
+    });
   }, [aplicarResultado]);
 
   useEffect(() => {
@@ -149,21 +160,29 @@ function Painel({ onSair }) {
     loadDataRef.current = loadData;
   }, [hasLoaded, loadData]);
 
-  // Primeiro carregamento. "loading" já começa true, então não há setState síncrono aqui.
+  // Carrega o mês aberto: no início e a cada troca de mês.
+  // "ativo" descarta a resposta de um mês que a pessoa já deixou para trás.
   useEffect(() => {
     let ativo = true;
-    buscarTudo().then((r) => {
+    buscarTudo(mes).then((r) => {
       if (ativo) aplicarResultado(r);
     });
     return () => {
       ativo = false;
     };
-  }, [aplicarResultado]);
+  }, [mes, aplicarResultado]);
+
+  function irParaMes(novo) {
+    if (novo === mes) return;
+    mesRef.current = novo;
+    setLoading(true);
+    setMes(novo);
+  }
 
   // Se a pessoa fechar a aba durante o "Desfazer", a exclusão ainda é enviada.
   useEffect(() => {
     function handlePageHide() {
-      const id = toastRef.current?.pendingDeleteId;
+      const id = toastRef.current?.pendingDelete?.id;
       if (id != null) deleteDespesa(id, { keepalive: true }).catch(() => {});
     }
     window.addEventListener('pagehide', handlePageHide);
@@ -187,8 +206,12 @@ function Painel({ onSair }) {
       showToast({ message: `Alterações em "${atualizada.descricao}" salvas.` });
     } else {
       const criada = await createDespesa(payload);
-      setDespesas((prev) => [criada, ...prev]);
-      showToast({ message: `"${criada.descricao}" cadastrada.` });
+      if (criada.mes === mesRef.current) setDespesas((prev) => [criada, ...prev]);
+      showToast({
+        message: Number(criada.parcelas) > 1 && criada.parcelaAtual
+          ? `"${criada.descricao}" cadastrada em ${criada.parcelas} parcelas, uma por mês.`
+          : `"${criada.descricao}" cadastrada.`
+      });
     }
     // Se estava em modo demonstração e salvou, a API voltou: recarrega os dados reais.
     if (status === 'demo') loadData();
@@ -206,10 +229,11 @@ function Painel({ onSair }) {
     try {
       const atualizada = await updateDespesa(item.id, { ...item, status: novoStatus });
       setDespesas((prev) => prev.map((d) => (d.id === item.id ? atualizada : d)));
+      const entrada = item.tipo === 'ENTRADA';
       showToast({
         message: novoStatus === 'PAGO'
-          ? `"${item.descricao}" marcada como paga.`
-          : `"${item.descricao}" voltou para pendente.`
+          ? `"${item.descricao}" marcada como ${entrada ? 'recebida' : 'paga'}.`
+          : `"${item.descricao}" voltou para ${entrada ? 'a receber' : 'pendente'}.`
       });
     } catch (err) {
       if (err.kind === 'not_found') {
@@ -230,6 +254,8 @@ function Painel({ onSair }) {
   }
 
   function restaurar(item, index) {
+    // Se a pessoa já trocou de mês, o item volta sozinho ao reabrir o mês dele.
+    if (item.mes && item.mes !== mesRef.current) return;
     setDespesas((prev) => {
       if (prev.some((d) => d.id === item.id)) return prev;
       const copia = [...prev];
@@ -262,9 +288,11 @@ function Painel({ onSair }) {
     requestAnimationFrame(() => document.getElementById('lista-titulo')?.focus());
 
     showToast({
-      message: `"${item.descricao}" excluída.`,
+      message: item.compraId
+        ? `"${item.descricao}" excluída com as ${item.parcelas} parcelas.`
+        : `"${item.descricao}" excluída.`,
       actionLabel: 'Desfazer',
-      pendingDeleteId: item.id,
+      pendingDelete: { id: item.id, compraId: item.compraId },
       onAction: () => restaurar(item, index),
       onExpire: () => confirmarExclusao(item, index)
     });
@@ -324,6 +352,9 @@ function Painel({ onSair }) {
 
   const selected = modal?.type === 'details' ? despesas.find((d) => d.id === modal.id) : null;
   const temDespesas = despesas.length > 0;
+  const noMesAtual = mes === mesAtual();
+  // Ao trocar de mês, a lista antiga some na hora: nada de mostrar outubro com o título de novembro.
+  const trocandoMes = loading && hasLoaded && despesas.length > 0 && despesas[0].mes !== mes;
 
   // ---------- Conteúdo principal ----------
   let conteudo;
@@ -335,7 +366,7 @@ function Painel({ onSair }) {
         </div>
       </div>
     );
-  } else if (isInitialLoading) {
+  } else if (isInitialLoading || trocandoMes) {
     // Antes de 300 ms não mostra nada; depois, skeleton. Nunca R$ 0,00 falso.
     conteudo = showSkeleton ? (
       <div className="cols">
@@ -352,7 +383,7 @@ function Painel({ onSair }) {
       <div className={`cols ${temDespesas ? '' : 'single'}`}>
         {temDespesas && (
           <FaltaPagar
-            despesas={despesas}
+            lancamentos={despesas}
             onFilterStatus={handleFilterStatus}
             onTogglePaid={handleTogglePaid}
             carimbadaId={carimbadaId}
@@ -415,9 +446,32 @@ function Painel({ onSair }) {
       <main className="page">
         <header className="view-head">
           <div>
-            <h1>Despesas</h1>
-            <p>O que falta pagar e tudo o que você já registrou.</p>
+            <div className="mes-nav">
+              <button
+                type="button"
+                className="icon-btn"
+                aria-label={`Mês anterior: ${rotuloMes(somarMeses(mes, -1))}`}
+                onClick={() => irParaMes(somarMeses(mes, -1))}
+              >
+                <ChevronLeft size={22} aria-hidden="true" />
+              </button>
+              <h1 aria-live="polite">{rotuloMes(mes)}</h1>
+              <button
+                type="button"
+                className="icon-btn"
+                aria-label={`Próximo mês: ${rotuloMes(somarMeses(mes, 1))}`}
+                onClick={() => irParaMes(somarMeses(mes, 1))}
+              >
+                <ChevronRight size={22} aria-hidden="true" />
+              </button>
+            </div>
+            <p>Entradas e saídas do mês. O que você lançar agora entra em {rotuloMes(mes).toLowerCase()}.</p>
           </div>
+          {!noMesAtual && (
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => irParaMes(mesAtual())}>
+              Voltar para o mês atual
+            </button>
+          )}
         </header>
         {conteudo}
       </main>
@@ -426,7 +480,7 @@ function Painel({ onSair }) {
       <div className="fab-bar">
         <button type="button" className="btn btn-primary" onClick={openNew}>
           <Plus size={20} aria-hidden="true" />
-          Nova despesa
+          Novo lançamento
         </button>
       </div>
 
@@ -438,6 +492,7 @@ function Painel({ onSair }) {
           despesa={modal.despesa}
           categorias={categorias}
           despesas={despesas}
+          mes={mes}
           onClose={closeModal}
           onSave={handleSave}
         />

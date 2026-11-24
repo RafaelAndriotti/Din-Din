@@ -40,7 +40,11 @@ CREATE TABLE IF NOT EXISTS despesas (
   categoria         TEXT,
   metodo_pagamento  TEXT,
   parcelas          INTEGER, -- 0 = a vista
-  status            TEXT     -- 'pago' ou 'pendente'
+  status            TEXT,    -- 'pago' ou 'pendente'
+  tipo              TEXT NOT NULL DEFAULT 'SAIDA', -- 'ENTRADA' ou 'SAIDA'
+  mes               DATE NOT NULL DEFAULT date_trunc('month', current_date)::date, -- sempre o dia 1
+  parcela_atual     INTEGER, -- 1..parcelas numa compra parcelada; NULL fora dela
+  compra_id         UUID     -- liga as parcelas da mesma compra (uma linha por mês)
 );
 
  CREATE TABLE IF NOT EXISTS categorias (
@@ -61,7 +65,22 @@ ALTER TABLE despesas ADD COLUMN IF NOT EXISTS usuario_id INTEGER REFERENCES usua
 ALTER TABLE categorias ADD COLUMN IF NOT EXISTS usuario_id INTEGER REFERENCES usuarios (id);
 ALTER TABLE categorias DROP CONSTRAINT IF EXISTS categorias_nome_key;
 
+-- Meses, entradas e parcelas (2026-11-24). Linhas que já existiam ficam como SAIDA no mês em
+-- que este arquivo rodar: o Postgres calcula o DEFAULT uma vez e preenche todas.
+ALTER TABLE despesas ADD COLUMN IF NOT EXISTS tipo TEXT NOT NULL DEFAULT 'SAIDA';
+ALTER TABLE despesas ADD COLUMN IF NOT EXISTS mes DATE NOT NULL DEFAULT date_trunc('month', current_date)::date;
+ALTER TABLE despesas ADD COLUMN IF NOT EXISTS parcela_atual INTEGER;
+ALTER TABLE despesas ADD COLUMN IF NOT EXISTS compra_id UUID;
+-- DROP + ADD deixa o arquivo rodar de novo sem erro de "constraint já existe".
+ALTER TABLE despesas DROP CONSTRAINT IF EXISTS despesas_tipo_check;
+ALTER TABLE despesas ADD CONSTRAINT despesas_tipo_check CHECK (tipo IN ('ENTRADA', 'SAIDA'));
+ALTER TABLE despesas DROP CONSTRAINT IF EXISTS despesas_mes_dia_1_check;
+ALTER TABLE despesas ADD CONSTRAINT despesas_mes_dia_1_check CHECK (EXTRACT(DAY FROM mes) = 1);
+
 CREATE INDEX IF NOT EXISTS despesas_usuario_id_idx ON despesas (usuario_id);
+-- A tela lista um mês por vez: WHERE usuario_id = $1 AND mes = $2.
+CREATE INDEX IF NOT EXISTS despesas_usuario_mes_idx ON despesas (usuario_id, mes);
+CREATE INDEX IF NOT EXISTS despesas_compra_id_idx ON despesas (compra_id) WHERE compra_id IS NOT NULL;
 -- Nome único por dono: a categoria de um usuário não bloqueia o nome para os outros (F03).
 CREATE UNIQUE INDEX IF NOT EXISTS categorias_usuario_nome_key ON categorias (usuario_id, nome);
 

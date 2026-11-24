@@ -175,3 +175,22 @@ describe('validate({ body: despesaSchema }) - middleware', () => {
         expect(next).not.toHaveBeenCalled();
     });
 });
+
+describe('despesaSchema - tipo e mes', () => {
+    it('sem tipo, o lançamento é SAIDA', () => {
+        expect(despesaSchema.parse(pix).tipo).toBe('SAIDA');
+    });
+
+    it('ENTRADA ignora forma de pagamento e parcelas', () => {
+        const r = despesaSchema.parse({ ...base, tipo: 'ENTRADA', metodoPagamento: 'CREDITO', parcelas: 12 });
+        expect(r).toMatchObject({ tipo: 'ENTRADA', metodoPagamento: null, parcelas: 1 });
+    });
+
+    it.each(['2026-01', '2026-12'])('aceita mes %s', (mes) => {
+        expect(camposComErro({ ...pix, mes })).toEqual([]);
+    });
+
+    it.each(['2026-13', '2026-1', '26-11', '2026-11-01', 202611])('rejeita mes %s', (mes) => {
+        expect(camposComErro({ ...pix, mes })).toEqual(['mes']);
+    });
+});

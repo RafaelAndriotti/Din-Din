@@ -1,9 +1,10 @@
 import React, { useRef } from 'react';
 import { X, Pencil, Trash2 } from 'lucide-react';
 import useDialog from '../hooks/useDialog';
-import { StatusBadge, CategoryDot } from './ExpenseList';
-import { formatCurrency, formatParcelas, isPago } from '../utils/format';
-import { rotuloMetodo } from '../utils/despesas';
+import { StatusBadge, CategoryDot, Valor } from './ExpenseList';
+import { formatParcelas, isPago } from '../utils/format';
+import { isEntrada, rotuloMarcar, rotuloMetodo } from '../utils/despesas';
+import { rotuloMes } from '../utils/meses';
 
 // Abre com o item que já está na lista: não precisa de GET /despesas/:id.
 export default function ExpenseDetailsModal({ expense, categorias, carimbada = false, onClose, onEdit, onDelete, onTogglePaid }) {
@@ -12,6 +13,7 @@ export default function ExpenseDetailsModal({ expense, categorias, carimbada = f
   useDialog({ dialogRef, initialFocusRef: acaoPrincipalRef, onClose });
 
   const pago = isPago(expense);
+  const entrada = isEntrada(expense);
 
   return (
     <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
@@ -32,7 +34,7 @@ export default function ExpenseDetailsModal({ expense, categorias, carimbada = f
 
         <div className="modal-body">
           <div className={`detail-hero ${pago ? 'is-paid' : ''}`}>
-            <span className="detail-value money">{formatCurrency(expense.valor)}</span>
+            <Valor item={expense} className="detail-value" />
             <StatusBadge despesa={expense} fresh={carimbada} />
           </div>
 
@@ -44,10 +46,26 @@ export default function ExpenseDetailsModal({ expense, categorias, carimbada = f
                 {expense.categoria || 'Sem categoria'}
               </span>
             </dd>
-            <dt>Forma de pagamento</dt>
-            <dd>{rotuloMetodo(expense.metodoPagamento)}</dd>
-            <dt>Parcelas</dt>
-            <dd className="money">{formatParcelas(expense.parcelas, expense.valor)}</dd>
+            <dt>Tipo</dt>
+            <dd>{entrada ? 'Entrada' : 'Saída'}</dd>
+            {expense.mes && (
+              <>
+                <dt>Mês</dt>
+                <dd>{rotuloMes(expense.mes)}</dd>
+              </>
+            )}
+            {!entrada && (
+              <>
+                <dt>Forma de pagamento</dt>
+                <dd>{rotuloMetodo(expense.metodoPagamento)}</dd>
+                <dt>Parcelas</dt>
+                <dd className="money">
+                  {expense.parcelaAtual
+                    ? `Parcela ${expense.parcelaAtual} de ${expense.parcelas}`
+                    : formatParcelas(expense.parcelas, expense.valor)}
+                </dd>
+              </>
+            )}
           </dl>
 
           {/* Um único botão (e não dois alternados) para o foco não se perder ao trocar o status. */}
@@ -57,14 +75,14 @@ export default function ExpenseDetailsModal({ expense, categorias, carimbada = f
             className={`btn full-width ${pago ? 'btn-secondary' : 'btn-primary'}`}
             onClick={() => onTogglePaid(expense)}
           >
-            {pago ? 'Marcar como pendente' : 'Marcar como pago'}
+            {pago ? (entrada ? 'Marcar como a receber' : 'Marcar como pendente') : rotuloMarcar(expense)}
           </button>
         </div>
 
         <div className="modal-foot between">
           <button type="button" className="btn btn-ghost text-danger" onClick={() => onDelete(expense)}>
             <Trash2 size={18} aria-hidden="true" />
-            Excluir
+            {expense.compraId ? `Excluir as ${expense.parcelas} parcelas` : 'Excluir'}
           </button>
           <button type="button" className="btn btn-secondary" onClick={() => onEdit(expense)}>
             <Pencil size={18} aria-hidden="true" />

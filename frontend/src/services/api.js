@@ -3,6 +3,7 @@
 // Toda resposta que não for 2xx vira ApiError, e quem chamou decide o que mostrar.
 
 import { normalizarMetodo, normalizarStatus, toPayload } from '../utils/despesas';
+import { mesAtual } from '../utils/meses';
 
 const DESPESAS_URL = '/despesas';
 const CATEGORIAS_URL = '/categorias';
@@ -11,10 +12,12 @@ const POR_PAGINA = 100;
 const CHAVE_TOKEN = 'din-din-token';
 
 // Dados de exemplo usados só em desenvolvimento, quando o backend não está de pé.
+// Aparecem em qualquer mês que a pessoa abrir.
 const FALLBACK_DESPESAS = [
+  { id: 4, tipo: 'ENTRADA', descricao: 'Salário', valor: 5200.0, categoria: 'Salário', metodoPagamento: null, parcelas: 1, status: 'PAGO' },
   { id: 1, descricao: 'Supermercado Mensal', valor: 450.0, categoria: 'Alimentação', metodoPagamento: 'PIX', parcelas: 1, status: 'PAGO' },
   { id: 2, descricao: 'Conta de Energia', valor: 185.3, categoria: 'Moradia', metodoPagamento: 'DEBITO', parcelas: 1, status: 'PENDENTE' },
-  { id: 3, descricao: 'Notebook para Trabalho', valor: 3600.0, categoria: 'Tecnologia', metodoPagamento: 'CREDITO', parcelas: 10, status: 'PAGO' }
+  { id: 3, descricao: 'Notebook para Trabalho', valor: 360.0, categoria: 'Tecnologia', metodoPagamento: 'CREDITO', parcelas: 10, parcelaAtual: 1, compraId: 'demo', status: 'PENDENTE' }
 ];
 
 // kind: 'network' (sem conexão), 'validation' (400), 'auth' (401), 'not_found' (404),
@@ -130,16 +133,20 @@ function normalizarDespesa(d) {
     valor: Number(d.valor) || 0,
     parcelas: Number(d.parcelas) || 0,
     status: normalizarStatus(d.status),
+    tipo: d.tipo === 'ENTRADA' ? 'ENTRADA' : 'SAIDA',
+    parcelaAtual: d.parcelaAtual ?? null,
+    compraId: d.compraId ?? null,
     metodoPagamento: normalizarMetodo(d.metodoPagamento) ?? d.metodoPagamento
   };
 }
 
 // O backend devolve no máximo POR_PAGINA itens por vez; uma página incompleta é a última.
 // shortcut: paginação por OFFSET pode pular ou repetir um item se a lista mudar entre duas páginas; trocar por cursor (id > último) no backend se isso virar problema.
-async function buscarTodas(url) {
+async function buscarTodas(url, filtros = {}) {
   const todas = [];
   for (let pagina = 1; ; pagina += 1) {
-    const lote = (await request(`${url}?pagina=${pagina}&limite=${POR_PAGINA}`)) || [];
+    const query = new URLSearchParams({ ...filtros, pagina, limite: POR_PAGINA });
+    const lote = (await request(`${url}?${query}`)) || [];
     todas.push(...lote);
     if (lote.length < POR_PAGINA) return todas;
   }
@@ -153,16 +160,17 @@ async function autenticar(url, email, senha) {
 export const entrar = (email, senha) => autenticar('/auth/login', email, senha);
 export const criarConta = (email, senha) => autenticar('/auth/registro', email, senha);
 
+// Lançamentos (entradas e saídas) de um mês 'AAAA-MM'.
 // Devolve { data, isFallback, error }. Nunca lança.
 // Fallback só em falha de rede e só em desenvolvimento. 4xx/5xx viram erro.
-export async function getDespesas() {
+export async function getDespesas(mes = mesAtual()) {
   try {
-    const data = await buscarTodas(DESPESAS_URL);
+    const data = await buscarTodas(DESPESAS_URL, { mes });
     return { data: data.map(normalizarDespesa), isFallback: false, error: null };
   } catch (error) {
     if (error.kind === 'network' && import.meta.env.DEV) {
       console.warn('Backend inacessível. Exibindo dados de exemplo. Suba a API com: npm run dev');
-      return { data: FALLBACK_DESPESAS.map(normalizarDespesa), isFallback: true, error };
+      return { data: FALLBACK_DESPESAS.map((d) => normalizarDespesa({ ...d, mes })), isFallback: true, error };
     }
     return { data: null, isFallback: false, error };
   }

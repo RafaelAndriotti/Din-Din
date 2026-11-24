@@ -53,6 +53,8 @@ npm test               # testes
 - Em andamento, não commitado: **C6** — renomear colunas de despesas para português (`descricao`, `valor`, `categoria`, `metodo_pagamento`, `parcelas`, `status`) no `init.sql`, controllers, validators, testes e frontend.
 - 2026-11-23, branch `fix/auditoria-seguranca`: correções da auditoria de segurança (críticos a baixos). Autenticação JWT e dono dos dados (A5), posse em toda query, role do banco sem superusuário, `.env` validado no boot, API e Postgres só em 127.0.0.1, handler de erro central (parte de A1), paginação (parte de M3) e rate limit. Detalhes em `docs/security-audit/relatorio-correcoes-seguranca.pdf`.
 
+- 2026-11-24, branch `feat/meses-entradas-saidas` (não commitado): lançamentos por mês. `despesas` ganhou `tipo` (ENTRADA/SAIDA), `mes` (DATE no dia 1), `parcela_atual` e `compra_id`. Compra no crédito em N vezes vira N linhas, uma por mês, com o mesmo `compra_id`; excluir uma parcela exclui a compra. `GET /despesas?mes=AAAA-MM`. Na tela, setas trocam o mês e o resumo mostra entradas, saídas e saldo. Antes do deploy, rodar o `init.sql` de novo no Neon.
+
 ## Próximos passos (roteiro do mentor)
 
 1. Fechar C6 e garantir `npm start` e `npm test` sem erro.
