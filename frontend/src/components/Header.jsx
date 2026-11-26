@@ -2,10 +2,10 @@ import React from 'react';
 import { LogOut, Moon, Plus, RefreshCw, Sun, Wallet } from 'lucide-react';
 import useTema from '../hooks/useTema';
 
-// Com a API no ar não aparece nada: a barra só avisa quando algo foge do normal.
+// A barra só avisa quando a tela mostra dados de exemplo (desenvolvimento, API desligada).
+// Falha da API não aparece aqui: a própria lista mostra o erro com "Tentar de novo".
 const CONEXAO = {
-  demo: { texto: 'Dados de exemplo', classe: 'off' },
-  error: { texto: 'API indisponível', classe: 'error' }
+  demo: { texto: 'Dados de exemplo', classe: 'off' }
 };
 
 // Sem onSair (tela de login), a barra mostra só a marca e o tema.
